@@ -7,6 +7,11 @@ extern "C"
 {
 #endif
 
+/**
+ * @brief An enumeration of flags that can be applied to
+ *        engine objects. Some flags may be used only only
+ *        on some objects or won't have any effect.
+ */
 enum FLAGS
 {
     /**
@@ -39,7 +44,22 @@ enum FLAGS
      *        translucent render pass.
      */
     TRANSLUCENT = (1<<4),
+};
 
+/**
+ * @brief An enumeration of possible error values.
+ */
+enum ERROR
+{
+    /**
+     * No error has happened.
+     */
+    SUCCESS = 0,
+
+    /**
+     * @brief The engine ran out of memory.
+     */
+    OUT_OF_MEMORY = 1,
 };
 
 struct ENTITY;
@@ -67,17 +87,11 @@ struct LEVEL
 
 
 
-
-
-/**
- * @brief A type alias for @struct LEVEL
- */
 typedef struct LEVEL LEVEL;
 
-/**
- * @brief A type alias for @enum FLAGS.
- */
 typedef enum FLAGS FLAGS;
+
+typedef enum ERROR ERROR;
 
 #if defined(__cplusplus)
 }

@@ -3,7 +3,8 @@ CONFIG += c++11
 CONFIG -= app_bundle
 CONFIG -= qt
 
-SOURCES += main.cpp
+SOURCES += \
+    engine.cpp
 
 HEADERS += \
     $$PWD/../include/acknext.h \

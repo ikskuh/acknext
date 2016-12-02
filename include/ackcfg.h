@@ -5,3 +5,9 @@
 #else
 #define ACKCONST
 #endif
+
+#if defined(__cplusplus)
+#define ACKFUN extern "C"
+#else
+#define ACKFUN
+#endif

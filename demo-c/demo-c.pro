@@ -11,3 +11,5 @@ else:unix: LIBS += -L$$OUT_PWD/../acknext/ -lacknext
 
 INCLUDEPATH += $$PWD/../acknext
 DEPENDPATH += $$PWD/../acknext
+
+INCLUDEPATH += $$PWD/../include
