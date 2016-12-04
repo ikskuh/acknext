@@ -6,6 +6,11 @@
 #include <unistd.h>
 #include <chrono>
 
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_opengl.h>
+
+#include "engine.h"
+
 struct
 {
     ERROR code;
@@ -14,9 +19,20 @@ struct
     SUCCESS, "Success.",
 };
 
-static std::chrono::steady_clock::time_point startupTime;
+using std::chrono::steady_clock;
+using std::chrono::high_resolution_clock;
+
+// This clock point is used for logging
+static steady_clock::time_point startupTime;
+
+// This clock point is used for frame time calculations
+static high_resolution_clock::time_point lastFrameTime;
 
 static FILE *logfile = nullptr;
+
+struct engine engine;
+
+#define SDL_CHECKED(x, y) if((x) < 0) { engine_setsdlerror(); return y; }
 
 ACKFUN bool engine_open(int argc, char ** argv)
 {
@@ -34,21 +50,83 @@ ACKFUN bool engine_open(int argc, char ** argv)
         }
     }
 
+    engine_log("Begin initalizing engine.");
 
+    SDL_CHECKED(SDL_Init(SDL_INIT_EVERYTHING), false)
+
+    SDL_CHECKED(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3), false)
+    SDL_CHECKED(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3), false)
+    SDL_CHECKED(SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG), false)
+    SDL_CHECKED(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1), false)
+
+    engine.window = SDL_CreateWindow(
+        "Acknext A1",
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        1280, 720,
+        SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_MOUSE_FOCUS);
+    if(engine.window == nullptr)
+    {
+        engine_setsdlerror();
+        return false;
+    }
+
+    engine.context = SDL_GL_CreateContext(engine.window);
+    if(engine.context == nullptr)
+    {
+        engine_setsdlerror();
+        return false;
+    }
+
+    initialize_renderer();
 
     engine_log("Engine ready.");
 
-    return false;
+    lastFrameTime = high_resolution_clock::now();
+
+    return true;
 }
 
 ACKFUN bool engine_frame()
 {
-    return false;
+    auto nextFrameTime = high_resolution_clock::now();
+    // Time Setup
+    {
+        std::chrono::duration<float> timePoint = std::chrono::duration_cast<std::chrono::milliseconds>(nextFrameTime - lastFrameTime);
+
+        time_step = timePoint.count();
+    }
+
+    SDL_Event event;
+
+    // Update Frame
+    while(SDL_PollEvent(&event))
+    {
+        switch(event.type)
+        {
+            case SDL_QUIT:
+            {
+                // TODO: Initialize engine shutdown here.
+                return false;
+            }
+        }
+    }
+
+    // Render Frame
+    render_frame();
+
+    lastFrameTime = nextFrameTime;
+    return true;
 }
 
 ACKFUN void engine_close()
 {
     engine_log("Shutting down engine...");
+
+    engine_log("Destroy GL context.");
+    SDL_GL_DeleteContext(engine.context);
+
+    engine_log("Close window.");
+    SDL_DestroyWindow(engine.window);
 
     engine_log("Engine shutdown complete.");
 }
@@ -56,7 +134,7 @@ ACKFUN void engine_close()
 ACKFUN void engine_log(char const * format, ...)
 {
     // TODO: Determine current time
-    std::chrono::duration<float> timePoint = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - startupTime);
+    std::chrono::duration<float> timePoint = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - startupTime);
 
     FILE * files[] = { stderr, logfile };
 
@@ -91,4 +169,9 @@ void engine_seterror(ERROR code, char const * message, ...)
     va_end(args);
 
     lasterror.code = code;
+}
+
+void engine_setsdlerror()
+{
+    engine_seterror(SDL_ERROR, SDL_GetError());
 }

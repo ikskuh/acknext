@@ -1,11 +1,24 @@
 #pragma once
 
+#include <stdint.h>
 #include "ackcfg.h"
+
+/**
+ * @file
+ * @brief This file contains all structure and enum declarations.
+ **/
 
 #if defined(__cplusplus)
 extern "C"
 {
 #endif
+
+/**
+ * The numeric type used by Acknext.
+ *
+ * This aliases to float.
+ */
+typedef float var;
 
 /**
  * @brief An enumeration of flags that can be applied to
@@ -15,33 +28,33 @@ extern "C"
 enum FLAGS
 {
     /**
-     * @brief A flag that says that no flags are set.
+     * A flag that says that no flags are set.
      */
     NONE = 0,
 
     /**
-     * @brief If set, the entity will be visible.
+     * If set, the entity will be visible.
      **/
     VISIBLE = (1<<0),
 
     /**
-     * @brief If set, the entity won't collide with other entities.
+     * If set, the entity won't collide with other entities.
      **/
     PASSABLE = (1<<1),
 
     /**
-     * @brief If set, the entity will not be touchable by the mouse.
+     * If set, the entity will not be touchable by the mouse.
      */
     UNTOUCHABLE = (1<<2),
 
     /**
-     * @brief If set, the entity will cast a shadow.
+     * If set, the entity will cast a shadow.
      */
     SHADOW = (1<<3),
 
     /**
-     * @brief Marks an entity as translucent and moves it to the
-     *        translucent render pass.
+     * Marks an entity as translucent and moves it to the
+     * translucent render pass.
      */
     TRANSLUCENT = (1<<4),
 };
@@ -57,10 +70,36 @@ enum ERROR
     SUCCESS = 0,
 
     /**
-     * @brief The engine ran out of memory.
+     * The engine ran out of memory.
      */
     OUT_OF_MEMORY = 1,
+
+    /**
+     * An error within SDL2 has happened.
+     */
+    SDL_ERROR = 2
 };
+
+/**
+ * @brief An rgb color using 8 bit per color channel.
+ */
+struct COLOR
+{
+    /**
+     * The red color component.
+     */
+    uint8_t red;
+
+    /**
+     * The green color component.
+     */
+    uint8_t green;
+
+    /**
+     * The blue color component.
+     */
+    uint8_t blue;
+} __attribute__((packed));
 
 struct ENTITY;
 
@@ -88,6 +127,8 @@ struct LEVEL
 
 
 typedef struct LEVEL LEVEL;
+
+typedef struct COLOR COLOR;
 
 typedef enum FLAGS FLAGS;
 

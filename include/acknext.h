@@ -11,6 +11,7 @@
 
 #include "ackcfg.h"
 #include "acktypes.h"
+#include "ackvars.h"
 
 #include <stdbool.h>
 
