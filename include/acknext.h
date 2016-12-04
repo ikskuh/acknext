@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef _ACKNEXT_
+#define _ACKNEXT_
+
 /**
  * @file
  * @brief This is the main include file for the engine.
@@ -43,7 +46,7 @@ ACKFUN void level_remove(LEVEL *level);
  *
  * @remarks This function only works in coroutines.
  */
-ACKFUN void sched_wait();
+ACKFUN void task_wait();
 
 /**
   * @brief start Starts a new coroutine.
@@ -51,9 +54,17 @@ ACKFUN void sched_wait();
   * @param context A user context that can be used to pass specific information+
   *                to the coroutine.
   *
+  * Starts an asynchronous, cooperative process that will run in parallel
+  * to other tasks.
   *
+  * Each task must call @ref task_wait when it's work for the current
+  * frame is done.
+  *
+  * @remarks The default @ref task_priority is 0.0
+  * @remarks Each task will copy the priority of its creating task.
+  * @remarks Tasks are executed in the order of their @ref task_priority.
   */
-ACKFUN void sched_start(void (*fn)(), void * context);
+ACKFUN void task_start(void (*fn)(), void * context);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -98,12 +109,16 @@ ACKFUN char const * engine_lasterror(ERROR * errorcode);
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifndef _ACKNEXT_INTERNAL_
+
 // Those defines allow the use of wait() and start() instead
 // of sched_wait() and sched_start()
+#define wait task_wait
+#define start task_start
 
-#if !defined(_ACKNEXT_INTERNAL_)
-
-#define wait sched_wait
-#define start sched_start
+// This define allows the use of a typed context variable
+#define CONTEXT(Type) (*((Type*)context))
 
 #endif
+
+#endif // _ACKNEXT_

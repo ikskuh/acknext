@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef _ACKNEXT_ACKTYPES_
+#define _ACKNEXT_ACKTYPES_
+
 #include <stdint.h>
 #include "ackcfg.h"
 
@@ -8,7 +11,7 @@
  * @brief This file contains all structure and enum declarations.
  **/
 
-#if defined(__cplusplus)
+#ifdef __cplusplus
 extern "C"
 {
 #endif
@@ -134,6 +137,8 @@ typedef enum FLAGS FLAGS;
 
 typedef enum ERROR ERROR;
 
-#if defined(__cplusplus)
+#ifdef __cplusplus
 }
 #endif
+
+#endif // _ACKNEXT_ACKTYPES_

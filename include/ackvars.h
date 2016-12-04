@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef _ACKNEXT_ACKVARS_
+#define _ACKNEXT_ACKVARS_
+
 #include "ackcfg.h"
 #include "acktypes.h"
 
@@ -8,7 +11,7 @@
  * @brief This file contains all the global engine variables.
  */
 
-#if defined(__cplusplus)
+#ifdef __cplusplus
 extern "C"
 {
 #endif
@@ -24,11 +27,25 @@ extern COLOR screen_color;
  *
  * A speed multiplied by time_step gives the distance to be covered per frame.
  */
-extern var time_step;
+extern var ACKCONST time_step;
 
 
+/**
+ * The context of the current task passed to @ref task_start.
+ */
 extern void * ACKCONST context;
 
-#if defined(__cplusplus)
+/**
+ * The priority of the current task.
+ *
+ * This variables allows to schedule tasks to your will.
+ * Tasks with lower priority will come before tasks with higher priority.
+ */
+extern var task_priority;
+
+#ifdef __cplusplus
 }
 #endif
+
+
+#endif // _ACKNEXT_ACKVARS_

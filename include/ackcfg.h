@@ -1,13 +1,18 @@
 #pragma once
 
-#if defined(_ACKNEXT_INTERNAL_)
+#ifndef _ACKNEXT_ACKCFG_
+#define _ACKNEXT_ACKCFG_
+
+#ifdef _ACKNEXT_INTERNAL_
 #define ACKCONST
 #else
 #define ACKCONST const
 #endif
 
-#if defined(__cplusplus)
+#ifdef __cplusplus
 #define ACKFUN extern "C"
 #else
 #define ACKFUN
 #endif
+
+#endif // _ACKNEXT_ACKCFG_

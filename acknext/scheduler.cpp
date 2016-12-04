@@ -18,11 +18,15 @@ struct Coroutine
     EntryPoint ep;
     void * context;
     int const id;
+    bool shutdown;
+    var priority;
 
     Coroutine(EntryPoint ep, void * context) :
         ep(ep),
         context(context),
-        id(coroutine_new(::schedule, &Coroutine::Trampoline, this))
+        id(coroutine_new(::schedule, &Coroutine::Trampoline, this)),
+        shutdown(false),
+        priority(task_priority) // copy the current priority
     {
 
     }
@@ -56,6 +60,7 @@ private:
         catch(const CoError & err)
         {
             // This is a wanted shutdown!
+            engine_log("Coroutine Shutdown: %d", err.reason);
         }
         catch(const std::exception & except)
         {
@@ -67,6 +72,12 @@ private:
         }
     }
 };
+
+// This is required for coroutine sorting!
+bool operator < (const Coroutine & lhs, const Coroutine & rhs)
+{
+    return lhs.priority < rhs.priority;
+}
 
 static Coroutine * current;
 
@@ -89,6 +100,15 @@ void scheduler_shutdown()
 
 void scheduler_update()
 {
+    // Remove all dead coroutines.
+    coroutines.remove_if([](Coroutine & co) {
+        return co.status() == COROUTINE_DEAD;
+    });
+
+    // Sort for priority.
+    coroutines.sort();
+
+    // Schedule everything
     for(Coroutine & co : coroutines)
     {
         switch(co.status())
@@ -98,15 +118,21 @@ void scheduler_update()
                            "from within a coroutine!");
                 continue;
             case COROUTINE_DEAD:
+                // this should never happen!
                 continue;
             case COROUTINE_READY:
             case COROUTINE_SUSPEND:
             {
+                // This is some stupid back and forth of variables,
+                // but it makes the API easier.
                 ::current = &co;
                 context = co.context;
+                task_priority = co.priority;
 
                 co.resume();
 
+                // Same goes here
+                co.priority = task_priority;
                 context = nullptr;
                 ::current = nullptr;
                 break;
@@ -116,23 +142,35 @@ void scheduler_update()
                 break;
         }
     }
+
+    task_priority = 0.0;
 }
 
 
 
 
-ACKFUN void sched_start(Coroutine::EntryPoint ep, void * context)
+ACKFUN void task_start(Coroutine::EntryPoint ep, void * context)
 {
     coroutines.emplace_back(ep, context);
 }
 
-ACKFUN void sched_wait()
+ACKFUN void task_wait()
 {
     if(::current == nullptr) {
         // Nothing to yield
         engine_log("Call to sched_wait() outside a coroutine!");
         return;
     }
-
     coroutine_yield(schedule);
+
+    if(::current == nullptr)
+    {
+        engine_log("No current coroutine after yield. This is evil!");
+        throw CoError { 2 };
+    }
+
+    if(::current->shutdown)
+    {
+        throw CoError { 1 };
+    }
 }
