@@ -19,9 +19,15 @@ extern "C"
 extern COLOR screen_color;
 
 
-
+/**
+ * The duration of the last frame in seconds.
+ *
+ * A speed multiplied by time_step gives the distance to be covered per frame.
+ */
 extern var time_step;
 
+
+extern void * ACKCONST context;
 
 #if defined(__cplusplus)
 }

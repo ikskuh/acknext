@@ -1,9 +1,9 @@
 #pragma once
 
 #if defined(_ACKNEXT_INTERNAL_)
-#define ACKCONST const
-#else
 #define ACKCONST
+#else
+#define ACKCONST const
 #endif
 
 #if defined(__cplusplus)

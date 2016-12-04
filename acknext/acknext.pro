@@ -6,14 +6,17 @@ CONFIG -= qt
 SOURCES += \
     engine.cpp \
     variables.cpp \
-    renderer.cpp
+    renderer.cpp \
+    scheduler.cpp \
+    $$PWD/../coroutine/coroutine.c
 
 HEADERS += \
     $$PWD/../include/acknext.h \
     $$PWD/../include/acktypes.h \
     $$PWD/../include/ackvars.h \
     ../include/ackcfg.h \
-    engine.h
+    engine.h \
+    $$PWD/../coroutine/coroutine.h
 
 INCLUDEPATH += $$PWD/../include/
 

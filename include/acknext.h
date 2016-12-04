@@ -39,6 +39,25 @@ ACKFUN void level_remove(LEVEL *level);
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
+ * @brief Yields the current coroutine and waits a single update frame.
+ *
+ * @remarks This function only works in coroutines.
+ */
+ACKFUN void sched_wait();
+
+/**
+  * @brief start Starts a new coroutine.
+  * @param fn      The coroutine function
+  * @param context A user context that can be used to pass specific information+
+  *                to the coroutine.
+  *
+  *
+  */
+ACKFUN void sched_start(void (*fn)(), void * context);
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
  * @brief Initializes the engine.
  *
  * @returns true when the engine was successfully initialized.
@@ -78,3 +97,13 @@ ACKFUN void engine_log(char const * format, ...);
 ACKFUN char const * engine_lasterror(ERROR * errorcode);
 
 ////////////////////////////////////////////////////////////////////////////////
+
+// Those defines allow the use of wait() and start() instead
+// of sched_wait() and sched_start()
+
+#if !defined(_ACKNEXT_INTERNAL_)
+
+#define wait sched_wait
+#define start sched_start
+
+#endif

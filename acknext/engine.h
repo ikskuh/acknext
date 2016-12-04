@@ -13,6 +13,11 @@ void engine_setsdlerror();
 void render_frame();
 void initialize_renderer();
 
+// Scheduler API
+void scheduler_update();
+void scheduler_initialize();
+void scheduler_shutdown();
+
 struct engine
 {
     SDL_Window * window;
