@@ -29,6 +29,15 @@ extern COLOR screen_color;
  */
 extern var ACKCONST time_step;
 
+/**
+ * The time in seconds since the start of the game.
+ */
+extern var ACKCONST total_secs;
+
+/**
+ * The number of frames that were already rendered.
+ */
+extern int ACKCONST total_frames;
 
 /**
  * The context of the current task passed to @ref task_start.

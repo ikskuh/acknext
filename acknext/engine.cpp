@@ -93,9 +93,14 @@ ACKFUN bool engine_frame()
     auto nextFrameTime = high_resolution_clock::now();
     // Time Setup
     {
-        std::chrono::duration<float> timePoint = std::chrono::duration_cast<std::chrono::milliseconds>(nextFrameTime - lastFrameTime);
-
+        std::chrono::duration<float> timePoint;
+        timePoint = std::chrono::duration_cast<std::chrono::milliseconds>(
+                    nextFrameTime - lastFrameTime);
         time_step = timePoint.count();
+
+        timePoint = std::chrono::duration_cast<std::chrono::microseconds>(
+                    steady_clock::now() - startupTime);
+        total_secs = timePoint.count();
     }
 
     SDL_Event event;
@@ -119,6 +124,7 @@ ACKFUN bool engine_frame()
     render_frame();
 
     lastFrameTime = nextFrameTime;
+    total_frames++;
     return true;
 }
 
@@ -180,4 +186,14 @@ void engine_seterror(ERROR code, char const * message, ...)
 void engine_setsdlerror()
 {
     engine_seterror(SDL_ERROR, SDL_GetError());
+}
+
+HANDLE handle_getnew(int type)
+{
+    static int objects[64];
+    if(type < 1 || type >= 64) {
+        return HANDLE { 0, 0 };
+    } else {
+        return HANDLE { type, ++objects[type] };
+    }
 }

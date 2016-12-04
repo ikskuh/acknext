@@ -5,6 +5,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
 
+#define HANDLE_TASK 1
+
 void engine_seterror(ERROR code, char const * message, ...);
 
 void engine_setsdlerror();
@@ -17,6 +19,9 @@ void initialize_renderer();
 void scheduler_update();
 void scheduler_initialize();
 void scheduler_shutdown();
+
+// Handle System
+HANDLE handle_getnew(int type);
 
 struct engine
 {

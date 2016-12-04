@@ -1,6 +1,7 @@
 #include "engine.h"
 #include <memory>
 #include <list>
+#include <algorithm>
 
 #include "../coroutine/coroutine.h"
 
@@ -20,13 +21,15 @@ struct Coroutine
     int const id;
     bool shutdown;
     var priority;
+    HANDLE const handle;
 
     Coroutine(EntryPoint ep, void * context) :
         ep(ep),
         context(context),
         id(coroutine_new(::schedule, &Coroutine::Trampoline, this)),
         shutdown(false),
-        priority(task_priority) // copy the current priority
+        priority(task_priority), // copy the current priority
+        handle(handle_getnew(HANDLE_TASK))
     {
 
     }
@@ -56,6 +59,10 @@ private:
         try
         {
             co->ep();
+        }
+        catch(int i)
+        {
+            engine_log("received: %d", i);
         }
         catch(const CoError & err)
         {
@@ -149,9 +156,25 @@ void scheduler_update()
 
 
 
-ACKFUN void task_start(Coroutine::EntryPoint ep, void * context)
+ACKFUN HANDLE task_start(Coroutine::EntryPoint ep, void * context)
 {
     coroutines.emplace_back(ep, context);
+    return coroutines.back().handle;
+}
+
+ACKFUN void task_kill(HANDLE htask)
+{
+    auto cofind = std::find_if(
+        coroutines.begin(),
+        coroutines.end(),
+        [htask](const Coroutine & co)
+        {
+            return co.handle == htask;
+        });
+    if(cofind == coroutines.end()) {
+        return;
+    }
+    (*cofind).shutdown = true;
 }
 
 ACKFUN void task_wait()
@@ -171,6 +194,7 @@ ACKFUN void task_wait()
 
     if(::current->shutdown)
     {
-        throw CoError { 1 };
+        throw 1;
+        // throw CoError { 1 };
     }
 }

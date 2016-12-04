@@ -16,7 +16,8 @@ HEADERS += \
     $$PWD/../include/ackvars.h \
     ../include/ackcfg.h \
     engine.h \
-    $$PWD/../coroutine/coroutine.h
+    $$PWD/../coroutine/coroutine.h \
+    ../include/ackcpp.h
 
 INCLUDEPATH += $$PWD/../include/
 

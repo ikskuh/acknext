@@ -74,8 +74,13 @@ int main(int argc, char *argv[])
         printf("Failed to initialize engine: %s\n", engine_lasterror(NULL));
         return 1;
     }
-    start(ackmain, NULL);
-    start(func, NULL);
+
+    HANDLE hmain = start(func, NULL);
+
+    engine_log("Game Main: %d:%d", hmain.type, hmain.id);
+
+    start(ackmain, &hmain);
+
     while(engine_frame())
     {
         // Now: Run!
@@ -93,6 +98,12 @@ void ackmain()
     {
         // screen_color.red = 128 + 127 * sin(time);
         screen_color.green = 128 + 127 * sin(time + 1.0);
+
+        if(time < 4 && (time + time_step) >= 4)
+        {
+            // Kill after 4 seconds!
+            task_kill(CONTEXT(HANDLE));
+        }
 
         time += time_step;
         wait();
