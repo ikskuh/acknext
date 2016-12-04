@@ -109,7 +109,7 @@ void scheduler_update()
 {
     // Remove all dead coroutines.
     coroutines.remove_if([](Coroutine & co) {
-        return co.status() == COROUTINE_DEAD;
+        return (co.status() == COROUTINE_DEAD) || co.shutdown;
     });
 
     // Sort for priority.
@@ -118,6 +118,9 @@ void scheduler_update()
     // Schedule everything
     for(Coroutine & co : coroutines)
     {
+        if(co.shutdown) {
+            continue;
+        }
         switch(co.status())
         {
             case COROUTINE_RUNNING:
@@ -194,7 +197,6 @@ ACKFUN void task_wait()
 
     if(::current->shutdown)
     {
-        throw 1;
-        // throw CoError { 1 };
+        throw CoError { 1 };
     }
 }
