@@ -7,6 +7,8 @@ extern "C"
 // Graphics variables
 COLOR screen_color = { 0, 0, 128 };
 
+SIZE screen_size;
+
 // Time variables
 var time_step = 0.0f;
 var total_secs = 0.0f;

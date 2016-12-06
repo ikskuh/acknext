@@ -9,7 +9,8 @@ SOURCES += \
     renderer.cpp \
     scheduler.cpp \
     compiler.cpp \
-    $$PWD/../coroutine/coroutine.c
+    $$PWD/../coroutine/coroutine.c \
+    video.cpp
 
 HEADERS += \
     $$PWD/../include/acknext.h \

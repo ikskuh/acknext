@@ -121,6 +121,8 @@ ACKFUN bool engine_frame()
         total_secs = timePoint.count();
     }
 
+    SDL_GetWindowSize(engine.window, &screen_size.width, &screen_size.height);
+
     SDL_Event event;
 
     // Update Frame

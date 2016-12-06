@@ -60,6 +60,13 @@ enum FLAGS
      * translucent render pass.
      */
     TRANSLUCENT = (1<<4),
+
+    /**
+     * Marks an entity as transient and prevents deletion
+     * of the entity when the level containing the entity
+     * gets destroyed.
+     */
+    TRANSIENT = (1<<5),
 };
 
 /**
@@ -109,6 +116,22 @@ struct COLOR
     uint8_t blue;
 } __attribute__((packed));
 
+/**
+ * @brief A two-dimensional, integral size value
+ */
+struct SIZE
+{
+    /**
+     * The horizontal component
+     */
+    int width;
+
+    /**
+     * The vertical component
+     */
+    int height;
+};
+
 struct ENTITY;
 
 /**
@@ -122,7 +145,8 @@ struct LEVEL
     char ACKCONST * ACKCONST filename;
 
     /**
-     * @brief A pointer to a linked list of entities that will be created within this level.
+     * @brief A pointer to a linked list of entities that are contained within
+     *        this level.
      */
     struct ENTITY * ACKCONST entities;
 
@@ -146,10 +170,13 @@ struct SCRIPT;
  */
 typedef uint32_t HANDLE;
 
+typedef struct ENTITY ENTITY;
 
 typedef struct LEVEL LEVEL;
 
 typedef struct COLOR COLOR;
+
+typedef struct SIZE SIZE;
 
 typedef struct SCRIPT SCRIPT;
 

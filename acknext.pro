@@ -9,3 +9,6 @@ SUBDIRS += \
 
 SOURCES += \
     scripts/main.c
+
+HEADERS += \
+    documentation/src/groups.h

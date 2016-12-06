@@ -8,7 +8,6 @@ void ackmain()
     start(turn_color, &screen_color.red);
     while(true)
     {
-        // screen_color.red = 128 + 127 * sin(time);
         screen_color.green = 128 + 127 * sinf(total_secs + 1.0);
         wait();
     }
@@ -16,19 +15,16 @@ void ackmain()
 
 void main()
 {
-    engine_log("Hello from script!");
-
-    engine_log("Starting ackmain:");
+    video_settitle("Acknext A1 - Demo");
     task_start(ackmain, NULL);
-
-	while(true)
-	{
-		// Do some fancy screen coloring.
+    while(true)
+    {
+        // Do some fancy screen coloring.
         for(screen_color.blue = 0; screen_color.blue < 255; screen_color.blue ++)
-		{
-			wait();
+        {
+            wait();
         }
-	}
+    }
 }
 
 void turn_color()
