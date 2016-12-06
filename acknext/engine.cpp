@@ -37,6 +37,14 @@ struct engine engine;
 ACKFUN bool engine_open(int argc, char ** argv)
 {
     startupTime = std::chrono::steady_clock::now();
+
+
+    engine_log("Begin initalizing engine.");
+
+    if(compiler_init() == false) {
+        return false;
+    }
+
     for(int i = 1; i < argc; i++)
     {
         if(strcmp(argv[i], "-diag") == 0) {
@@ -48,9 +56,15 @@ ACKFUN bool engine_open(int argc, char ** argv)
                 engine_log("Failed to open acklog.txt!");
             }
         }
-    }
 
-    engine_log("Begin initalizing engine.");
+        if(argv[i][0] != '-')
+        {
+            // positional file!
+            if(compiler_add(argv[i]) == false) {
+                return false;
+            }
+        }
+    }
 
     SDL_CHECKED(SDL_Init(SDL_INIT_EVERYTHING), false)
 
@@ -84,6 +98,10 @@ ACKFUN bool engine_open(int argc, char ** argv)
     engine_log("Engine ready.");
 
     lastFrameTime = high_resolution_clock::now();
+
+    if(compiler_start() == false) {
+        return false;
+    }
 
     return true;
 }
@@ -173,14 +191,29 @@ ACKFUN char const * engine_lasterror(ERROR * errcode)
     return lasterror.message;
 }
 
+#define STRINGIFY(x) #x
+
 void engine_seterror(ERROR code, char const * message, ...)
 {
+    static char const * errorNames[] = {
+        STRINGIFY(SUCCESS),
+        STRINGIFY(OUT_OF_MEMORY),
+        STRINGIFY(SDL_ERROR),
+        STRINGIFY(COMPILATION_FAILED),
+    };
+
     va_list args;
     va_start(args, message);
     vsnprintf(lasterror.message, 1023, message, args);
     va_end(args);
 
     lasterror.code = code;
+
+    if(lasterror.code != SUCCESS)
+    {
+        char const * errname = (lasterror.code < (sizeof(errorNames) / sizeof(errorNames[0]))) ? errorNames[lasterror.code] : "UNKNOWN_ERR";
+        engine_log("%s: %s", errname, lasterror.message);
+    }
 }
 
 void engine_setsdlerror()

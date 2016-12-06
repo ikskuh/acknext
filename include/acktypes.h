@@ -80,7 +80,12 @@ enum ERROR
     /**
      * An error within SDL2 has happened.
      */
-    SDL_ERROR = 2
+    SDL_ERROR = 2,
+
+    /**
+     * The compilation of a script failed.
+     */
+    COMPILATION_FAILED = 3,
 };
 
 /**
@@ -154,6 +159,10 @@ struct LEVEL
     enum FLAGS flags;
 };
 
+/**
+ * @brief An opaque handle to a script.
+ */
+struct SCRIPT;
 
 
 typedef struct LEVEL LEVEL;
@@ -161,6 +170,8 @@ typedef struct LEVEL LEVEL;
 typedef struct COLOR COLOR;
 
 typedef struct HANDLE HANDLE;
+
+typedef struct SCRIPT SCRIPT;
 
 typedef enum FLAGS FLAGS;
 

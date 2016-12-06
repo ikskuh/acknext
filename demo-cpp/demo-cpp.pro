@@ -13,3 +13,7 @@ INCLUDEPATH += $$PWD/../acknext
 DEPENDPATH += $$PWD/../acknext
 
 INCLUDEPATH += $$PWD/../include
+
+
+LIBS += -L$$PWD/../../tcc-0.9.26/ -ldl -ltcc
+DEPENDPATH += $$PWD/../../tcc-0.9.26

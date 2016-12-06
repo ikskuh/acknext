@@ -2,6 +2,7 @@
 
 void main()
 {
+    engine_log("Hello from script!");
 	while(true)
 	{
 		// Do some fancy screen coloring.

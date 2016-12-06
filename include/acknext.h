@@ -79,6 +79,30 @@ ACKFUN void task_kill(HANDLE htask);
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
+ * @brief Compiles a script file and returns the script handle.
+ * @param fileName The file containing the source code.
+ * @returns Compiled script or NULL if errors happened.
+ */
+ACKFUN SCRIPT * script_compile(char const * fileName);
+
+/**
+ * @brief Compiles a script from source and returns the script handle.
+ * @param source The source that should be compiled.
+ * @returns Compiled script or NULL if errors happened.
+ */
+ACKFUN SCRIPT * script_compile_src(char const * source);
+
+/**
+ * @brief Gets an exported symbol from a script.
+ * @param script The script that should contain the symbol.
+ * @param name   The name of the symbol
+ * @returns Pointer to the symbol or NULL if non-existent.
+ */
+ACKFUN void *script_symbol(SCRIPT * script, char const * name);
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
  * @brief Initializes the engine.
  *
  * @returns true when the engine was successfully initialized.

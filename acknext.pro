@@ -6,3 +6,6 @@ SUBDIRS += \
     acknext \
     demo-cpp \
     demo-c
+
+SOURCES += \
+    scripts/main.c
