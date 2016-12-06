@@ -225,8 +225,8 @@ HANDLE handle_getnew(int type)
 {
     static int objects[64];
     if(type < 1 || type >= 64) {
-        return HANDLE { 0, 0 };
+        return 0;
     } else {
-        return HANDLE { type, ++objects[type] };
+        return ((++objects[type]) << 6) | type;
     }
 }

@@ -42,7 +42,7 @@ extern int ACKCONST total_frames;
 /**
  * The context of the current task passed to @ref task_start.
  */
-extern void * ACKCONST context;
+extern void * context; // ACKCONST
 
 /**
  * The priority of the current task.

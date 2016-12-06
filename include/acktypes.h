@@ -89,33 +89,6 @@ enum ERROR
 };
 
 /**
- * An engine object handle.
- *
- * Handles are unique identifiers for engine objects that
- * won't become "dangling". Handles still can point to
- * non-existent objects.
- */
-struct HANDLE
-{
-    union
-    {
-        struct
-        {
-            /**
-             * The type of the referenced object.
-             */
-            int type : 6;
-
-            /**
-             * The id of the referenced object.
-             */
-            int id : 26;
-        };
-        int value : 32;
-    };
-};
-
-/**
  * @brief An rgb color using 8 bit per color channel.
  */
 struct COLOR
@@ -164,12 +137,19 @@ struct LEVEL
  */
 struct SCRIPT;
 
+/**
+ * An engine object handle.
+ *
+ * Handles are unique identifiers for engine objects that
+ * won't become "dangling". Handles still can point to
+ * non-existent objects.
+ */
+typedef uint32_t HANDLE;
+
 
 typedef struct LEVEL LEVEL;
 
 typedef struct COLOR COLOR;
-
-typedef struct HANDLE HANDLE;
 
 typedef struct SCRIPT SCRIPT;
 

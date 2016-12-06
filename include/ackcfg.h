@@ -12,7 +12,7 @@
 #ifdef __cplusplus
 #define ACKFUN extern "C"
 #else
-#define ACKFUN
+#define ACKFUN extern
 #endif
 
 #endif // _ACKNEXT_ACKCFG_

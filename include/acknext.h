@@ -17,7 +17,9 @@
 #include "ackvars.h"
 #include "ackcpp.h"
 
+#include <stddef.h>
 #include <stdbool.h>
+#include <math.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -147,10 +149,22 @@ ACKFUN char const * engine_lasterror(ERROR * errorcode);
 
 // Those defines allow the use of wait() and start() instead
 // of sched_wait() and sched_start()
+
+/**
+ * @brief This is an alias to @ref task_wait
+ */
 #define wait task_wait
+
+/**
+ * @brief This is an alias to @ref task_start
+ */
 #define start task_start
 
-// This define allows the use of a typed context variable
+/**
+ * @brief This macro dereferences and casts the @ref context pointer to the given type
+ *
+ * This allows a simple use of the context variable: `CONTEXT(ENTITY*) = ent_create(...);`.
+ */
 #define CONTEXT(Type) (*((Type*)context))
 
 #endif

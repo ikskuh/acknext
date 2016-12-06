@@ -33,6 +33,7 @@ public:
         success &= this->addIncludePath("/home/felix/projects/acknext/include/");
         success &= this->addLibraryPath("/tmp/build-acknext-Desktop-Debug/acknext/");
         success &= this->addLibrary("acknext");
+        success &= this->addLibrary("m");
         return success;
     }
 

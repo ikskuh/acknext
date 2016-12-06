@@ -14,16 +14,14 @@ struct CoError
 
 struct Coroutine
 {
-    typedef void (*EntryPoint)();
-
-    EntryPoint ep;
+    void (*ep)();
     void * context;
     int const id;
     bool shutdown;
     var priority;
     HANDLE const handle;
 
-    Coroutine(EntryPoint ep, void * context) :
+    Coroutine(void (*ep)(), void * context) :
         ep(ep),
         context(context),
         id(coroutine_new(::schedule, &Coroutine::Trampoline, this)),
@@ -42,6 +40,11 @@ struct Coroutine
 
     }
 
+    bool alive()
+    {
+        return (this->status() != COROUTINE_DEAD);
+    }
+
     int status()
     {
         return coroutine_status(::schedule, this->id);
@@ -50,6 +53,11 @@ struct Coroutine
     void resume()
     {
         coroutine_resume(::schedule, this->id);
+    }
+
+    void yield()
+    {
+        coroutine_yield(::schedule);
     }
 
 private:
@@ -109,7 +117,7 @@ void scheduler_update()
 {
     // Remove all dead coroutines.
     coroutines.remove_if([](Coroutine & co) {
-        return (co.status() == COROUTINE_DEAD) || co.shutdown;
+        return (co.alive() == false) || co.shutdown;
     });
 
     // Sort for priority.
@@ -156,10 +164,7 @@ void scheduler_update()
     task_priority = 0.0;
 }
 
-
-
-
-ACKFUN HANDLE task_start(Coroutine::EntryPoint ep, void * context)
+ACKFUN HANDLE task_start(void (*ep)(), void * context)
 {
     coroutines.emplace_back(ep, context);
     return coroutines.back().handle;
@@ -184,10 +189,11 @@ ACKFUN void task_wait()
 {
     if(::current == nullptr) {
         // Nothing to yield
-        engine_log("Call to sched_wait() outside a coroutine!");
+        engine_log("Call to task_wait() outside a coroutine!");
         return;
     }
-    coroutine_yield(schedule);
+
+    ::current->yield();
 
     if(::current == nullptr)
     {
