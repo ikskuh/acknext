@@ -4,6 +4,7 @@
 #define _ACKNEXT_ACKTYPES_
 
 #include <stdint.h>
+#include <GL/gl.h>
 #include "ackcfg.h"
 
 /**
@@ -117,6 +118,22 @@ struct COLOR
 } __attribute__((packed));
 
 /**
+ * @brief A two-dimensional, integral position value
+ */
+struct POINT
+{
+    /**
+     * The horizontal component
+     */
+    int x;
+
+    /**
+     * The vertical component
+     */
+    int y;
+}  __attribute__((packed));
+
+/**
  * @brief A two-dimensional, integral size value
  */
 struct SIZE
@@ -130,9 +147,34 @@ struct SIZE
      * The vertical component
      */
     int height;
-};
+}  __attribute__((packed));
 
-struct ENTITY;
+
+/**
+ * @brief A 3d vector
+ */
+struct VECTOR
+{
+    /**
+     * @brief x coordinate
+     */
+    var x;
+
+    /**
+     * @brief y coordinate
+     */
+    var y;
+
+    /**
+     * @brief z coordinate
+     */
+    var z;
+} __attribute__((packed));
+
+/**
+ * @brief A matrix type used for calculations.
+ */
+typedef float MATRIX[4][4];
 
 /**
  * @brief A level that contains a set of entities and some other settings.
@@ -145,21 +187,168 @@ struct LEVEL
     char ACKCONST * ACKCONST filename;
 
     /**
-     * @brief A pointer to a linked list of entities that are contained within
-     *        this level.
-     */
-    struct ENTITY * ACKCONST entities;
-
-    /**
      * @brief flags
      */
     enum FLAGS flags;
+
+#ifdef _ACKNEXT_INTERNAL_
+    struct LEVELdetail * _detail;
+#endif
 };
+
+/**
+ * @brief An entity is an object in a 3d world.
+ */
+struct ENTITY;
 
 /**
  * @brief An opaque handle to a script.
  */
 struct SCRIPT;
+
+/**
+ * @brief A gui widget that will be rendered in 2d.
+ */
+struct WIDGET
+{
+    /**
+     * @brief Horizontal position of the
+     */
+    union {
+        struct {
+            /**
+             * @brief Horizontal relative position
+             */
+            int x;
+            /**
+             * @brief Vertical relative position
+             */
+            int y;
+        };
+        /**
+         * @brief The position of the widget relative to its parents.
+         */
+        struct POINT position;
+    };
+    union {
+        struct {
+            /**
+             * @brief Horizontal size in pixels.
+             */
+            int width;
+
+            /**
+             * @brief Vertical size in pixels.
+             */
+            int height;
+        };
+        /**
+         * @brief The size of the widget in pixels.
+         */
+        struct SIZE size;
+    };
+
+    /**
+     * @brief The parent of the widget.
+     */
+    struct WIDGET * ACKCONST parent;
+
+    /**
+     * @brief Flags modifying the behaviour of this widget.
+     */
+    enum FLAGS flags;
+};
+
+/**
+ * @ingroup rendering
+ * @brief A texture object
+ *
+ * A bitmap can be any kind of OpenGL texture, including renderbuffer objects.
+ */
+struct BITMAP
+{
+    GLenum ACKCONST target;
+    GLint ACKCONST object;
+    GLint ACKCONST format;
+    GLint ACKCONST internalFormat;
+};
+
+/**
+ * @ingroup rendering
+ * @brief A render pipeline stage.
+ */
+struct STAGE
+{
+    /**
+     * @brief The four render targets of this stage.
+     *
+     * This array contains the four targets of a rendering process.
+     *
+     * @remarks Each target must be distinct, no duplicates allowed.
+     */
+    struct BITMAP * targets[4];
+
+    /**
+     * @brief The depth buffer that will be used for this stage.
+     */
+    struct BITMAP * depthBuffer;
+
+    /**
+     * @brief The level this stage should render
+     */
+    struct LEVEL * level;
+
+    /**
+     * @brief A dependency of the stage. Can be used to chain stages together
+     *
+     * If a stage is beeing rendered, first its chain of dependencies will be
+     * rendered. If two stages share a single dependency, the dependency stage
+     * will only be rendered once.
+     */
+    struct STAGE * dependency;
+
+    /**
+     * @brief Flags modifying the stage behaviour
+     */
+    enum FLAGS flags;
+};
+
+/**
+ * @brief The VIEW struct
+ */
+struct VIEW
+{
+    /**
+     * @brief The widget definition of this view.
+     *
+     * This widget contains the 2d representation of the view.
+     */
+    struct WIDGET widget;
+
+    union {
+        struct {
+            /**
+             * @brief Coordinates of the view in 3d space.
+             */
+            var x, y, z;
+        };
+        /**
+         * @brief Position of the view in 3d space.
+         */
+        struct VECTOR position;
+    };
+
+    /**
+     * @brief The render pipeline stage that should be displayed by this
+     *        view.
+     */
+    struct STAGE * stage;
+
+    /**
+     * @brief Flags modifying the behaviour of this view.
+     */
+    enum FLAGS flags;
+};
 
 /**
  * An engine object handle.
@@ -170,19 +359,44 @@ struct SCRIPT;
  */
 typedef uint32_t HANDLE;
 
+#define _EXPORT_STRUCT(name) typedef struct name name;
+
+_EXPORT_STRUCT(ENTITY)
+_EXPORT_STRUCT(LEVEL)
+_EXPORT_STRUCT(COLOR)
+_EXPORT_STRUCT(POINT)
+_EXPORT_STRUCT(SIZE)
+_EXPORT_STRUCT(SCRIPT)
+_EXPORT_STRUCT(VIEW)
+_EXPORT_STRUCT(VECTOR)
+_EXPORT_STRUCT(WIDGET)
+_EXPORT_STRUCT(ENTITY)
+_EXPORT_STRUCT(STAGE)
+_EXPORT_STRUCT(BITMAP)
+
 typedef struct ENTITY ENTITY;
 
 typedef struct LEVEL LEVEL;
 
 typedef struct COLOR COLOR;
 
+typedef struct POINT POINT;
+
 typedef struct SIZE SIZE;
 
 typedef struct SCRIPT SCRIPT;
 
+typedef struct VIEW VIEW;
+
+typedef struct VECTOR VECTOR;
+
+typedef struct WIDGET WIDGET;
+
 typedef enum FLAGS FLAGS;
 
 typedef enum ERROR ERROR;
+
+#undef _EXPORT_STRUCT
 
 #ifdef __cplusplus
 }

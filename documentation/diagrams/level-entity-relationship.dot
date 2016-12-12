@@ -1,0 +1,41 @@
+graph
+{
+	node [shape=box];
+	nodesep = 0.5;
+	ranksep = 1.2;
+	
+	widget [label="WIDGET"];
+	
+	gui [shape="box3d"];
+	camera [shape=box3d];
+	world [shape=box3d];
+	
+	container [label="CONTAINER"];
+	
+	view [label="VIEW"];
+	
+	entity [label="ENTITY"];
+	
+	level [label="LEVEL"];
+	
+	
+	level -- entity [taillabel="1", headlabel="0…n", label="contains"];
+	
+	view -- level [taillabel="1", headlabel="0…n", label="renders"];
+	
+	view -- widget [style=dashed, weight=2];
+	
+	container -- widget [style=dashed, weight=2];
+	
+	container -- widget [taillabel="1", headlabel="0…n", label="children"];
+	
+	gui -- camera [headlabel=1, taillabel=1, label="contains\nby default", weight=3];
+	
+	gui -- container [style=dotted, weight=0];
+	
+	view -- camera [style=dotted, weight=0];
+	
+	level -- world [style=dotted];
+	
+	camera -- world [label="renders"];
+}

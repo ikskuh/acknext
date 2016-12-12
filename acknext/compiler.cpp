@@ -111,7 +111,7 @@ ACKFUN SCRIPT * script_compile(char const * fileName)
     return (SCRIPT*)tcc;
 }
 
-ACKFUN SCRIPT * script_compile_source(char const * source)
+ACKFUN SCRIPT * script_compile_src(char const * source)
 {
     CompileUnit * tcc = new CompileUnit();
 
@@ -144,6 +144,7 @@ ACKFUN void * script_symbol(SCRIPT * script, char const * name)
 }
 
 static bool successfullInit = true;
+static bool hasInitialFile = false;
 static CompileUnit mainCompiler;
 
 bool compiler_init()
@@ -154,6 +155,7 @@ bool compiler_init()
 bool compiler_add(char const * fileName)
 {
     return mainCompiler.addFile(fileName);
+    hasInitialFile = true;
 }
 
 bool compiler_start()
@@ -162,18 +164,21 @@ bool compiler_start()
         return false;
     }
 
-    typedef void (*MainFunc)();
-
-    MainFunc mainFunc = mainCompiler.getSymbol<MainFunc>("main");
-
-    if(mainFunc == nullptr)
+    if(hasInitialFile)
     {
-        engine_seterror(COMPILATION_FAILED, "The main script does not provide a main() function!");
-        return false;
+        typedef void (*MainFunc)();
+
+        MainFunc mainFunc = mainCompiler.getSymbol<MainFunc>("main");
+
+        if(mainFunc == nullptr)
+        {
+            engine_log("Warning: The initial script does not provide a main() function!");
+        }
+        else
+        {
+            // We can savely ignore the handle here as we don't want to play with the main script at all ;)
+            task_start(mainFunc, nullptr);
+        }
     }
-
-    // We can savely ignore the handle here as we don't want to play with the main script at all ;)
-    task_start(mainFunc, nullptr);
-
     return true;
 }

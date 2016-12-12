@@ -1,0 +1,20 @@
+{
+    "name": "Demo Level",
+    "entities": [
+        {
+            "model": "warlock.mdl",
+            "position": [ 0, 0, 0 ],
+            "action": "npc_warlock"
+        },
+        {
+            "model": "warlock.mdl",
+            "position": [ 10, 0, 0 ],
+            "action": "npc_warlock"
+        },
+        {
+            "model": "c_babe.mdl",
+            "position": [ -10, 0, 0],
+            "action": "player"
+        }
+    ]
+}

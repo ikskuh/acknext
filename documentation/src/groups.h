@@ -1,4 +1,8 @@
 /**
+ * Group Documentation
+ */
+
+/**
  * @file
  * @brief Contains documentation
  *
@@ -18,14 +22,14 @@
  * @brief Contains functions for engine initialization, logging and error
  *        handling.
  *
+ * @defgroup scripting Scripting
+ * @brief This module provides basic scripting features.
  *
+ * @defgroup gui Graphical User Interface
+ * @brief This module provides a 2d graphical user interface.
  *
- *
- *
- *
- *
- *
- *
+ * @defgroup rendering Rendering & Shaders
+ * @brief This module provides an interface to OpenGL and graphics effects.
  *
  *
  *

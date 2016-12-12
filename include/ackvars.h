@@ -63,6 +63,18 @@ extern void * ACKCONST context;
  */
 extern var task_priority;
 
+/**
+ * @ingroup gui
+ * @brief The default view that renders the default level @ref world
+ */
+extern VIEW * camera;
+
+/**
+ * @ingroup scene
+ * @brief The default level that will contain all created entities.
+ */
+extern LEVEL * world;
+
 #ifdef __cplusplus
 }
 #endif

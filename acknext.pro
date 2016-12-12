@@ -5,10 +5,8 @@ CONFIG += ordered
 SUBDIRS += \
     acknext \
     demo-cpp \
-    demo-c
-
-SOURCES += \
-    scripts/main.c
+    demo-c \
+    scripts
 
 HEADERS += \
     documentation/src/groups.h

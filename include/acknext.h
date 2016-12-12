@@ -23,6 +23,38 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
+
+/**
+ * @ingroup gui scene
+ * @brief Creates a new view.
+ * @param parent The parent widget that will contain this view.
+ * @return The newly created view.
+ */
+ACKFUN VIEW * view_create(WIDGET * parent);
+
+/**
+ * @ingroup gui scene
+ * @brief Extracts the view and projection matrix from a view object.
+ * @param view          The view which matrices should be extracted.
+ * @param matView       A pointer to a matrix that should recevice
+ *                      the view matrix.
+ * @param matProjection A pointer to a matrix that should recevice
+ *                      the projection matrix.
+ */
+ACKFUN void view_to_matrix(
+    VIEW * view,
+    MATRIX * matView,
+    MATRIX * matProjection);
+
+/**
+ * @ingroup gui scene
+ * @brief Destroys a view widget.
+ * @param view The view that should be destroyed.
+ */
+ACKFUN void view_remove(VIEW * view);
+
+////////////////////////////////////////////////////////////////////////////////
+
 /**
  * @ingroup scene
  * @brief Creates a new, empty level.
@@ -40,7 +72,7 @@ ACKFUN LEVEL * level_load(char const * filename);
 
 /**
  * @ingroup scene
- * @brief Destroys a level and removes all contained entities.
+ * @brief Destroys a level
  * @param level
  */
 ACKFUN void level_remove(LEVEL *level);
@@ -49,17 +81,41 @@ ACKFUN void level_remove(LEVEL *level);
 
 /**
  * @ingroup scene
+ * @brief Creates a new entity.
+ * @param source   The entity file. Can either be a model file or
+ *                 an entity definition file.
+ * @param position The position where the entity should spawn
+ * @param entmain  The main function that will be scheduled for the entity.
+ * @returns        The newly created entity.
+ */
+ACKFUN ENTITY * ent_create(char const * source, VECTOR position, void (*entmain)());
+
+/**
+ * @ingroup scene
  * @brief Attaches en entity to the given level.
  * @param ent   The entity that should be attached
- * @param level The level where the entity will be attached
+ * @param level The level where the entity will be attached.
  *
- * An entity can be either *free* or *attached*. Attached entities are contained
- * in a specific level and will be removed when the associated level gets
- * removed.
- *
- * @remarks Passing NULL to level will release the entitiy from its attachment.
+ * Inserts the entity in the given level.
  */
 ACKFUN void ent_attach(ENTITY * ent, LEVEL * level);
+
+/**
+ * @ingroup scene
+ * @brief Detaches an entity from the given level.
+ * @param ent   The entity that should be detached.
+ * @param level The level where the entity will be detached.
+ *
+ * Removes the entity from the given level.
+ */
+ACKFUN void ent_detach(ENTITY * ent, LEVEL * level);
+
+/**
+ * @ingroup scene
+ * @brief Destroys an entity and removes it from all levels.
+ * @param ent The entity to be destroyed
+ */
+ACKFUN void ent_remove(ENTITY * ent);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -192,6 +248,21 @@ ACKFUN void engine_log(char const * format, ...);
  * @returns Textual description of the error.
  */
 ACKFUN char const * engine_lasterror(ERROR * errorcode);
+
+/**
+ * @ingroup engin
+ * @ingroup scripting
+ * @brief Returns a symbol name from any loaded script.
+ * @param name The name of the symbol.
+ * @return The first symbol that matches the given name in any loaded script.
+ *
+ * This function searches for a global script variable that can be located
+ * in any loaded script.
+ *
+ * It will return the first occurance and ignores all later created symbols
+ * with that name.
+ */
+ACKFUN void * engine_getscript(char const * name);
 
 ////////////////////////////////////////////////////////////////////////////////
 
