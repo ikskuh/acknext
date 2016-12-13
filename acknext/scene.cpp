@@ -4,6 +4,8 @@
 #include <set>
 #include <memory>
 
+#include <json.hpp>
+
 struct LEVELdetail
 {
     LEVEL * const level;
@@ -48,6 +50,15 @@ ACKFUN LEVEL * level_create()
     levels.emplace_back(level);
 
     return level;
+}
+
+ACKFUN LEVEL * level_load(char const * filename)
+{
+    nlohmann::json json(filename);
+
+    // TODO: Implement level loader.
+
+    throw "Not implemented yet!";
 }
 
 ACKFUN void level_remove(LEVEL * level)

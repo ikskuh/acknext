@@ -39,3 +39,5 @@ LIBS += -L$$PWD/../../tcc-0.9.26/ -ldl -ltcc
 
 INCLUDEPATH += $$PWD/../../tcc-0.9.26
 DEPENDPATH += $$PWD/../../tcc-0.9.26
+
+INCLUDEPATH += $$PWD/../../json/src
