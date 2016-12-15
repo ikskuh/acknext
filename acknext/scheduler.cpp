@@ -195,6 +195,10 @@ void scheduler_update()
         if(co.shutdown) {
             continue;
         }
+        // Skip all masked tasks
+        if((co.globals.value(::task).mask & task_enabled) == 0) {
+            continue;
+        }
         switch(co.status())
         {
             case COROUTINE_RUNNING:

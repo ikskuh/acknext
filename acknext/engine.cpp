@@ -138,7 +138,7 @@ ACKFUN bool engine_frame()
             }
             case SDL_KEYDOWN:
             {
-                input_callback(event.key.keysym.sym);
+                input_callback(event.key.keysym.sym, event.key.keysym.scancode);
                 break;
             }
         }

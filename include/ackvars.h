@@ -83,7 +83,7 @@ extern TASK task;
 #include "ackkeys.h"
 #undef _ACKKEY
 
-#define _ACKKEY(name, key, scan) extern void (*on_##name)();
+#define _ACKKEY(name, key, scan) extern void (*on_##name)(int keycode, int scancode);
 #include "ackkeys.h"
 #undef _ACKKEY
 

@@ -31,7 +31,7 @@ bool compiler_start();
 HANDLE handle_getnew(int type);
 
 void input_update();
-void input_callback(int key);
+void input_callback(int keycode, int scancode);
 
 struct engine
 {

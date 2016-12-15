@@ -20,7 +20,7 @@ int task_enabled = -1;
 #include <ackkeys.h>
 #undef _ACKKEY
 
-#define _ACKKEY(name, key, scan) void (*on_##name)();
+#define _ACKKEY(name, key, scan) void (*on_##name)(int keycode, int scancode);
 #include <ackkeys.h>
 #undef _ACKKEY
 

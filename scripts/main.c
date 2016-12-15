@@ -28,15 +28,33 @@ int main(int argc, char ** argv)
 
 */
 
+void taskout()
+{
+    while(true)
+    {
+        engine_log("I am %02x: %s", task.mask, task.context);
+        wait();
+    }
+}
+
 void khit()
 {
-    engine_log("k was hit!");
+    task_enabled++;
 }
 
 void main()
 {
     engine_log("Hello World!");
     on_k = khit;
+
+    task_start(taskout, "1")->mask = 0x01;
+    task_start(taskout, "2")->mask = 0x02;
+    task_start(taskout, "3")->mask = 0x04;
+
+    engine_log("Post-Task!");
+
+    task_enabled = 0;
+
     while(true)
     {
         screen_color.red = 128 + 127 * sin(total_secs);

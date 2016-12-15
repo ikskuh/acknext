@@ -16,11 +16,11 @@ void input_update()
 }
 
 
-void input_callback(int key)
+void input_callback(int key, int scan)
 {
     switch(key)
     {
-#define _ACKKEY(name, key, sym) case key: if(on_##name != nullptr) on_##name(); break;
+#define _ACKKEY(name, key, sym) case key: if(on_##name != nullptr) on_##name(key, scan); break;
 #include <ackkeys.h>
 #undef _ACKKEY
     }
