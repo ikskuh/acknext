@@ -13,17 +13,15 @@ struct LEVELdetail
     std::set<ENTITY*> entities;
 
     LEVELdetail(LEVEL *level) :
-        level(level)
+        level(level),
+        entities()
     {
 
     }
 
     ~LEVELdetail()
     {
-        for(ENTITY * ent : this->entities)
-        {
-            // TODO: detach entity logic if necessary
-        }
+
     }
 };
 
@@ -66,4 +64,38 @@ ACKFUN void level_remove(LEVEL * level)
     ::levels.remove_if([level](LEVELuniq & ptr) {
         return ptr.get() == level;
     });
+}
+
+ACKFUN ENTITY * ent_create(char const * source, VECTOR position, void (*entmain)())
+{
+    // Implement model assignment.
+    (void)source;
+
+    ENTITY * ent = new ENTITY;
+    ent->position = position;
+    ent->parent = NULL;
+    ent->flags = NONE;
+
+    TASK * hMain = task_start(entmain, ent);
+
+    return ent;
+}
+
+ACKFUN void ent_attach(ENTITY * ent, LEVEL * level)
+{
+    if(ent == nullptr || level == nullptr) {
+        return;
+    }
+    level->_detail->entities.insert(ent);
+}
+
+ACKFUN void ent_detach(ENTITY * ent, LEVEL * level)
+{
+    if(ent == nullptr || level == nullptr) {
+        return;
+    }
+    auto pos = level->_detail->entities.find(ent);
+    if(pos != level->_detail->entities.end()) {
+        level->_detail->entities.erase(pos);
+    }
 }

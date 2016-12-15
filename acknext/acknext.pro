@@ -11,7 +11,8 @@ SOURCES += \
     compiler.cpp \
     $$PWD/../coroutine/coroutine.c \
     video.cpp \
-    scene.cpp
+    scene.cpp \
+    input.cpp
 
 HEADERS += \
     $$PWD/../include/acknext.h \
@@ -20,7 +21,8 @@ HEADERS += \
     ../include/ackcfg.h \
     engine.h \
     $$PWD/../coroutine/coroutine.h \
-    ../include/ackcpp.h
+    ../include/ackcpp.h \
+    ../include/ackkeys.h
 
 INCLUDEPATH += $$PWD/../include/
 
@@ -41,3 +43,8 @@ INCLUDEPATH += $$PWD/../../tcc-0.9.26
 DEPENDPATH += $$PWD/../../tcc-0.9.26
 
 INCLUDEPATH += $$PWD/../../json/src
+
+DISTFILES += \
+    linker.ld
+
+QMAKE_LFLAGS += -T$$quote($$PWD/linker.ld)

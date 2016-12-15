@@ -197,9 +197,52 @@ struct LEVEL
 };
 
 /**
+ * @ingroup scene
  * @brief An entity is an object in a 3d world.
  */
-struct ENTITY;
+struct ENTITY
+{
+    union
+    {
+        /**
+         * @brief The position of the entity either in world coordinates
+         *        or in local coordinates relative to its parent
+         *
+         * @see parent
+         */
+        struct VECTOR position;
+        struct {
+            /**
+             * @brief x-component of the @ref position.
+             */
+            var x;
+
+            /**
+             * @brief y-component of the @ref position.
+             */
+            var y;
+
+            /**
+             * @brief z-component of the @ref position.
+             */
+            var z;
+        };
+    };
+
+    /**
+     * @brief The parent of the entity.
+     *
+     * Entities without parent will be rendered at their given @brief position.
+     * Entities that will have a parent assigned treat their position relative
+     * to the position of their parent.
+     */
+    struct ENTITY * parent;
+
+    /**
+     * @brief Flags modifying the behaviour of the entitiy.
+     */
+    enum FLAGS flags;
+};
 
 /**
  * @brief An opaque handle to a script.
@@ -351,6 +394,41 @@ struct VIEW
 };
 
 /**
+ * @ingroup scheduler
+ * @brief A task started by the scheduler.
+ *
+ */
+struct TASK
+{
+    /**
+     * @brief The priority of the current task.
+     *
+     * This variables allows to schedule tasks to your will.
+     * Tasks with lower priority will come before tasks with higher priority.
+     */
+    var priority;
+
+    /**
+     * @brief A bitmask setting the enable-groups of this task.
+     *
+     * @default -1
+     * @remarks This variable is task-global
+     * @see task_enable
+     */
+    int mask;
+
+    /**
+     * @brief The context of the passed to @ref task_start.
+     */
+    void * ACKCONST context;
+
+    /**
+     * @brief Flags modifying the behaviour of this task.
+     */
+    enum FLAGS flags;
+};
+
+/**
  * An engine object handle.
  *
  * Handles are unique identifiers for engine objects that
@@ -373,24 +451,7 @@ _EXPORT_STRUCT(WIDGET)
 _EXPORT_STRUCT(ENTITY)
 _EXPORT_STRUCT(STAGE)
 _EXPORT_STRUCT(BITMAP)
-
-typedef struct ENTITY ENTITY;
-
-typedef struct LEVEL LEVEL;
-
-typedef struct COLOR COLOR;
-
-typedef struct POINT POINT;
-
-typedef struct SIZE SIZE;
-
-typedef struct SCRIPT SCRIPT;
-
-typedef struct VIEW VIEW;
-
-typedef struct VECTOR VECTOR;
-
-typedef struct WIDGET WIDGET;
+_EXPORT_STRUCT(TASK)
 
 typedef enum FLAGS FLAGS;
 

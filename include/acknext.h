@@ -153,7 +153,7 @@ ACKFUN void task_wait();
   * @param fn      The coroutine function
   * @param context A user context that can be used to pass specific information+
   *                to the coroutine.
-  * @returns A handle to the created task.
+  * @returns A pointer to the created task or null if failure.
   *
   * Starts an asynchronous, cooperative process that will run in parallel
   * to other tasks.
@@ -165,16 +165,16 @@ ACKFUN void task_wait();
   * @remarks Each task will copy the priority of its creating task.
   * @remarks Tasks are executed in the order of their @ref task_priority.
   */
-ACKFUN HANDLE task_start(void (*fn)(), void * context);
+ACKFUN TASK * task_start(void (*fn)(), void * context);
 
 /**
  * @ingroup scheduler
  * @brief Terminates the given task.
- * @param htask A handle to the task that should be terminated.
+ * @param task A pointer to the task that should be terminated.
  *
  * This function will end the task and release all of its resources.
  */
-ACKFUN void task_kill(HANDLE htask);
+ACKFUN void task_kill(TASK * task);
 
 ////////////////////////////////////////////////////////////////////////////////
 

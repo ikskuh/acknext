@@ -38,7 +38,6 @@ ACKFUN bool engine_open(int argc, char ** argv)
 {
     startupTime = std::chrono::steady_clock::now();
 
-
     engine_log("Begin initalizing engine.");
 
     if(compiler_init() == false) {
@@ -123,6 +122,8 @@ ACKFUN bool engine_frame()
 
     SDL_GetWindowSize(engine.window, &screen_size.width, &screen_size.height);
 
+    input_update();
+
     SDL_Event event;
 
     // Update Frame
@@ -134,6 +135,11 @@ ACKFUN bool engine_frame()
             {
                 // TODO: Initialize engine shutdown here.
                 return false;
+            }
+            case SDL_KEYDOWN:
+            {
+                input_callback(event.key.keysym.sym);
+                break;
             }
         }
     }

@@ -30,6 +30,9 @@ bool compiler_start();
 // Handle System
 HANDLE handle_getnew(int type);
 
+void input_update();
+void input_callback(int key);
+
 struct engine
 {
     SDL_Window * window;

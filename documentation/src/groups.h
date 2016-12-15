@@ -15,6 +15,14 @@
  * @defgroup scheduler Scheduler
  * @brief Contains functions and variables to start and control tasks.
  *
+ * The engine provides a cooperative scheduler which allows multiple concurrent
+ * tasks to be executed. Each task has a set of its own global variables which
+ * will be swapped accordingly.
+ *
+ * Tasks can be enabled/disabled by using the @ref task_mask and
+ * @ref task_enabled. If a bit is set in both variables, the task will be
+ * executed.
+ *
  * @defgroup scene Levels & Entities
  * @brief In this group is everything related to levels and entities.
  *

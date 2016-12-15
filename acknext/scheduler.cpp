@@ -12,24 +12,90 @@ struct CoError
     int reason;
 };
 
+extern "C"
+{
+    struct memptr;
+    extern struct memptr _taskdata_start;
+    extern struct memptr _taskdata_end;
+}
+
+struct TaskGlobals
+{
+    const size_t TGSIZE;
+    uint8_t * buffer;
+
+    TaskGlobals() :
+        TGSIZE(((uint8_t const *)&_taskdata_end - (uint8_t const *)&_taskdata_start))
+    {
+        buffer = new uint8_t[TGSIZE];
+        memset(buffer, 0, TGSIZE);
+    }
+
+    TaskGlobals(TaskGlobals const &) = delete;
+    TaskGlobals(TaskGlobals &&) = delete;
+
+    ~TaskGlobals()
+    {
+        delete buffer;
+    }
+
+    void readback()
+    {
+        memcpy(buffer, &_taskdata_start, TGSIZE);
+    }
+
+    void assign()
+    {
+        memcpy(&_taskdata_start, buffer, TGSIZE);
+    }
+
+    template<typename T>
+    void set(T const & var, T value)
+    {
+        size_t offset = (uint8_t const *)&var - (uint8_t const * )&_taskdata_start;
+        *((T*)(&buffer[offset])) = value;
+    }
+
+    template<typename T>
+    T get(T const & var) const
+    {
+        size_t offset = (uint8_t const *)&var - (uint8_t const * )&_taskdata_start;
+        return *((T*)(&buffer[offset]));
+    }
+
+    template<typename T>
+    T const & value(T const & var) const
+    {
+        size_t offset = (uint8_t const *)&var - (uint8_t const * )&_taskdata_start;
+        return *((T*)(&buffer[offset]));
+    }
+
+    template<typename T>
+    T & value(T const & var)
+    {
+        size_t offset = (uint8_t const *)&var - (uint8_t const * )&_taskdata_start;
+        return *((T*)(&buffer[offset]));
+    }
+};
+
 struct Coroutine
 {
     void (*ep)();
-    void * context;
+    TaskGlobals globals;
     int const id;
     bool shutdown;
-    var priority;
     HANDLE const handle;
 
     Coroutine(void (*ep)(), void * context) :
         ep(ep),
-        context(context),
+        globals(),
         id(coroutine_new(::schedule, &Coroutine::Trampoline, this)),
         shutdown(false),
-        priority(task_priority), // copy the current priority
         handle(handle_getnew(HANDLE_TASK))
     {
-
+        globals.set(::task.context, context);
+        globals.set(::task.mask, -1);
+        globals.set(::task.priority, ::task.priority);
     }
 
     Coroutine(Coroutine const & other) = delete;
@@ -91,7 +157,7 @@ private:
 // This is required for coroutine sorting!
 bool operator < (const Coroutine & lhs, const Coroutine & rhs)
 {
-    return lhs.priority < rhs.priority;
+    return lhs.globals.get(task.priority) < rhs.globals.get(task.priority);
 }
 
 static Coroutine * current;
@@ -144,14 +210,11 @@ void scheduler_update()
                 // This is some stupid back and forth of variables,
                 // but it makes the API easier.
                 ::current = &co;
-                context = co.context;
-                task_priority = co.priority;
 
+                co.globals.assign();
                 co.resume();
+                co.globals.readback();
 
-                // Same goes here
-                co.priority = task_priority;
-                context = nullptr;
                 ::current = nullptr;
                 break;
             }
@@ -160,24 +223,25 @@ void scheduler_update()
                 break;
         }
     }
-
-    task_priority = 0.0;
 }
 
-ACKFUN HANDLE task_start(void (*ep)(), void * context)
+ACKFUN TASK * task_start(void (*ep)(), void * context)
 {
     coroutines.emplace_back(ep, context);
-    return coroutines.back().handle;
+
+    Coroutine & co = coroutines.back();
+
+    return &co.globals.value(task);
 }
 
-ACKFUN void task_kill(HANDLE htask)
+ACKFUN void task_kill(TASK * task)
 {
     auto cofind = std::find_if(
         coroutines.begin(),
         coroutines.end(),
-        [htask](const Coroutine & co)
+        [task](const Coroutine & co)
         {
-            return co.handle == htask;
+            return (&co.globals.value(::task)) == task;
         });
     if(cofind == coroutines.end()) {
         return;

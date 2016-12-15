@@ -154,8 +154,8 @@ bool compiler_init()
 
 bool compiler_add(char const * fileName)
 {
-    return mainCompiler.addFile(fileName);
     hasInitialFile = true;
+    return mainCompiler.addFile(fileName);
 }
 
 bool compiler_start()

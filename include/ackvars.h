@@ -50,18 +50,12 @@ extern int ACKCONST total_frames;
 
 /**
  * @ingroup scheduler
- * The context of the current task passed to @ref task_start.
- */
-extern void * ACKCONST context;
-
-/**
- * @ingroup scheduler
- * The priority of the current task.
+ * @brief A bitmask setting the currently enabled task groups.
  *
- * This variables allows to schedule tasks to your will.
- * Tasks with lower priority will come before tasks with higher priority.
+ * @default -1
+ * @see task_mask
  */
-extern var task_priority;
+extern int task_enabled;
 
 /**
  * @ingroup gui
@@ -74,6 +68,26 @@ extern VIEW * camera;
  * @brief The default level that will contain all created entities.
  */
 extern LEVEL * world;
+
+/**
+ * @ingroup scheduler
+ *
+ * The task which is currently executed. This allows changing the priority
+ * and behaviour of the task.
+ */
+extern TASK task;
+
+////////////////////////////////////////////////////////////////////////////////
+
+#define _ACKKEY(name, key, scan) extern int key_##name;
+#include "ackkeys.h"
+#undef _ACKKEY
+
+#define _ACKKEY(name, key, scan) extern void (*on_##name)();
+#include "ackkeys.h"
+#undef _ACKKEY
+
+////////////////////////////////////////////////////////////////////////////////
 
 #ifdef __cplusplus
 }
