@@ -77,6 +77,15 @@ extern LEVEL * world;
  */
 extern TASK task;
 
+/**
+ * @ingroup gui
+ * @brief The root widget that will be rendered each frame.
+ *
+ * By default, this variable is set to @ref camera, so the default world will
+ * be rendered.
+ */
+extern WIDGET * render_root;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #define _ACKKEY(name, key, scan) extern int key_##name;

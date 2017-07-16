@@ -39,8 +39,8 @@
  * @defgroup rendering Rendering & Shaders
  * @brief This module provides an interface to OpenGL and graphics effects.
  *
- *
- *
+ * @defgroup math Math
+ * @brief This module provides some basic math for game development
  *
  *
  *

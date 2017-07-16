@@ -4,10 +4,14 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <getopt.h>
 #include <chrono>
+#include <fstream>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
+
+#include <json.hpp>
 
 #include "engine.h"
 
@@ -32,6 +36,8 @@ static FILE *logfile = nullptr;
 
 struct engine engine;
 
+nlohmann::json engine_config;
+
 #define SDL_CHECKED(x, y) if((x) < 0) { engine_setsdlerror(); return y; }
 
 ACKFUN bool engine_open(int argc, char ** argv)
@@ -44,26 +50,95 @@ ACKFUN bool engine_open(int argc, char ** argv)
         return false;
     }
 
-    for(int i = 1; i < argc; i++)
-    {
-        if(strcmp(argv[i], "-diag") == 0) {
-            if(logfile != nullptr) {
-                continue;
-            }
-            logfile = fopen("acklog.txt", "w");
-            if(logfile == nullptr) {
-                engine_log("Failed to open acklog.txt!");
-            }
-        }
+	int diag_flag = 0;
+	int has_config = 0;
 
-        if(argv[i][0] != '-')
-        {
-            // positional file!
-            if(compiler_add(argv[i]) == false) {
-                return false;
+	// Parse arguments
+	{
+		static struct option long_options[] =
+		{
+			/* These options set a flag. */
+			{"diag",    no_argument,       &diag_flag, 1},
+			/* These options don’t set a flag.
+					 We distinguish them by their indices. */
+			// {"diag",    no_argument,       0, 'd'},
+			{"config",  required_argument, 0, 'c'},
+			{0, 0, 0, 0}
+		};
+		while (1)
+		{
+			/* getopt_long stores the option index here. */
+			int option_index = 0;
+			int c = getopt_long (argc, argv, "dc:",
+			                     long_options, &option_index);
+
+			/* Detect the end of the options. */
+			if (c == -1)
+				break;
+
+			switch (c)
+			{
+				case 0:
+					/* If this option set a flag, do nothing else now. */
+					if (long_options[option_index].flag != 0)
+						break;
+					printf ("option %s", long_options[option_index].name);
+					if (optarg)
+						printf (" with arg %s", optarg);
+					printf ("\n");
+					break;
+
+				case 'd':
+					diag_flag = 1;
+					break;
+				case 'c': {
+					std::ifstream configFile(optarg);
+					if(configFile.is_open() == false) {
+						engine_log("Failed to open configuration %s!", optarg);
+					} else {
+						configFile >> engine_config;
+						has_config = true;
+					}
+					break;
+				}
+				case '?': break;
+				default:
+					abort ();
+			}
+		}
+
+		if (diag_flag) {
+			if(logfile == nullptr) {
+				logfile = fopen("acklog.txt", "w");
+	            if(logfile == nullptr) {
+	                engine_log("Failed to open acklog.txt!");
+	            }
             }
-        }
-    }
+		}
+
+
+		for(int i = optind; i < argc; i++)
+		{
+			// positional file!
+			if(compiler_add(argv[i]) == false) {
+				return false;
+			}
+		}
+	}
+
+	if(!has_config) {
+		std::ifstream configFile("acknext.cfg");
+		if(configFile.is_open() == false) {
+			engine_config = R"json({
+				"title": "Acknext A1",
+			    "resolution": [ 1280, 720 ],
+			    "fullscreen": "yes",
+			})json"_json;
+		} else {
+			configFile >> engine_config;
+			has_config = true;
+		}
+	}
 
     SDL_CHECKED(SDL_Init(SDL_INIT_EVERYTHING), false)
 
@@ -72,29 +147,52 @@ ACKFUN bool engine_open(int argc, char ** argv)
     SDL_CHECKED(SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG), false)
     SDL_CHECKED(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1), false)
 
-    engine.window = SDL_CreateWindow(
-        "Acknext A1",
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        1280, 720,
-        SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_MOUSE_FOCUS);
-    if(engine.window == nullptr)
-    {
-        engine_setsdlerror();
-        return false;
-    }
+	{ // Create window and initialize SDL
+		auto title = engine_config.at("title").get<std::string>();
+		auto resolution = engine_config.at("resolution");
+		auto fullscreen = engine_config.at("fullscreen").get<std::string>();
 
-    engine.context = SDL_GL_CreateContext(engine.window);
-    if(engine.context == nullptr)
-    {
-        engine_setsdlerror();
-        return false;
-    }
+		auto flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_MOUSE_FOCUS;
+		if(fullscreen == "yes") {
+			flags |= SDL_WINDOW_FULLSCREEN;
+		}
+		else if(fullscreen == "desktop") {
+			flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+		}
+
+		engine.window = SDL_CreateWindow(
+			title.c_str(),
+			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+			resolution.at(0).get<int>(), resolution.at(1).get<int>(),
+			flags);
+		if(engine.window == nullptr)
+		{
+			engine_setsdlerror();
+			return false;
+		}
+
+		engine.context = SDL_GL_CreateContext(engine.window);
+		if(engine.context == nullptr)
+		{
+			engine_setsdlerror();
+			return false;
+		}
+	}
 
     initialize_renderer();
 
     scheduler_initialize();
 
-    engine_log("Engine ready.");
+	{ // Initialize engine state
+		::world = level_create();
+
+		::camera = view_create(nullptr);
+		::camera->level = ::world;
+
+		::render_root = &::camera->widget;
+	}
+
+	engine_log("Engine ready.");
 
     lastFrameTime = high_resolution_clock::now();
 

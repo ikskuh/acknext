@@ -12,7 +12,9 @@ SOURCES += \
     $$PWD/../coroutine/coroutine.c \
     video.cpp \
     scene.cpp \
-    input.cpp
+    input.cpp \
+    view.cpp \
+    model.cpp
 
 HEADERS += \
     $$PWD/../include/acknext.h \
@@ -22,7 +24,10 @@ HEADERS += \
     engine.h \
     $$PWD/../coroutine/coroutine.h \
     ../include/ackcpp.h \
-    ../include/ackkeys.h
+    ../include/ackkeys.h \
+    level-detail.h \
+    model.h \
+    ackglm.hpp
 
 INCLUDEPATH += $$PWD/../include/
 

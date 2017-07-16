@@ -17,4 +17,5 @@ LIBS += -L$$PWD/../../tcc-0.9.26/ -ldl -ltcc
 DEPENDPATH += $$PWD/../../tcc-0.9.26
 
 DISTFILES += \
-    acklevel.json
+    acklevel.json \
+    acknext.cfg

@@ -16,6 +16,9 @@ int total_frames = 0;
 
 int task_enabled = -1;
 
+VIEW * camera;
+LEVEL * world;
+
 #define _ACKKEY(name, key, scan) int ACKCONST key_##name = 0;
 #include <ackkeys.h>
 #undef _ACKKEY

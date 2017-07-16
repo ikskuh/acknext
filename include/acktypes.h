@@ -18,13 +18,15 @@ extern "C"
 #endif
 
 /**
- * The numeric type used by Acknext.
+ * @ingroup math
+ * @brief The numeric type used by Acknext.
  *
  * This aliases to float.
  */
 typedef float var;
 
 /**
+ * @ingroup engine
  * @brief An enumeration of flags that can be applied to
  *        engine objects. Some flags may be used only only
  *        on some objects or won't have any effect.
@@ -63,14 +65,16 @@ enum FLAGS
     TRANSLUCENT = (1<<4),
 
     /**
-     * Marks an entity as transient and prevents deletion
-     * of the entity when the level containing the entity
-     * gets destroyed.
+     * Marks a widget as automatically sized when the widgets
+     * defined area is zero.
+     *
+     * @see WIDGET::size
      */
-    TRANSIENT = (1<<5),
+    AUTOSIZE = (1<<5),
 };
 
 /**
+ * @ingroup engine
  * @brief An enumeration of possible error values.
  */
 enum ERROR
@@ -94,9 +98,53 @@ enum ERROR
      * The compilation of a script failed.
      */
     COMPILATION_FAILED = 3,
+
+	/**
+	 * An invalid argument was passed to a function.
+	 */
+	INVALID_ARGUMENT = 4,
 };
 
 /**
+ * @ingroup gui
+ * @brief An enumeration of @ref WIDGET types.
+ */
+enum WIDGETTYPE
+{
+    /**
+     * The widget is of the type @ref VIEW.
+     */
+    WIDGET_VIEW = 1,
+
+    /**
+     * The widget is of the type @ref BUTTON.
+     *
+     * @todo Implement BUTTON widget.
+     */
+    WIDGET_BUTTON = 2,
+
+    /**
+     * The widget is of the type @ref IMAGE.
+     *
+     * @todo Implement IMAGE widget.
+     */
+    WIDGET_IMAGE = 3,
+
+    /**
+     * @brief The minimum type any user widget can have.
+     *
+     * If a widget type is larger than or equal to WIDGET_USER, it is a
+     * widget type registered by @ref widget_registertype. This widget
+     * type will be rendered and updated by the user script instead of the
+     * engine itself.
+     *
+     * @todo Implement WIDGETTYPE widget_registertype(size_t size)
+     */
+    WIDGET_USER = 0x1000,
+};
+
+/**
+ * @ingroup video
  * @brief An rgb color using 8 bit per color channel.
  */
 struct COLOR
@@ -118,6 +166,7 @@ struct COLOR
 } __attribute__((packed));
 
 /**
+ * @ingroup math
  * @brief A two-dimensional, integral position value
  */
 struct POINT
@@ -134,6 +183,7 @@ struct POINT
 }  __attribute__((packed));
 
 /**
+ * @ingroup math
  * @brief A two-dimensional, integral size value
  */
 struct SIZE
@@ -151,6 +201,7 @@ struct SIZE
 
 
 /**
+ * @ingroup math
  * @brief A 3d vector
  */
 struct VECTOR
@@ -172,11 +223,40 @@ struct VECTOR
 } __attribute__((packed));
 
 /**
+ * @ingroup math
+ * @brief A quaternion, used to represent rotations and orientations
+ */
+struct QUATERNION
+{
+    /**
+     * @brief x coordinate
+     */
+    var x;
+
+    /**
+     * @brief y coordinate
+     */
+    var y;
+
+    /**
+     * @brief z coordinate
+     */
+    var z;
+
+    /**
+     * @brief w coordinate
+     */
+    var w;
+} __attribute__((packed));
+
+/**
+ * @ingroup math
  * @brief A matrix type used for calculations.
  */
 typedef float MATRIX[4][4];
 
 /**
+ * @ingroup scene
  * @brief A level that contains a set of entities and some other settings.
  */
 struct LEVEL
@@ -229,6 +309,11 @@ struct ENTITY
         };
     };
 
+	/**
+	 * @brief The rotation of the entity.
+	 */
+	struct QUATERNION rotation;
+
     /**
      * @brief The parent of the entity.
      *
@@ -245,15 +330,22 @@ struct ENTITY
 };
 
 /**
+ * @ingroup scripting
  * @brief An opaque handle to a script.
  */
 struct SCRIPT;
 
 /**
+ * @ingroup gui
  * @brief A gui widget that will be rendered in 2d.
  */
 struct WIDGET
 {
+    /**
+     * @brief The engine type of the widget.
+     */
+    enum WIDGETTYPE ACKCONST type;
+
     /**
      * @brief Horizontal position of the
      */
@@ -303,61 +395,11 @@ struct WIDGET
 };
 
 /**
- * @ingroup rendering
- * @brief A texture object
+ * @ingroup gui
+ * @brief A view to the 3d world.
  *
- * A bitmap can be any kind of OpenGL texture, including renderbuffer objects.
- */
-struct BITMAP
-{
-    GLenum ACKCONST target;
-    GLint ACKCONST object;
-    GLint ACKCONST format;
-    GLint ACKCONST internalFormat;
-};
-
-/**
- * @ingroup rendering
- * @brief A render pipeline stage.
- */
-struct STAGE
-{
-    /**
-     * @brief The four render targets of this stage.
-     *
-     * This array contains the four targets of a rendering process.
-     *
-     * @remarks Each target must be distinct, no duplicates allowed.
-     */
-    struct BITMAP * targets[4];
-
-    /**
-     * @brief The depth buffer that will be used for this stage.
-     */
-    struct BITMAP * depthBuffer;
-
-    /**
-     * @brief The level this stage should render
-     */
-    struct LEVEL * level;
-
-    /**
-     * @brief A dependency of the stage. Can be used to chain stages together
-     *
-     * If a stage is beeing rendered, first its chain of dependencies will be
-     * rendered. If two stages share a single dependency, the dependency stage
-     * will only be rendered once.
-     */
-    struct STAGE * dependency;
-
-    /**
-     * @brief Flags modifying the stage behaviour
-     */
-    enum FLAGS flags;
-};
-
-/**
- * @brief The VIEW struct
+ * A view is a viewport and camera that will display a scene on the user
+ * interface. It can render one or more levels (by the use of pipelines).
  */
 struct VIEW
 {
@@ -382,10 +424,50 @@ struct VIEW
     };
 
     /**
-     * @brief The render pipeline stage that should be displayed by this
-     *        view.
+     * @brief The rotation of the view.
+     *
+     * The rotation will determine which direction is forward, left/right and
+     * upwards.
      */
-    struct STAGE * stage;
+    struct QUATERNION rotation;
+
+	/**
+	 * @brief The field of view in vertical direction.
+	 */
+	var arc;
+
+	/**
+	 * @brief The aspect ration for width and height.
+	 *
+	 * This aspect ration is multiplied to the screen aspect ration
+	 * and allows an image distortion.
+	 */
+	var aspect;
+
+	/**
+	 * @brief Depth of the short clipping plane.
+	 */
+	var zNear;
+
+	/**
+	 * @brief Depth of the far clipping plane.
+	 */
+	var zFar;
+
+    /**
+     * @brief The level that should be rendered by this view.
+     *
+     * @remarks This option is only used if @ref pipeline is not set.
+     */
+    struct LEVEL * level;
+
+    /**
+     * @brief The rendering pipeline that is invoked when rendering this view.
+     *
+     * @remarks If pipeline is set to NULL, the engine will invoke a simple renderer
+     * that will draw the assigned LEVEL if any.
+     */
+    struct PIPELINE * pipeline;
 
     /**
      * @brief Flags modifying the behaviour of this view.
@@ -413,7 +495,7 @@ struct TASK
      *
      * @default -1
      * @remarks This variable is task-global
-     * @see task_enable
+     * @see task_enabled
      */
     int mask;
 
@@ -441,6 +523,7 @@ typedef uint32_t HANDLE;
 
 _EXPORT_STRUCT(ENTITY)
 _EXPORT_STRUCT(LEVEL)
+_EXPORT_STRUCT(QUATERNION)
 _EXPORT_STRUCT(COLOR)
 _EXPORT_STRUCT(POINT)
 _EXPORT_STRUCT(SIZE)
@@ -456,6 +539,8 @@ _EXPORT_STRUCT(TASK)
 typedef enum FLAGS FLAGS;
 
 typedef enum ERROR ERROR;
+
+typedef enum WIDGETTYPE WIDGETTYPE;
 
 #undef _EXPORT_STRUCT
 

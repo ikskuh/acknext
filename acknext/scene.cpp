@@ -6,24 +6,7 @@
 
 #include <json.hpp>
 
-struct LEVELdetail
-{
-    LEVEL * const level;
-
-    std::set<ENTITY*> entities;
-
-    LEVELdetail(LEVEL *level) :
-        level(level),
-        entities()
-    {
-
-    }
-
-    ~LEVELdetail()
-    {
-
-    }
-};
+#include "level-detail.h"
 
 struct LEVELdeleter
 {
@@ -76,7 +59,12 @@ ACKFUN ENTITY * ent_create(char const * source, VECTOR position, void (*entmain)
     ent->parent = NULL;
     ent->flags = NONE;
 
-    TASK * hMain = task_start(entmain, ent);
+	if(entmain != NULL) {
+		TASK * hMain = task_start(entmain, ent);
+		(void)hMain;
+	}
+
+	ent_attach(ent, world);
 
     return ent;
 }

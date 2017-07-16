@@ -266,6 +266,76 @@ ACKFUN void * engine_getscript(char const * name);
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifndef ACKNEXT_NO_PRIMITIVE_CTORS
+
+/**
+ * @brief Constructs a vector
+ * @param x
+ * @param y
+ * @param z
+ * @return
+ */
+static inline VECTOR vector(var x, var y, var z)
+{
+    return (VECTOR){ x, y, z};
+}
+
+/**
+ * @brief Constructions a point
+ * @param x
+ * @param y
+ * @return
+ */
+static inline POINT point(int x, int y)
+{
+    return (POINT){ x, y };
+}
+
+/**
+ * @brief Constructs a size
+ * @param width
+ * @param height
+ * @return
+ */
+static inline SIZE size(int width, int height)
+{
+    return (SIZE){ width, height };
+}
+
+/**
+ * @brief Returns a quaternion based on euler angles
+ * @param pan  The rotation around the z-axis
+ * @param tilt The rotation around the y-axis
+ * @param roll The rotation around the x-axis
+ * @return Quaternion defining the euler rotation.
+ */
+static inline QUATERNION euler(var pan, var tilt, var roll)
+{
+    QUATERNION q;
+
+    pan *= DEG_TO_RAD;
+    tilt *= DEG_TO_RAD;
+    roll *= DEG_TO_RAD;
+
+    var t0 = cos(tilt * 0.5f);
+    var t1 = sin(tilt * 0.5f);
+    var t2 = cos(roll * 0.5f);
+    var t3 = sin(roll * 0.5f);
+    var t4 = cos(pan * 0.5f);
+    var t5 = sin(pan * 0.5f);
+
+    q.w = t0 * t2 * t4 + t1 * t3 * t5;
+    q.x = t0 * t3 * t4 - t1 * t2 * t5;
+    q.y = t0 * t2 * t5 + t1 * t3 * t4;
+    q.z = t1 * t2 * t4 - t0 * t3 * t5;
+
+    return q;
+}
+
+#endif // ACKNEXT_NO_PRIMITIVE_CTORS
+
+////////////////////////////////////////////////////////////////////////////////
+
 #ifndef _ACKNEXT_INTERNAL_
 
 // Those defines allow the use of wait() and start() instead

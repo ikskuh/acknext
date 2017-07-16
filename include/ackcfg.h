@@ -15,4 +15,7 @@
 #define ACKFUN extern
 #endif
 
+#define RAD_TO_DEG 57.29580406904963
+#define DEG_TO_RAD 0.0174533
+
 #endif // _ACKNEXT_ACKCFG_
