@@ -9,9 +9,13 @@ struct SHADER
 	GLuint program;
 	std::vector<GLuint> shaders;
 	bool isLinked;
-	std::unordered_map<std::string, GLint> uniforms;
+	std::vector<UNIFORM> uniforms;
 
-	SHADER() : program(glCreateProgram()), shaders(), isLinked(false)
+	SHADER() :
+	    program(glCreateProgram()),
+	    shaders(),
+	    isLinked(false),
+	    uniforms()
 	{
 
 	}
@@ -57,9 +61,19 @@ ACKFUN bool shader_addSource(SHADER * shader, enum SHADERTYPE type, const char *
 	}
 	glShaderSource(sh, 1, &source, nullptr);
 	glCompileShader(sh);
+
 	GLint status;
-	glGetShaderiv(sh, 1, &status);
+	glGetShaderiv(sh, GL_COMPILE_STATUS, &status);
 	if(status != GL_TRUE) {
+		GLint len;
+		glGetShaderiv(sh, GL_INFO_LOG_LENGTH, &len);
+
+		std::vector<GLchar> log(len + 1);
+		glGetShaderInfoLog(sh, log.size(), &len, log.data());
+		log[len] = 0;
+
+		engine_log("Failed to compile shader: %s", log.data());
+
 		glDeleteShader(sh);
 		return false;
 	}
@@ -79,7 +93,7 @@ ACKFUN bool shader_link(SHADER * shader)
 	}
 	glLinkProgram(shader->program);
 	GLint status;
-	glGetProgramiv(shader->program, 1, &status);
+	glGetProgramiv(shader->program, GL_LINK_STATUS, &status);
 
 	for(GLuint sh : shader->shaders) {
 		glDetachShader(shader->program, sh);
@@ -87,7 +101,29 @@ ACKFUN bool shader_link(SHADER * shader)
 	}
 	shader->shaders.clear();
 
-	return (status == GL_TRUE);
+	if(status != GL_TRUE) {
+		engine_seterror(INVALID_OPERATION, "Failed to link shader!");
+		return false;
+	}
+
+	GLint count;
+	glGetProgramiv(shader->program, GL_ACTIVE_UNIFORMS, &count);
+
+	shader->uniforms.resize(count);
+	for(int i = 0; i < count; i++) {
+		UNIFORM * uni = &shader->uniforms[i];
+		glGetActiveUniform(
+			shader->program,
+			i,
+			sizeof(uni->name),
+			nullptr,
+			&uni->sizeInBytes,
+			&uni->type,
+			uni->name);
+	}
+
+	shader->isLinked = true;
+	return true;
 }
 
 ACKFUN void shader_remove(SHADER * shader)
@@ -106,11 +142,44 @@ ACKFUN bool shader_use(SHADER * shader)
 		return false;
 	}
 	glUseProgram(shader->program);
+	return true;
 }
 
-ACKFUN UNIFORM * shader_getUniform(SHADER * shader, char const * name)
+ACKFUN int shader_getUniformCount(SHADER * shader)
 {
-
+	if(shader == NULL) {
+		engine_seterror(INVALID_ARGUMENT, "shader must not be NULL!");
+		return -1;
+	}
+	if(shader->isLinked == false) {
+		engine_seterror(INVALID_OPERATION, "Shader must be linked!");
+		return -1;
+	}
+	return shader->uniforms.size();
 }
 
-ACKFUN unsigned int shader_getObject(SHADER * shader);
+ACKFUN UNIFORM const * shader_getUniform(SHADER * shader, int index)
+{
+	if(shader == NULL) {
+		engine_seterror(INVALID_ARGUMENT, "shader must not be NULL!");
+		return nullptr;
+	}
+	if(shader->isLinked == false) {
+		engine_seterror(INVALID_OPERATION, "Shader must be linked!");
+		return nullptr;
+	}
+	if(index < 0 || index >= int(shader->uniforms.size())) {
+		engine_seterror(INVALID_ARGUMENT, "Index of ouf range!");
+		return nullptr;
+	}
+	return &shader->uniforms[index];
+}
+
+ACKFUN unsigned int shader_getObject(SHADER * shader)
+{
+	if(shader == NULL) {
+		engine_seterror(INVALID_ARGUMENT, "shader must not be NULL!");
+		return 0;
+	}
+	return shader->program;
+}

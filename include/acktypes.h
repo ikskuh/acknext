@@ -4,6 +4,7 @@
 #define _ACKNEXT_ACKTYPES_
 
 #include <stdint.h>
+#include <stddef.h>
 #include "ackcfg.h"
 
 /**
@@ -592,8 +593,9 @@ struct SHADER;
 struct UNIFORM
 {
 	int location;
-	char const * name;
+	char name[128];
 	unsigned int type;
+	int sizeInBytes;
 };
 
 /**

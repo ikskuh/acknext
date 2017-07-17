@@ -274,7 +274,9 @@ ACKFUN bool shader_link(SHADER * shader);
 
 ACKFUN bool shader_use(SHADER * shader);
 
-ACKFUN int shader_getUniformLocation(SHADER * shader, char const * name);
+ACKFUN UNIFORM const * shader_getUniform(SHADER * shader, int index);
+
+ACKFUN int shader_getUniformCount(SHADER * shader);
 
 ACKFUN unsigned int shader_getObject(SHADER * shader);
 
