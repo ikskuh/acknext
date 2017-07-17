@@ -14,7 +14,8 @@ SOURCES += \
     scene.cpp \
     input.cpp \
     view.cpp \
-    model.cpp
+    model.cpp \
+    shader.cpp
 
 HEADERS += \
     $$PWD/../include/acknext.h \
@@ -53,3 +54,5 @@ DISTFILES += \
     linker.ld
 
 QMAKE_LFLAGS += -T$$quote($$PWD/linker.ld)
+
+include(../../gl3w/gl3w.pri)

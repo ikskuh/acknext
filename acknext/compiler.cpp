@@ -143,7 +143,6 @@ ACKFUN void * script_symbol(SCRIPT * script, char const * name)
     return tcc->getSymbol(name);
 }
 
-static bool successfullInit = true;
 static bool hasInitialFile = false;
 static CompileUnit mainCompiler;
 

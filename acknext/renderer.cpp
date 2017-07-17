@@ -5,30 +5,13 @@
 
 WIDGET * render_root = nullptr;
 
-static void draw_widget(WIDGET * widget, const POINT & offset, const SIZE & size);
-
-void render_frame()
-{
-    glClearColor(
-        screen_color.red / 255.0f,
-        screen_color.green / 255.0f,
-        screen_color.blue / 255.0f,
-        1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-	if(render_root != nullptr) {
-		glEnable(GL_SCISSOR_TEST);
-		draw_widget(render_root, POINT(), screen_size);
-		glDisable(GL_SCISSOR_TEST);
-	}
-
-	glViewport(0, 0, screen_size.width, screen_size.height);
-
-    SDL_GL_SwapWindow(engine.window);
-}
-
 void initialize_renderer()
 {
+	if(gl3wInit() < 0) {
+		engine_log("Failed to initialize OpenGL!");
+		abort();
+	}
+
     engine_log("OpenGL Version: %s", glGetString(GL_VERSION));
 }
 
@@ -94,4 +77,24 @@ static void draw_widget(WIDGET *widget, const POINT & offset, const SIZE & conta
 			engine_log("Widget type %d is not supported yet.", widget->type);
 			abort();
 	}
+}
+
+void render_frame()
+{
+    glClearColor(
+        screen_color.red / 255.0f,
+        screen_color.green / 255.0f,
+        screen_color.blue / 255.0f,
+        1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+	if(render_root != nullptr) {
+		glEnable(GL_SCISSOR_TEST);
+		draw_widget(render_root, POINT(), screen_size);
+		glDisable(GL_SCISSOR_TEST);
+	}
+
+	glViewport(0, 0, screen_size.width, screen_size.height);
+
+    SDL_GL_SwapWindow(engine.window);
 }

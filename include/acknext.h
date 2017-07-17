@@ -264,6 +264,22 @@ ACKFUN char const * engine_lasterror(ERROR * errorcode);
  */
 ACKFUN void * engine_getscript(char const * name);
 
+// TODO: Document new APIs
+
+ACKFUN SHADER * shader_create();
+
+ACKFUN bool shader_addSource(SHADER * shader, enum SHADERTYPE type, const char * source);
+
+ACKFUN bool shader_link(SHADER * shader);
+
+ACKFUN bool shader_use(SHADER * shader);
+
+ACKFUN int shader_getUniformLocation(SHADER * shader, char const * name);
+
+ACKFUN unsigned int shader_getObject(SHADER * shader);
+
+ACKFUN void shader_remove(SHADER * shader);
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifndef ACKNEXT_NO_PRIMITIVE_CTORS

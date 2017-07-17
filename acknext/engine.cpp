@@ -8,9 +8,6 @@
 #include <chrono>
 #include <fstream>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
-
 #include <json.hpp>
 
 #include "engine.h"
@@ -324,7 +321,7 @@ void engine_seterror(ERROR code, char const * message, ...)
 
 void engine_setsdlerror()
 {
-    engine_seterror(SDL_ERROR, SDL_GetError());
+    engine_seterror(SDL_ERROR, "%s", SDL_GetError());
 }
 
 HANDLE handle_getnew(int type)

@@ -4,7 +4,6 @@
 #define _ACKNEXT_ACKTYPES_
 
 #include <stdint.h>
-#include <GL/gl.h>
 #include "ackcfg.h"
 
 /**
@@ -103,6 +102,11 @@ enum ERROR
 	 * An invalid argument was passed to a function.
 	 */
 	INVALID_ARGUMENT = 4,
+
+	/**
+	 * A function was called when it was not allowed to be called.
+	 **/
+	INVALID_OPERATION = 5,
 };
 
 /**
@@ -141,6 +145,23 @@ enum WIDGETTYPE
      * @todo Implement WIDGETTYPE widget_registertype(size_t size)
      */
     WIDGET_USER = 0x1000,
+};
+
+/**
+ * @ingroup rendering
+ * @brief An enumeration of shader types.
+ */
+enum SHADERTYPE
+{
+	/**
+	 * A vertex shader
+	 **/
+	VERTEX_SHADER = 1,
+
+	/**
+	 * A fragment or pixel shader
+	 **/
+	FRAGMENT_SHADER = 2,
 };
 
 /**
@@ -199,6 +220,22 @@ struct SIZE
     int height;
 }  __attribute__((packed));
 
+/**
+ * @ingroup math
+ * @brief A texture coord
+ */
+struct UVCOORD
+{
+    /**
+     * @brief u coordinate
+     */
+    var u;
+
+    /**
+     * @brief y coordinate
+     */
+    var v;
+} __attribute__((packed));
 
 /**
  * @ingroup math
@@ -220,6 +257,33 @@ struct VECTOR
      * @brief z coordinate
      */
     var z;
+} __attribute__((packed));
+
+/**
+ * @ingroup math
+ * @brief A 4d vector
+ */
+struct VECTOR4
+{
+    /**
+     * @brief x coordinate
+     */
+    var x;
+
+    /**
+     * @brief y coordinate
+     */
+    var y;
+
+    /**
+     * @brief z coordinate
+     */
+    var z;
+
+	/**
+     * @brief w coordinate
+     */
+    var w;
 } __attribute__((packed));
 
 /**
@@ -519,6 +583,40 @@ struct TASK
  */
 typedef uint32_t HANDLE;
 
+/**
+ * @ingroup rendering
+ * @brief An OpenGL shader program
+ */
+struct SHADER;
+
+struct UNIFORM
+{
+	int location;
+	char const * name;
+	unsigned int type;
+};
+
+/**
+ * @ingroup rendering
+ * @brief An OpenGL buffer object
+ */
+struct BUFFER;
+
+/**
+ * @ingroup rendering
+ * @brief A vertex of a @ref MESH.
+ */
+struct VERTEX
+{
+	struct VECTOR position;
+	struct VECTOR normal;
+	struct VECTOR tangent;
+	struct COLOR color;
+	struct UVCOORD texcoord0;
+	struct UVCOORD texcoord1;
+	struct VECTOR4 weights;
+} __attribute__((__packed__));
+
 #define _EXPORT_STRUCT(name) typedef struct name name;
 
 _EXPORT_STRUCT(ENTITY)
@@ -535,6 +633,12 @@ _EXPORT_STRUCT(ENTITY)
 _EXPORT_STRUCT(STAGE)
 _EXPORT_STRUCT(BITMAP)
 _EXPORT_STRUCT(TASK)
+_EXPORT_STRUCT(BUFFER)
+_EXPORT_STRUCT(VERTEX)
+_EXPORT_STRUCT(SHADER)
+_EXPORT_STRUCT(UNIFORM)
+_EXPORT_STRUCT(UVCOORD)
+_EXPORT_STRUCT(VECTOR4)
 
 typedef enum FLAGS FLAGS;
 
