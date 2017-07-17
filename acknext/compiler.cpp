@@ -6,21 +6,21 @@
 
 #include "libtcc.h"
 
-class CompileUnit
+struct SCRIPT
 {
 private:
     TCCState * const tcc;
 public:
-    CompileUnit() :
+    SCRIPT() :
         tcc(tcc_new())
     {
         tcc_set_output_type(this->tcc, TCC_OUTPUT_MEMORY);
     }
 
-    CompileUnit(CompileUnit const & other) = delete;
-    CompileUnit(CompileUnit && other) = delete;
+    SCRIPT(SCRIPT const & other) = delete;
+    SCRIPT(SCRIPT && other) = delete;
 
-    ~CompileUnit()
+    ~SCRIPT()
     {
         tcc_delete(this->tcc);
     }
@@ -103,7 +103,7 @@ public:
 
 ACKFUN SCRIPT * script_compile(char const * fileName)
 {
-    CompileUnit * tcc = new CompileUnit();
+    SCRIPT * tcc = new SCRIPT();
 
     if(tcc->setup() == false) {
         delete tcc;
@@ -121,12 +121,12 @@ ACKFUN SCRIPT * script_compile(char const * fileName)
     }
 
     // HACK: Well, this is quite hacky, but it should work :P
-    return (SCRIPT*)tcc;
+    return tcc;
 }
 
 ACKFUN SCRIPT * script_compile_src(char const * source)
 {
-    CompileUnit * tcc = new CompileUnit();
+    SCRIPT * tcc = new SCRIPT();
 
     if(tcc->setup() == false) {
         delete tcc;
@@ -143,21 +143,19 @@ ACKFUN SCRIPT * script_compile_src(char const * source)
         return nullptr;
     }
 
-    // HACK: Well, this is quite hacky, but it should work :P
-    return (SCRIPT*)tcc;
+    return tcc;
 }
 
 ACKFUN void * script_symbol(SCRIPT * script, char const * name)
 {
-    CompileUnit * tcc = reinterpret_cast<CompileUnit*>(script);
-    if(tcc == nullptr) {
+    if(script == nullptr) {
         return nullptr;
     }
-    return tcc->getSymbol(name);
+    return script->getSymbol(name);
 }
 
 static bool hasInitialFile = false;
-static CompileUnit mainCompiler;
+static SCRIPT mainCompiler;
 
 bool compiler_init()
 {
