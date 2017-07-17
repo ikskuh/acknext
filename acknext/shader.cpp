@@ -131,20 +131,6 @@ ACKFUN void shader_remove(SHADER * shader)
 	delete shader;
 }
 
-ACKFUN bool shader_use(SHADER * shader)
-{
-	if(shader == NULL) {
-		engine_seterror(INVALID_ARGUMENT, "shader must not be NULL!");
-		return false;
-	}
-	if(shader->isLinked == false) {
-		engine_seterror(INVALID_OPERATION, "Shader must be linked!");
-		return false;
-	}
-	glUseProgram(shader->program);
-	return true;
-}
-
 ACKFUN int shader_getUniformCount(SHADER * shader)
 {
 	if(shader == NULL) {

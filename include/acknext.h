@@ -266,21 +266,73 @@ ACKFUN void * engine_getscript(char const * name);
 
 // TODO: Document new APIs
 
+// SHADER API
+
+/**
+ * @ingroup rendering
+ * @brief Creates a new shader object
+ * @returns The created shader object or NULL on failure.
+ */
 ACKFUN SHADER * shader_create();
 
+/**
+ * @ingroup rendering
+ * @brief Adds and compiles a code snippet into the shader.
+ *
+ * This function internally creates a new shader object and compiles
+ * a new OpenGL shader object. On success, this shader object is attached
+ * and stored in the @ref SHADER itself.
+ *
+ * @param shader The Acknext shader object
+ * @param
+ */
 ACKFUN bool shader_addSource(SHADER * shader, enum SHADERTYPE type, const char * source);
 
+/**
+ * @ingroup rendering
+ * @brief Links the shader after all sources are added.
+ *
+ * A shader needs to be linked in order to be used for rendering. After linking,
+ * no more sources can be added via @ref shader_addSource.
+ *
+ * @param shader The shader to be linked
+ * @returns true on success, else otherwise.
+ */
 ACKFUN bool shader_link(SHADER * shader);
 
-ACKFUN bool shader_use(SHADER * shader);
-
+/**
+ * @ingroup rendering
+ * @brief Returns the number of active uniforms in a shader.
+ * @param shader The shader object
+ * @param index  The index of the uniform.
+ * @returns Pointer to a @ref UNIFORM object describing the uniform or NULL on
+ *          failure.
+ */
 ACKFUN UNIFORM const * shader_getUniform(SHADER * shader, int index);
 
+/**
+ * @ingroup rendering
+ * @brief Returns the number of active uniforms in a shader.
+ * @param shader The shader object
+ * @returns Number of uniforms.
+ */
 ACKFUN int shader_getUniformCount(SHADER * shader);
 
+/**
+ * @ingroup rendering
+ * @brief Returns the OpenGL program object for a shader.
+ * @param shader The Acknext @ref SHADER object.
+ * @returns OpenGL program object
+ */
 ACKFUN unsigned int shader_getObject(SHADER * shader);
 
+/**
+ * @ingroup rendering
+ * @brief Destroys a shader object and releases all of its memory.
+ */
 ACKFUN void shader_remove(SHADER * shader);
+
+// BUFFER API
 
 ////////////////////////////////////////////////////////////////////////////////
 

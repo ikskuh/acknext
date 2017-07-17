@@ -15,7 +15,8 @@ SOURCES += \
     input.cpp \
     view.cpp \
     model.cpp \
-    shader.cpp
+    shader.cpp \
+    buffer.cpp
 
 HEADERS += \
     $$PWD/../include/acknext.h \
