@@ -7,8 +7,12 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
 
+#include <json.hpp>
+
 #define HANDLE_TASK   1
 #define HANDLE_SCRIPT 2
+
+extern nlohmann::json engine_config;
 
 void engine_seterror(ERROR code, char const * message, ...);
 

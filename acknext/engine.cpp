@@ -43,12 +43,10 @@ ACKFUN bool engine_open(int argc, char ** argv)
 
     engine_log("Begin initalizing engine.");
 
-    if(compiler_init() == false) {
-        return false;
-    }
-
 	int diag_flag = 0;
 	int has_config = 0;
+
+	std::vector<char const *> sourceFiles;
 
 	// Parse arguments
 	{
@@ -116,10 +114,7 @@ ACKFUN bool engine_open(int argc, char ** argv)
 
 		for(int i = optind; i < argc; i++)
 		{
-			// positional file!
-			if(compiler_add(argv[i]) == false) {
-				return false;
-			}
+			sourceFiles.emplace_back(argv[i]);
 		}
 	}
 
@@ -130,10 +125,30 @@ ACKFUN bool engine_open(int argc, char ** argv)
 				"title": "Acknext A1",
 			    "resolution": [ 1280, 720 ],
 			    "fullscreen": "yes",
+				"includePath": [
+					"/usr/include/",
+					"/home/felix/projects/tcc-0.9.26/include/",
+					"/home/felix/projects/acknext/include/",
+					"/home/felix/projects/gl3w/include/"
+				],
+				libraryPath: [
+					"/tmp/build-acknext-Desktop-Debug/acknext/"
+				],
+				"libraries": [ "acknext", "m" ]
 			})json"_json;
 		} else {
 			configFile >> engine_config;
 			has_config = true;
+		}
+	}
+
+	if(compiler_init() == false) {
+        return false;
+    }
+
+	for(auto & str : sourceFiles) {
+		if(compiler_add(str) == false) {
+			return false;
 		}
 	}
 

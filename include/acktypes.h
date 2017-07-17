@@ -590,6 +590,13 @@ typedef uint32_t HANDLE;
  */
 struct SHADER;
 
+/**
+ * @ingroup rendering
+ * @brief A @ref SHADER uniform variable that
+ *        can be set when rendering.
+ *
+ *
+ */
 struct UNIFORM
 {
 	int location;

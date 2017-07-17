@@ -19,3 +19,5 @@ DEPENDPATH += $$PWD/../../tcc-0.9.26
 DISTFILES += \
     acklevel.json \
     acknext.cfg
+
+include(../../gl3w/gl3w.pri)

@@ -1,5 +1,7 @@
 #include <acknext.h>
 
+#include <GL/gl3w.h>
+
 #define GLSL(x) ("#version 330\n" #x)
 
 void main()

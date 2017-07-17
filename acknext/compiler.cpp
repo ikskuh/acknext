@@ -2,6 +2,7 @@
 
 #include <list>
 #include <algorithm>
+#include <string>
 
 #include "libtcc.h"
 
@@ -28,12 +29,24 @@ public:
     bool setup()
     {
         bool success = true;
-        success &= this->addIncludePath("/usr/include/");
-        success &= this->addIncludePath("/home/felix/projects/tcc-0.9.26/include/");
-        success &= this->addIncludePath("/home/felix/projects/acknext/include/");
-        success &= this->addLibraryPath("/tmp/build-acknext-Desktop-Debug/acknext/");
-        success &= this->addLibrary("acknext");
-        success &= this->addLibrary("m");
+
+		engine_log("Set up compiler...");
+		for(auto & val : engine_config.at("includePath"))
+		{
+			engine_log("include path: %s", val.get<std::string>().c_str());
+			success &= this->addIncludePath(val.get<std::string>().c_str());
+		}
+		for(auto & val : engine_config.at("libraryPath"))
+		{
+			engine_log("library path: %s", val.get<std::string>().c_str());
+			success &= this->addLibraryPath(val.get<std::string>().c_str());
+		}
+		for(auto & val : engine_config.at("libraries"))
+		{
+			engine_log("library:      %s", val.get<std::string>().c_str());
+			success &= this->addLibrary(val.get<std::string>().c_str());
+		}
+		engine_log("Compiler setup %s.", (success ? "successful" : "failed"));
         return success;
     }
 
