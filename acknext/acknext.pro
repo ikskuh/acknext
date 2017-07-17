@@ -29,7 +29,8 @@ HEADERS += \
     ../include/ackkeys.h \
     level-detail.h \
     model.h \
-    ackglm.hpp
+    ackglm.hpp \
+    buffer-detail.h
 
 INCLUDEPATH += $$PWD/../include/
 

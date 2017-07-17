@@ -86,6 +86,12 @@ extern TASK task;
  */
 extern WIDGET * render_root;
 
+/**
+ * @ingroup engine
+ * @brief Modifies the behaviour of the engine
+ */
+extern enum FLAGS engine_flags;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #define _ACKKEY(name, key, scan) extern int key_##name;

@@ -71,6 +71,24 @@ enum FLAGS
      * @see WIDGET::size
      */
     AUTOSIZE = (1<<5),
+
+	/**
+	 * When a uniform has this flag, its value will be automatically filled
+	 * in by the engine.
+	 *
+	 * @see UNIFORM
+	 */
+	AUTOFILL = (1<<6),
+
+	/**
+	 * @ingroup rendering
+	 * When this flag is set in @ref engine_flags, the
+	 * engines internal rendering is completly disabled
+	 * and the user must call everything manually.
+	 *
+	 * @see engine_swap
+	 */
+	CUSTOMDRAW = (1<<7),
 };
 
 /**
@@ -166,6 +184,29 @@ enum SHADERTYPE
 };
 
 /**
+ * @ingroup rendering
+ * @brief An enumeration of buffer types.
+ */
+enum BUFFERTYPE
+{
+	/**
+	 * A buffer for vertices.
+	 * @see VERTEX
+	 **/
+	VERTEX_BUFFER = 1,
+
+	/**
+	 * A buffer for uint32 indices.
+	 **/
+	INDEX_BUFFER = 2,
+
+	/**
+	 * A buffer for uniform storage.
+	 **/
+	UNIFORM_BUFFER = 3,
+};
+
+/**
  * @ingroup video
  * @brief An rgb color using 8 bit per color channel.
  */
@@ -185,6 +226,11 @@ struct COLOR
      * The blue color component.
      */
     uint8_t blue;
+
+	/**
+	 * The transparency component of the color.
+	 */
+	uint8_t alpha;
 } __attribute__((packed));
 
 /**
@@ -595,7 +641,22 @@ struct SHADER;
  * @brief A @ref SHADER uniform variable that
  *        can be set when rendering.
  *
+ * **Predefined Uniforms**
  *
+ * | Name             | Type      | Description                                |
+ * |------------------|-----------|--------------------------------------------|
+ * | matWorld         | mat4      | World transformation matrix                |
+ * | matView          | mat4      | View transformation matrix                 |
+ * | matProj          | mat4      | Projection matrix                          |
+ * | matWorldView     | mat4      | matWorld * matView                         |
+ * | matViewProj      | mat4      | matWorld * matView                         |
+ * | matWorldViewProj | mat4      | matWorld * matView                         |
+ * | vecViewDir       | vec3      | Forward vector of the current camera       |
+ * | vecViewPos       | vec3      | Position (world) of the current camera     |
+ * | vecViewPort      | vec4      | (w,h,1/w,1/h) of the current camera        |
+ * | *_bmap           | sampler2D | Sampler of a global `BITMAP*` variable     |
+ * | *_vec3           | vec3      | Value of a global `VECTOR` variable        |
+ * | *_var            | float     | Value of a global `var` variable           |
  */
 struct UNIFORM
 {
@@ -603,6 +664,7 @@ struct UNIFORM
 	char name[128];
 	unsigned int type;
 	int sizeInBytes;
+	enum FLAGS flags;
 };
 
 /**
@@ -625,6 +687,12 @@ struct VERTEX
 	struct UVCOORD texcoord1;
 	struct VECTOR4 weights;
 } __attribute__((__packed__));
+
+/**
+ * @ingroup rendering
+ * @brief An index of a @ref MESH.
+ */
+typedef uint32_t INDEX;
 
 #define _EXPORT_STRUCT(name) typedef struct name name;
 

@@ -23,6 +23,17 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * @ingroup rendering
+ * @ingroup engine
+ * @brief Swaps the front with the back buffer.
+ *
+ * @remark This function is useful when the engine
+ *         rendering is disabled.
+ *
+ * @remark This is usually called in @ref engine_frame
+ */
+ACKFUN void engine_swap();
 
 /**
  * @ingroup gui scene
@@ -334,6 +345,27 @@ ACKFUN void shader_remove(SHADER * shader);
 
 // BUFFER API
 
+ACKFUN BUFFER * buffer_create(enum BUFFERTYPE type);
+
+ACKFUN void buffer_set(BUFFER * buffer, size_t size, void * data);
+
+ACKFUN void buffer_update(BUFFER * buffer, size_t offset, size_t size, void * data);
+
+ACKFUN unsigned int buffer_getObject(BUFFER * buffer);
+
+ACKFUN void buffer_remove(BUFFER * buffer);
+
+// Render-API
+
+ACKFUN void opengl_setVertexBuffer(BUFFER * buffer);
+
+ACKFUN void opengl_setIndexBuffer(BUFFER * buffer);
+
+ACKFUN void opengl_draw(
+	unsigned int primitiveType,
+	unsigned int offset,
+	unsigned int count);
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifndef ACKNEXT_NO_PRIMITIVE_CTORS
@@ -400,6 +432,16 @@ static inline QUATERNION euler(var pan, var tilt, var roll)
     q.z = t1 * t2 * t4 - t0 * t3 * t5;
 
     return q;
+}
+
+static inline COLOR hexcolor(uint32_t hex)
+{
+	return (COLOR) {
+		(uint8_t)(hex >> 16),
+		(uint8_t)(hex >>  8),
+		(uint8_t)(hex >>  0),
+		(uint8_t)(hex >> 24),
+	};
 }
 
 #endif // ACKNEXT_NO_PRIMITIVE_CTORS

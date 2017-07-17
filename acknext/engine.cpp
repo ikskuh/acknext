@@ -35,6 +35,8 @@ struct engine engine;
 
 nlohmann::json engine_config;
 
+enum FLAGS engine_flags = NONE;
+
 #define SDL_CHECKED(x, y) if((x) < 0) { engine_setsdlerror(); return y; }
 
 ACKFUN bool engine_open(int argc, char ** argv)
@@ -256,8 +258,9 @@ ACKFUN bool engine_frame()
 
     scheduler_update();
 
-    // Render Frame
-    render_frame();
+	if(!(engine_flags & CUSTOMDRAW)) {
+		render_frame();
+	}
 
     lastFrameTime = nextFrameTime;
     total_frames++;
@@ -318,6 +321,8 @@ void engine_seterror(ERROR code, char const * message, ...)
         STRINGIFY(OUT_OF_MEMORY),
         STRINGIFY(SDL_ERROR),
         STRINGIFY(COMPILATION_FAILED),
+	    STRINGIFY(INVALID_ARGUMENT),
+	    STRINGIFY(INVALID_OPERATION),
     };
 
     va_list args;
