@@ -2,11 +2,17 @@
 #define MODEL_H
 
 #include <acknext.h>
+#include <vector>
 
-class Model
+struct Model
 {
-public:
+	std::vector<MATERIAL> materials;
+	std::vector<MESH> meshes;
+
 	Model();
+	~Model();
 };
+
+Model * model_get(char const * name);
 
 #endif // MODEL_H

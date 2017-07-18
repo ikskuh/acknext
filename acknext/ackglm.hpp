@@ -5,10 +5,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-static inline void glm_to_ack(MATRIX * target, const glm::mat4 & mat)
+static inline void glm_to_ack(MATRIX target, const glm::mat4 & mat)
 {
 	for(int i = 0; i < 16; i++) {
-		(*target)[i/4][i%4] = mat[i/4][i%4];
+		target[i/4][i%4] = mat[i/4][i%4];
 	}
 }
 

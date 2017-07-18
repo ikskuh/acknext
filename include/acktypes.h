@@ -27,6 +27,13 @@ typedef float var;
 
 /**
  * @ingroup engine
+ * @brief action is an alias for the void type to provide compatibility
+ *        to good ol' Gamestudio.
+ */
+typedef void action;
+
+/**
+ * @ingroup engine
  * @brief An enumeration of flags that can be applied to
  *        engine objects. Some flags may be used only only
  *        on some objects or won't have any effect.
@@ -447,6 +454,8 @@ struct ENTITY
      * @brief Flags modifying the behaviour of the entitiy.
      */
     enum FLAGS flags;
+
+	ACKNEXT_ENTITY_DETAIL ACKCONST * ACKCONST _detail;
 };
 
 /**
@@ -817,7 +826,7 @@ struct MATERIAL
 struct MESH
 {
 	struct BUFFER   * vertexBuffer;
-	struct BUFFER   * indexBuffers;
+	struct BUFFER   * indexBuffer;
 	struct MATERIAL * material;
 };
 

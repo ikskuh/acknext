@@ -53,9 +53,9 @@ ACKFUN VIEW * view_create(WIDGET * parent);
  *                      the projection matrix.
  */
 ACKFUN void view_to_matrix(
-    VIEW * view,
-    MATRIX * matView,
-    MATRIX * matProjection);
+    VIEW const * view,
+    MATRIX matView,
+    MATRIX matProjection);
 
 /**
  * @ingroup gui scene
@@ -99,7 +99,7 @@ ACKFUN void level_remove(LEVEL *level);
  * @param entmain  The main function that will be scheduled for the entity.
  * @returns        The newly created entity.
  */
-ACKFUN ENTITY * ent_create(char const * source, VECTOR position, void (*entmain)());
+ACKFUN ENTITY * ent_create(char const * source, VECTOR position, action (*entmain)());
 
 /**
  * @ingroup scene
@@ -367,6 +367,10 @@ ACKFUN void opengl_setMaterial(MATERIAL * material);
 
 ACKFUN void opengl_setTexture(int slot, BITMAP * texture);
 
+ACKFUN void opengl_setMesh(MESH * mesh);
+
+ACKFUN void opengl_setTransform(MATRIX const matWorld, MATRIX const matView, MATRIX const matProj);
+
 ACKFUN void opengl_draw(
 	unsigned int primitiveType,
 	unsigned int offset,
@@ -389,6 +393,14 @@ ACKFUN void bmap_remove(BITMAP * bitmap);
 ACKFUN MATERIAL * mtl_create();
 
 ACKFUN void mtl_remove(MATERIAL * mtl);
+
+// Matrix API
+
+ACKFUN void mat_id(MATRIX mat);
+
+ACKFUN void mat_mul(MATRIX mat, MATRIX const lhs, MATRIX const rhs);
+
+ACKFUN void mat_copy(MATRIX dst, MATRIX const src);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -443,12 +455,12 @@ static inline QUATERNION euler(var pan, var tilt, var roll)
     tilt *= DEG_TO_RAD;
     roll *= DEG_TO_RAD;
 
-    var t0 = cos(tilt * 0.5f);
-    var t1 = sin(tilt * 0.5f);
-    var t2 = cos(roll * 0.5f);
-    var t3 = sin(roll * 0.5f);
-    var t4 = cos(pan * 0.5f);
-    var t5 = sin(pan * 0.5f);
+    var t0 = cos(roll * 0.5f);
+    var t1 = sin(roll * 0.5f);
+    var t2 = cos(pan * 0.5f);
+    var t3 = sin(pan * 0.5f);
+    var t4 = cos(tilt * 0.5f);
+    var t5 = sin(tilt * 0.5f);
 
     q.w = t0 * t2 * t4 + t1 * t3 * t5;
     q.x = t0 * t3 * t4 - t1 * t2 * t5;

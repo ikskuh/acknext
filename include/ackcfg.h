@@ -23,7 +23,11 @@
 #endif
 
 #ifndef ACKNEXT_LEVEL_DETAIL
-#define ACKNEXT_LEVEL_DETAIL  void
+#define ACKNEXT_LEVEL_DETAIL void
+#endif
+
+#ifndef ACKNEXT_ENTITY_DETAIL
+#define ACKNEXT_ENTITY_DETAIL void
 #endif
 
 #endif // _ACKNEXT_ACKCFG_

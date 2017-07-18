@@ -5,6 +5,7 @@
 #include "buffer-detail.h"
 #include "bitmap-detail.h"
 #include "shader-detail.h"
+#include "entity-detail.h"
 
 WIDGET * render_root = nullptr;
 
@@ -35,6 +36,8 @@ void initialize_renderer()
 
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
+	glEnable(GL_DEPTH_TEST);
 
 	glCreateVertexArrays(1, &vao);
 	glEnableVertexArrayAttrib(vao, 0);
@@ -109,8 +112,6 @@ void initialize_renderer()
 		abort();
 	}
 
-	engine_log("? %p %d", defaultShader, defaultShader->isLinked);
-
 	opengl_setShader(defaultShader);
 
 	uint32_t white = 0xFFFFFFFF;
@@ -135,13 +136,34 @@ static void draw_view(VIEW * view, const SIZE & size)
 	glClearDepth(1.0f);
 	glClear(GL_DEPTH_BUFFER_BIT);
 
+	MATRIX matView, matProj;
+	view_to_matrix(view, matView, matProj);
+
 	LEVEL * level = view->level;
 	for(ENTITY * ent : level->_detail->entities)
 	{
-		glm::mat4 matWorld =
+		ENTITYdetail & detail = *ent->_detail;
+		if(detail.model == nullptr) {
+			continue;
+		}
+		MATRIX matWorld;
+		glm_to_ack(matWorld,
 			glm::mat4_cast(ack_to_glm(ent->rotation)) *
-		    glm::translate(glm::mat4(), ack_to_glm(ent->position));
+		    glm::translate(glm::mat4(), ack_to_glm(ent->position)));
 
+
+
+		for(MESH & mesh : detail.model->meshes)
+		{
+			opengl_setMesh(&mesh);
+
+			opengl_setTransform(
+				matWorld,
+				matView,
+				matProj);
+
+			opengl_draw(GL_TRIANGLES, 0, mesh.indexBuffer->size / sizeof(INDEX));
+		}
 	}
 }
 
@@ -184,11 +206,12 @@ static void draw_widget(WIDGET *widget, const POINT & offset, const SIZE & conta
 
 void render_frame()
 {
+	glViewport(0, 0, screen_size.width, screen_size.height);
     glClearColor(
-        screen_color.red / 255.0f,
-        screen_color.green / 255.0f,
-        screen_color.blue / 255.0f,
-        1.0f);
+        screen_color.red,
+        screen_color.green,
+        screen_color.blue,
+        screen_color.alpha);
     glClear(GL_COLOR_BUFFER_BIT);
 
 	if(render_root != nullptr) {
@@ -196,8 +219,6 @@ void render_frame()
 		draw_widget(render_root, POINT(), screen_size);
 		glDisable(GL_SCISSOR_TEST);
 	}
-
-	glViewport(0, 0, screen_size.width, screen_size.height);
 
     engine_swap();
 }
@@ -248,6 +269,64 @@ ACKFUN void opengl_setIndexBuffer(BUFFER * buffer)
 	currentIndexBuffer = buffer;
 }
 
+ACKFUN void opengl_setTransform(MATRIX const matWorld, MATRIX const matView, MATRIX const matProj)
+{
+	int pgm = shader_getObject(currentShader);
+	int cnt = shader_getUniformCount(currentShader);
+	for(int i = 0; i < cnt; i++)
+	{
+		UNIFORM const * uni = shader_getUniform(currentShader, i);
+		MATRIX mat;
+		switch(uni->variable) {
+			case MAT_WORLD:
+				mat_copy(mat, matWorld);
+				break;
+			case MAT_VIEW:
+				mat_copy(mat, matView);
+				break;
+			case MAT_PROJ:
+				mat_copy(mat, matProj);
+				break;
+
+			case MAT_WORLDVIEW: {
+				mat_copy(mat, matWorld);
+				mat_mul(mat, mat, matView);
+				break;
+			}
+			case MAT_WORLDVIEWPROJ: {
+				mat_copy(mat, matWorld);
+				mat_mul(mat, mat, matView);
+				mat_mul(mat, mat, matProj);
+				break;
+			}
+			case MAT_VIEWPROJ: {
+				MATRIX mat;
+				mat_copy(mat, matView);
+				mat_mul(mat, mat, matProj);
+				break;
+			}
+
+			default:
+				// Skip this filthy uniform setting operation!
+				continue;
+		}
+
+		engine_log("Matrix %d:\n%1.3f %1.3f %1.3f %1.3f\n%1.3f %1.3f %1.3f %1.3f\n%1.3f %1.3f %1.3f %1.3f\n%1.3f %1.3f %1.3f %1.3f",
+			uni->variable,
+			mat[0][0], mat[0][1], mat[0][2], mat[0][3],
+			mat[1][0], mat[1][1], mat[1][2], mat[1][3],
+			mat[2][0], mat[2][1], mat[2][2], mat[2][3],
+			mat[3][0], mat[3][1], mat[3][2], mat[3][3]);
+
+		glProgramUniformMatrix4fv(
+			pgm,
+			uni->location,
+			1,
+			GL_FALSE,
+			&mat[0][0]);
+	}
+}
+
 ACKFUN void opengl_draw(
 	unsigned int primitiveType,
 	unsigned int offset,
@@ -281,6 +360,16 @@ ACKFUN void opengl_setTexture(int slot, BITMAP * texture)
 {
 	texture = FALLBACK(texture, defaultWhiteTexture);
 	glBindTextureUnit(slot, texture->_detail->id);
+}
+
+ACKFUN void opengl_setMesh(MESH * mesh)
+{
+	if(mesh == nullptr) {
+		engine_seterror(INVALID_ARGUMENT, "mesh must not be NULL!");
+	}
+	opengl_setIndexBuffer(mesh->indexBuffer);
+	opengl_setVertexBuffer(mesh->vertexBuffer);
+	opengl_setMaterial(mesh->material);
 }
 
 ACKFUN void opengl_setMaterial(MATERIAL * material)
@@ -335,7 +424,14 @@ ACKFUN void opengl_setMaterial(MATERIAL * material)
 
 void (APIENTRY render_log)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam)
 {
-	engine_log("[OpenGL] %s", message);
+	(void)source;
+	(void)type;
+	(void)id;
+	(void)length;
+	(void)userParam;
+	if(severity == GL_DEBUG_SEVERITY_HIGH || severity == GL_DEBUG_SEVERITY_MEDIUM) {
+		engine_log("[OpenGL] %s", message);
+	}
 }
 
 char const * srcVertexShader = R"GLSL(#version 330
@@ -345,12 +441,16 @@ char const * srcVertexShader = R"GLSL(#version 330
 	layout(location = 5) in vec2 vUV1;
 
 	uniform vec3 vecColor;
+	uniform mat4 matWorld;
+	uniform mat4 matView;
+	uniform mat4 matProj;
+
 	out vec3 color;
 	out vec2 uv0, uv1;
 
 	void main() {
-		gl_Position = vec4(vPosition, 1);
-		color = vColor * vecColor;
+		gl_Position = matProj * matView * matWorld * vec4(vPosition, 1);
+		color = vColor * vecColor * vec3(uv0, 1);
 		uv0 = vUV0;
 		uv1 = vUV1;
 	}

@@ -2,6 +2,8 @@ TEMPLATE = lib
 CONFIG += c++11
 CONFIG -= app_bundle
 CONFIG -= qt
+CONFIG    += link_pkgconfig
+PKGCONFIG += assimp
 
 SOURCES += \
     engine.cpp \
@@ -18,7 +20,9 @@ SOURCES += \
     shader.cpp \
     buffer.cpp \
     bitmap.cpp \
-    material.cpp
+    material.cpp \
+    entity.cpp \
+    matrix.cpp
 
 HEADERS += \
     $$PWD/../include/acknext.h \
@@ -34,13 +38,15 @@ HEADERS += \
     ackglm.hpp \
     buffer-detail.h \
     bitmap-detail.h \
-    shader-detail.h
+    shader-detail.h \
+    entity-detail.h
 
 INCLUDEPATH += $$PWD/../include/
 
 DEFINES += _ACKNEXT_INTERNAL_
 DEFINES += "ACKNEXT_LEVEL_DETAIL='struct LEVELdetail'"
 DEFINES += "ACKNEXT_BITMAP_DETAIL='struct BITMAPdetail'"
+DEFINES += "ACKNEXT_ENTITY_DETAIL='struct ENTITYdetail'"
 
 
 # QMAKE_LINK=ld
