@@ -5,7 +5,7 @@ extern "C"
 {
 
 // Graphics variables
-COLOR screen_color = { 0, 0, 128 };
+COLOR screen_color = { 0, 0, 0.5f, 1.0f };
 
 SIZE screen_size;
 

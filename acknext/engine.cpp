@@ -270,7 +270,6 @@ ACKFUN bool engine_frame()
 ACKFUN void engine_close()
 {
     engine_log("Shutting down engine...");
-
     scheduler_shutdown();
 
     engine_log("Destroy GL context.");

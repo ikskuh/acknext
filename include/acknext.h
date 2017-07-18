@@ -361,10 +361,32 @@ ACKFUN void opengl_setVertexBuffer(BUFFER * buffer);
 
 ACKFUN void opengl_setIndexBuffer(BUFFER * buffer);
 
+ACKFUN void opengl_setShader(SHADER * shader);
+
+ACKFUN void opengl_setMaterial(MATERIAL * material);
+
+ACKFUN void opengl_setTexture(int slot, BITMAP * texture);
+
 ACKFUN void opengl_draw(
 	unsigned int primitiveType,
 	unsigned int offset,
 	unsigned int count);
+
+// Bitmap API
+
+ACKFUN BITMAP * bmap_create();
+
+ACKFUN BITMAP * bmap_createblack(int width, int height, enum PIXELFORMAT format);
+
+ACKFUN void bmap_set(BITMAP * bitmap, int width, int height, enum PIXELFORMAT format, void const * data);
+
+ACKFUN void bmap_remove(BITMAP * bitmap);
+
+// Material API
+
+ACKFUN MATERIAL * mtl_create();
+
+ACKFUN void mtl_remove(MATERIAL * mtl);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -437,10 +459,10 @@ static inline QUATERNION euler(var pan, var tilt, var roll)
 static inline COLOR hexcolor(uint32_t hex)
 {
 	return (COLOR) {
-		(uint8_t)(hex >> 16),
-		(uint8_t)(hex >>  8),
-		(uint8_t)(hex >>  0),
-		(uint8_t)(hex >> 24),
+		(uint8_t)(hex >> 16) / 255.0f,
+		(uint8_t)(hex >>  8) / 255.0f,
+		(uint8_t)(hex >>  0) / 255.0f,
+		(uint8_t)(hex >> 24) / 255.0f,
 	};
 }
 

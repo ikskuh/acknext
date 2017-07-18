@@ -207,6 +207,17 @@ enum BUFFERTYPE
 };
 
 /**
+ * @ingroup rendering
+ * @brief An enumeration of possible formats for bitmaps.
+ */
+enum PIXELFORMAT
+{
+	RGBA8,
+	RGBA16F,
+	RGBA32F,
+};
+
+/**
  * @ingroup video
  * @brief An rgb color using 8 bit per color channel.
  */
@@ -215,22 +226,22 @@ struct COLOR
     /**
      * The red color component.
      */
-    uint8_t red;
+    var red;
 
     /**
      * The green color component.
      */
-    uint8_t green;
+    var green;
 
     /**
      * The blue color component.
      */
-    uint8_t blue;
+    var blue;
 
 	/**
 	 * The transparency component of the color.
 	 */
-	uint8_t alpha;
+	var alpha;
 } __attribute__((packed));
 
 /**
@@ -382,9 +393,7 @@ struct LEVEL
      */
     enum FLAGS flags;
 
-#ifdef _ACKNEXT_INTERNAL_
-    struct LEVELdetail * _detail;
-#endif
+	ACKNEXT_LEVEL_DETAIL ACKCONST * ACKCONST _detail;
 };
 
 /**
@@ -458,7 +467,7 @@ struct WIDGET
     enum WIDGETTYPE ACKCONST type;
 
     /**
-     * @brief Horizontal position of the
+     * @brief Horizontal position of the widget.
      */
     union {
         struct {
@@ -637,6 +646,31 @@ typedef uint32_t HANDLE;
 struct SHADER;
 
 /**
+ * @brief An enumeration of predefined shader variables.
+ */
+enum SHADERVARIABLE
+{
+	UNDEFINED = 0,
+	MAT_WORLD,
+	MAT_VIEW,
+	MAT_PROJ,
+	MAT_VIEWPROJ,
+	MAT_WORLDVIEW,
+	MAT_WORLDVIEWPROJ,
+
+	VEC_VIEWDIR,
+	VEC_VIEWPOS,
+	VEC_VIEWPORT,
+
+	VEC_COLOR,
+	VEC_EMISSION,
+	VEC_ATTRIBUTES,
+	TEX_COLOR,
+	TEX_ATTRIBUTES,
+	TEX_EMISSION,
+};
+
+/**
  * @ingroup rendering
  * @brief A @ref SHADER uniform variable that
  *        can be set when rendering.
@@ -654,6 +688,12 @@ struct SHADER;
  * | vecViewDir       | vec3      | Forward vector of the current camera       |
  * | vecViewPos       | vec3      | Position (world) of the current camera     |
  * | vecViewPort      | vec4      | (w,h,1/w,1/h) of the current camera        |
+ * | vecColor         | vec3      | @ref MATERIAL.color                        |
+ * | vecAttributes    | vec3      | (@ref MATERIAL.roughness, @ref MATERIAL.metallic, @ref MATERIAL.fresnell) |
+ * | vecEmission      | vec3      | @ref MATERIAL.emission                     |
+ * | texColor         | sampler2D | @ref MATERIAL.colorTexture                 |
+ * | texEmission      | sampler2D | @ref MATERIAL.emissionTexture              |
+ * | texAttributes    | sampler2D | @ref MATERIAL.attributeTexture             |
  * | *_bmap           | sampler2D | Sampler of a global `BITMAP*` variable     |
  * | *_vec3           | vec3      | Value of a global `VECTOR` variable        |
  * | *_var            | float     | Value of a global `var` variable           |
@@ -665,6 +705,7 @@ struct UNIFORM
 	unsigned int type;
 	int sizeInBytes;
 	enum FLAGS flags;
+	enum SHADERVARIABLE variable;
 };
 
 /**
@@ -672,6 +713,113 @@ struct UNIFORM
  * @brief An OpenGL buffer object
  */
 struct BUFFER;
+
+/**
+ * @ingroup rendering
+ * @brief A 2D texture
+ */
+struct BITMAP
+{
+	ACKCONST int width;
+	ACKCONST int height;
+	enum PIXELFORMAT format;
+    ACKNEXT_BITMAP_DETAIL ACKCONST * ACKCONST _detail;
+};
+
+/**
+ * @ingroup rendering
+ * @brief The MATERIAL struct
+ */
+struct MATERIAL
+{
+	/**
+	 * @brief The shader that is used for rendering this material.
+	 *
+	 * @remarks If NULL, the default shader will be used.
+	 */
+	struct SHADER * shader;
+
+	/**
+	 * @brief A texture that defines the surface color of an object.
+	 *
+	 * @remarks If NULL, a white texture will be provided.
+	 */
+	struct BITMAP * colorTexture;
+
+	/**
+	 * @brief A texture that encodes the material attributes on a per pixel
+	 *        basis.
+	 *
+	 * The red color channel contains @ref roughness, the green color channel
+	 * the @ref metallic factor and the blue color channel the @ref fresnel
+	 * factor. Those texture encoded values are multiplied with the properties
+	 * of the material.
+	 *
+	 * @remarks If NULL, a white texture will be provided.
+	 */
+	struct BITMAP * attributeTexture;
+
+	/**
+	 * @brief A texture encoding the material emission on a per pixel basis.
+	 *
+	 * @remarks If NULL, a white texture will be provided.
+	 */
+	struct BITMAP * emissionTexture;
+
+	/**
+	 * @brief The color of the object. Reflected light will be tinted with
+	 *        this color.
+	 *
+	 * @remarks The color values provided here will be clamped in the range
+	 *          `[0…1]`
+	 */
+	struct COLOR color; // will be clamped between [0;1]
+
+	/**
+	 * @brief The emission of the object. This value will be added after
+	 *        the lighting calculation to the final brightness.
+	 *
+	 * With this effect, bright and glowing objects can be created.
+	 */
+	struct COLOR emission; // pure additive evil!
+
+	/**
+	 * @brief The roughness of the material surface.
+	 *
+	 * The rougher a material is, the less sharp its reflections are.
+	 */
+	var roughness;
+
+	/**
+	 * @brief The metallic property of the material surface.
+	 *
+	 * The more metallic a materia is, the less diffuse reflection it will
+	 * produce. Also a metallic surface tints the specular reflection instead
+	 * of the diffuse reflection.
+	 *
+	 * @remarks 0% equals poser, 100% is the only true metal form!
+	 */
+	var metallic;
+
+	/**
+	 * @brief The fresnell effect of the surface
+	 * @todo write...
+	 */
+	var fresnell;
+};
+
+/**
+ * @ingroup rendering
+ * @brief A basic graphical component defining a 3D model
+ *
+ * @todo Add support for bones as well as multiple
+ */
+struct MESH
+{
+	struct BUFFER   * vertexBuffer;
+	struct BUFFER   * indexBuffers;
+	struct MATERIAL * material;
+};
 
 /**
  * @ingroup rendering
@@ -716,6 +864,9 @@ _EXPORT_STRUCT(SHADER)
 _EXPORT_STRUCT(UNIFORM)
 _EXPORT_STRUCT(UVCOORD)
 _EXPORT_STRUCT(VECTOR4)
+_EXPORT_STRUCT(MESH)
+_EXPORT_STRUCT(BITMAP)
+_EXPORT_STRUCT(MATERIAL)
 
 typedef enum FLAGS FLAGS;
 

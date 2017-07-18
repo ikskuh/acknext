@@ -1,33 +1,26 @@
 #include "engine.h"
+#include "shader-detail.h"
 
 #include <vector>
 #include <unordered_map>
 #include <string>
 
-struct SHADER
+SHADER::SHADER() :
+	program(glCreateProgram()),
+	shaders(),
+	isLinked(false),
+	uniforms()
 {
-	GLuint program;
-	std::vector<GLuint> shaders;
-	bool isLinked;
-	std::vector<UNIFORM> uniforms;
 
-	SHADER() :
-	    program(glCreateProgram()),
-	    shaders(),
-	    isLinked(false),
-	    uniforms()
-	{
+}
 
+SHADER::~SHADER()
+{
+	for(GLuint sh : this->shaders) {
+		glDeleteShader(sh);
 	}
-
-	~SHADER()
-	{
-		for(GLuint sh : this->shaders) {
-			glDeleteShader(sh);
-		}
-		glDeleteProgram(this->program);
-	}
-};
+	glDeleteProgram(this->program);
+}
 
 static GLenum transpose(enum SHADERTYPE type)
 {
@@ -112,6 +105,7 @@ ACKFUN bool shader_link(SHADER * shader)
 	shader->uniforms.resize(count);
 	for(int i = 0; i < count; i++) {
 		UNIFORM * uni = &shader->uniforms[i];
+		uni->location = i;
 		glGetActiveUniform(
 			shader->program,
 			i,
@@ -120,6 +114,49 @@ ACKFUN bool shader_link(SHADER * shader)
 			&uni->sizeInBytes,
 			&uni->type,
 			uni->name);
+#define SETTYPE(xname, xtype, value) \
+		do { \
+			if(strcmp(uni->name, xname) == 0) { \
+				if(uni->type != xtype) { \
+					engine_seterror(INVALID_OPERATION, "The uniform " xname " is not of the type " #xtype "!"); \
+					return false; \
+				} \
+				uni->variable = value; \
+			} \
+		} while(false)
+
+		SETTYPE("matWorld", GL_FLOAT_MAT4, MAT_WORLD);
+		SETTYPE("matWorldView", GL_FLOAT_MAT4, MAT_WORLDVIEW);
+		SETTYPE("matWorldViewProj", GL_FLOAT_MAT4, MAT_WORLDVIEWPROJ);
+		SETTYPE("matView", GL_FLOAT_MAT4, MAT_VIEW);
+		SETTYPE("matViewProj", GL_FLOAT_MAT4, MAT_VIEWPROJ);
+		SETTYPE("matProj", GL_FLOAT_MAT4, MAT_PROJ);
+
+		SETTYPE("vecViewPos", GL_FLOAT_VEC3, VEC_VIEWPOS);
+		SETTYPE("vecViewDir", GL_FLOAT_VEC3, VEC_VIEWDIR);
+		SETTYPE("vecViewPort", GL_FLOAT_VEC4, VEC_VIEWPORT);
+
+		SETTYPE("vecColor", GL_FLOAT_VEC3, VEC_COLOR);
+		SETTYPE("vecEmission", GL_FLOAT_VEC3, VEC_EMISSION);
+		SETTYPE("vecAttributes", GL_FLOAT_VEC3, VEC_ATTRIBUTES);
+
+		SETTYPE("texColor", GL_SAMPLER_2D, TEX_COLOR);
+		SETTYPE("texAttributes", GL_SAMPLER_2D, TEX_ATTRIBUTES);
+		SETTYPE("texEmission", GL_SAMPLER_2D, TEX_EMISSION);
+
+		switch(uni->variable) {
+			case TEX_COLOR:
+				glProgramUniform1i(shader->program, uni->location, 0);
+				break;
+			case TEX_ATTRIBUTES:
+				glProgramUniform1i(shader->program, uni->location, 1);
+				break;
+			case TEX_EMISSION:
+				glProgramUniform1i(shader->program, uni->location, 2);
+				break;
+			default:
+				break;
+		}
 	}
 
 	shader->isLinked = true;

@@ -18,4 +18,12 @@
 #define RAD_TO_DEG 57.29580406904963
 #define DEG_TO_RAD 0.0174533
 
+#ifndef ACKNEXT_BITMAP_DETAIL
+#define ACKNEXT_BITMAP_DETAIL void
+#endif
+
+#ifndef ACKNEXT_LEVEL_DETAIL
+#define ACKNEXT_LEVEL_DETAIL  void
+#endif
+
 #endif // _ACKNEXT_ACKCFG_

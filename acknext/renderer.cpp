@@ -3,10 +3,19 @@
 #include "ackglm.hpp"
 #include "level-detail.h"
 #include "buffer-detail.h"
+#include "bitmap-detail.h"
+#include "shader-detail.h"
 
 WIDGET * render_root = nullptr;
 
 static GLuint vao;
+static SHADER * defaultShader;
+static BITMAP * defaultWhiteTexture;
+
+extern char const * srcVertexShader;
+extern char const * srcFragmentShader;
+
+void (APIENTRY render_log)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
 
 ACKFUN void engine_swap()
 {
@@ -21,6 +30,11 @@ void initialize_renderer()
 	}
 
     engine_log("OpenGL Version: %s", glGetString(GL_VERSION));
+
+	glDebugMessageCallback(&render_log, nullptr);
+
+	glEnable(GL_DEBUG_OUTPUT);
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
 	glCreateVertexArrays(1, &vao);
 	glEnableVertexArrayAttrib(vao, 0);
@@ -51,8 +65,8 @@ void initialize_renderer()
 	glVertexArrayAttribFormat(vao,
 		3, // color
 		4,
-		GL_UNSIGNED_BYTE,
-		GL_TRUE,
+		GL_FLOAT,
+		GL_FALSE,
 		offsetof(VERTEX, color));
 	glVertexArrayAttribFormat(vao,
 		4, // texcoord0
@@ -82,6 +96,26 @@ void initialize_renderer()
 	glVertexArrayAttribBinding(vao, 6, 10);
 
 	glBindVertexArray(vao);
+
+	defaultShader = shader_create();
+
+	if(shader_addSource(defaultShader, VERTEX_SHADER, srcVertexShader) == false) {
+		abort();
+	}
+	if(shader_addSource(defaultShader, FRAGMENT_SHADER, srcFragmentShader) == false) {
+		abort();
+	}
+	if(shader_link(defaultShader) == false) {
+		abort();
+	}
+
+	engine_log("? %p %d", defaultShader, defaultShader->isLinked);
+
+	opengl_setShader(defaultShader);
+
+	uint32_t white = 0xFFFFFFFF;
+	defaultWhiteTexture = bmap_create();
+	bmap_set(defaultWhiteTexture, 1, 1, RGBA8, &white);
 }
 
 static void draw_view(VIEW * view, const SIZE & size)
@@ -170,6 +204,7 @@ void render_frame()
 
 static BUFFER * currentVertexBuffer;
 static BUFFER * currentIndexBuffer;
+static SHADER * currentShader;
 
 ACKFUN void opengl_setVertexBuffer(BUFFER * buffer)
 {
@@ -218,7 +253,7 @@ ACKFUN void opengl_draw(
 	unsigned int offset,
 	unsigned int count)
 {
-	if(currentIndexBuffer == NULL || currentVertexBuffer == NULL) {
+	if(currentIndexBuffer == nullptr || currentVertexBuffer == nullptr) {
 		engine_seterror(INVALID_OPERATION, "Either index, vertex or both buffers are not set.");
 		return;
 	}
@@ -232,3 +267,104 @@ ACKFUN void opengl_draw(
 		GL_UNSIGNED_INT,
 		(const void *)(sizeof(INDEX) * offset));
 }
+
+#define FALLBACK(a, b) ((a) ? (a) : (b))
+
+ACKFUN void opengl_setShader(SHADER * shader)
+{
+	currentShader = FALLBACK(shader, defaultShader);
+	glUseProgram(shader_getObject(currentShader));
+}
+
+
+ACKFUN void opengl_setTexture(int slot, BITMAP * texture)
+{
+	texture = FALLBACK(texture, defaultWhiteTexture);
+	glBindTextureUnit(slot, texture->_detail->id);
+}
+
+ACKFUN void opengl_setMaterial(MATERIAL * material)
+{
+	if(material == nullptr) {
+		engine_seterror(INVALID_ARGUMENT, "material must not be NULL!");
+		return;
+	}
+
+	// this fallbacks to the defaultShader if none is set.
+	opengl_setShader(material->shader);
+
+	int pgm = shader_getObject(currentShader);
+
+	int cnt = shader_getUniformCount(currentShader);
+	for(int i = 0; i < cnt; i++)
+	{
+		UNIFORM const * uni = shader_getUniform(currentShader, i);
+		switch(uni->variable) {
+			case VEC_COLOR:
+				glProgramUniform3f(
+					pgm,
+					uni->location,
+					material->color.red,
+					material->color.green,
+					material->color.blue);
+				break;
+			case VEC_ATTRIBUTES:
+				glProgramUniform3f(
+					pgm,
+					uni->location,
+					material->roughness,
+					material->metallic,
+					material->fresnell);
+				break;
+			case VEC_EMISSION:
+				glProgramUniform3f(
+					pgm,
+					uni->location,
+					material->emission.red,
+					material->emission.green,
+					material->emission.blue);
+				break;
+			default: break;
+		}
+	}
+
+	opengl_setTexture(0, material->colorTexture);
+	opengl_setTexture(1, material->attributeTexture);
+	opengl_setTexture(2, material->emissionTexture);
+}
+
+void (APIENTRY render_log)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam)
+{
+	engine_log("[OpenGL] %s", message);
+}
+
+char const * srcVertexShader = R"GLSL(#version 330
+	layout(location = 0) in vec3 vPosition;
+	layout(location = 3) in vec3 vColor;
+	layout(location = 4) in vec2 vUV0;
+	layout(location = 5) in vec2 vUV1;
+
+	uniform vec3 vecColor;
+	out vec3 color;
+	out vec2 uv0, uv1;
+
+	void main() {
+		gl_Position = vec4(vPosition, 1);
+		color = vColor * vecColor;
+		uv0 = vUV0;
+		uv1 = vUV1;
+	}
+)GLSL";
+
+char const * srcFragmentShader = R"GLSL(#version 330
+	in vec3 color;
+	in vec2 uv0;
+
+	uniform sampler2D texColor;
+
+	out vec4 fragment;
+
+	void main() {
+		fragment = vec4(color,1) * texture(texColor, uv0);
+	}
+)GLSL";

@@ -16,7 +16,9 @@ SOURCES += \
     view.cpp \
     model.cpp \
     shader.cpp \
-    buffer.cpp
+    buffer.cpp \
+    bitmap.cpp \
+    material.cpp
 
 HEADERS += \
     $$PWD/../include/acknext.h \
@@ -30,11 +32,15 @@ HEADERS += \
     level-detail.h \
     model.h \
     ackglm.hpp \
-    buffer-detail.h
+    buffer-detail.h \
+    bitmap-detail.h \
+    shader-detail.h
 
 INCLUDEPATH += $$PWD/../include/
 
 DEFINES += _ACKNEXT_INTERNAL_
+DEFINES += "ACKNEXT_LEVEL_DETAIL='struct LEVELdetail'"
+DEFINES += "ACKNEXT_BITMAP_DETAIL='struct BITMAPdetail'"
 
 
 # QMAKE_LINK=ld
