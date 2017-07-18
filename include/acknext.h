@@ -378,6 +378,8 @@ ACKFUN BITMAP * bmap_create();
 
 ACKFUN BITMAP * bmap_createblack(int width, int height, enum PIXELFORMAT format);
 
+ACKFUN BITMAP * bmap_load(char const * fileName);
+
 ACKFUN void bmap_set(BITMAP * bitmap, int width, int height, enum PIXELFORMAT format, void const * data);
 
 ACKFUN void bmap_remove(BITMAP * bitmap);

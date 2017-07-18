@@ -1,6 +1,8 @@
 #include "engine.h"
 #include "bitmap-detail.h"
 
+#include <SDL2/SDL_image.h>
+
 static GLenum translate(enum PIXELFORMAT format)
 {
 	switch(format) {
@@ -37,6 +39,30 @@ ACKFUN BITMAP * bmap_createblack(int width, int height, enum PIXELFORMAT format)
 {
 	BITMAP * bmp = bmap_create();
 	bmap_set(bmp, width, height, format, nullptr);
+	return bmp;
+}
+
+ACKFUN BITMAP * bmap_load(char const * fileName)
+{
+	SDL_Surface * surface = IMG_Load(fileName);
+	if(surface == nullptr) {
+		engine_setsdlerror();
+		return nullptr;
+	}
+	SDL_Surface * converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ABGR8888, 0);
+	if(converted == nullptr) {
+		SDL_FreeSurface(surface);
+		return nullptr;
+	}
+	surface = converted;
+
+	BITMAP * bmp = bmap_create();
+
+	SDL_LockSurface(surface);
+	bmap_set(bmp, surface->w, surface->h, RGBA8, surface->pixels);
+	SDL_UnlockSurface(surface);
+
+	SDL_FreeSurface(surface);
 	return bmp;
 }
 
