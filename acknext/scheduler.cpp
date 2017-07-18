@@ -56,6 +56,12 @@ struct TaskGlobals
         *((T*)(&buffer[offset])) = value;
     }
 
+    void set(void const * var, void const * value, size_t size)
+    {
+        size_t offset = (uint8_t const *)var - (uint8_t const * )&_taskdata_start;
+        memcpy(&buffer[offset], value, size);
+    }
+
     template<typename T>
     T get(T const & var) const
     {
@@ -227,6 +233,21 @@ void scheduler_update()
                 break;
         }
     }
+}
+
+void scheduler_setvar(TASK * task, void * ptr, void * data, size_t size)
+{
+	auto cofind = std::find_if(
+        coroutines.begin(),
+        coroutines.end(),
+        [task](const Coroutine & co)
+        {
+            return (&co.globals.value(::task)) == task;
+        });
+    if(cofind == coroutines.end()) {
+        return;
+    }
+    (*cofind).globals.set(ptr, data, size);
 }
 
 ACKFUN TASK * task_start(void (*ep)(), void * context)

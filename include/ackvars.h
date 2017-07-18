@@ -92,6 +92,11 @@ extern WIDGET * render_root;
  */
 extern enum FLAGS engine_flags;
 
+
+
+extern struct ENTITY * ACKCONST me;
+extern struct ENTITY * ACKCONST my;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #define _ACKKEY(name, key, scan) extern int key_##name;

@@ -100,6 +100,8 @@ Model * model_load(std::string const & file)
 			aiString path;
 			if(src.GetTexture(aiTextureType_DIFFUSE, 0, &path) == aiReturn_SUCCESS) {
 				engine_log("Texture: %s", path.C_Str());
+
+				dst.colorTexture = bmap_load("skin.bmp");
 			}
 		}
 	}

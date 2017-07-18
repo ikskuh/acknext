@@ -148,8 +148,8 @@ static void draw_view(VIEW * view, const SIZE & size)
 		}
 		MATRIX matWorld;
 		glm_to_ack(matWorld,
-			glm::mat4_cast(ack_to_glm(ent->rotation)) *
-		    glm::translate(glm::mat4(), ack_to_glm(ent->position)));
+		    glm::translate(glm::mat4(), ack_to_glm(ent->position)) *
+			glm::mat4_cast(ack_to_glm(ent->rotation)));
 
 
 
@@ -450,7 +450,7 @@ char const * srcVertexShader = R"GLSL(#version 330
 
 	void main() {
 		gl_Position = matProj * matView * matWorld * vec4(vPosition, 1);
-		color = vColor * vecColor * vec3(uv0, 1);
+		color = vColor * vecColor;
 		uv0 = vUV0;
 		uv1 = vUV1;
 	}

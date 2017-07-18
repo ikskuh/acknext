@@ -12,7 +12,7 @@ ENTITYdetail::~ENTITYdetail()
 
 }
 
-ACKFUN ENTITY * ent_create(char const * source, VECTOR position, void (*entmain)())
+ACKFUN ENTITY * ent_create(char const * source, VECTOR const * position, void (*entmain)())
 {
     // Implement model assignment.
     (void)source;
@@ -27,7 +27,7 @@ ACKFUN ENTITY * ent_create(char const * source, VECTOR position, void (*entmain)
 	}
 
     ENTITY * ent = new ENTITY;
-    ent->position = position;
+    ent->position = *position;
     ent->parent = NULL;
     ent->flags = NONE;
 	ent->_detail = new ENTITYdetail(ent);
@@ -35,7 +35,9 @@ ACKFUN ENTITY * ent_create(char const * source, VECTOR position, void (*entmain)
 
 	if(entmain != NULL) {
 		TASK * hMain = task_start(entmain, ent);
-		(void)hMain;
+
+		scheduler_setvar(hMain, &me, &ent, sizeof(me));
+		scheduler_setvar(hMain, &my, &ent, sizeof(my));
 	}
 
 	ent_attach(ent, world);

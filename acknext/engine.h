@@ -27,6 +27,9 @@ void scheduler_update();
 void scheduler_initialize();
 void scheduler_shutdown();
 
+
+void scheduler_setvar(TASK * task, void * ptr, void * data, size_t size);
+
 // Compiler API
 
 bool compiler_init();

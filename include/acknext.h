@@ -99,7 +99,7 @@ ACKFUN void level_remove(LEVEL *level);
  * @param entmain  The main function that will be scheduled for the entity.
  * @returns        The newly created entity.
  */
-ACKFUN ENTITY * ent_create(char const * source, VECTOR position, action (*entmain)());
+ACKFUN ENTITY * ent_create(char const * source, VECTOR const * position, action (*entmain)());
 
 /**
  * @ingroup scene
@@ -413,9 +413,16 @@ ACKFUN void mat_copy(MATRIX dst, MATRIX const src);
  * @param z
  * @return
  */
-static inline VECTOR vector(var x, var y, var z)
+static inline VECTOR const * vector(var x, var y, var z)
 {
-    return (VECTOR){ x, y, z};
+	static int index = 0;
+	static VECTOR values[32];
+
+	values[index].x = x;
+	values[index].y = y;
+	values[index].z = z;
+
+    return &values[index++];
 }
 
 /**
