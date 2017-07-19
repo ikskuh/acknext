@@ -22,7 +22,7 @@ static std::unordered_map<std::string, std::unique_ptr<Model>> models;
 
 static VECTOR ass_to_ack(const aiVector3D & vec)
 {
-	return (VECTOR){ -vec.z, vec.x, vec.y };
+	return (VECTOR){ vec.x, vec.y, vec.z };
 }
 
 Model * model_load(std::string const & file)
@@ -43,7 +43,7 @@ Model * model_load(std::string const & file)
 		| aiProcess_RemoveRedundantMaterials
 		| aiProcess_OptimizeMeshes
 		| aiProcess_OptimizeGraph
-		| aiProcess_FlipUVs
+		// | aiProcess_FlipUVs
 		;
 
 	aiScene const * scene = importer.ReadFile(file,	flags);

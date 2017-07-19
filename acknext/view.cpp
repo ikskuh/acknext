@@ -50,7 +50,6 @@ ACKFUN void view_to_matrix(VIEW const * view, MATRIX * matView, MATRIX * matProj
 		 0,  0,  0,  1);
 
 	glm_to_ack(matView,
-		ackToGL *
 		glm::mat4_cast(ack_to_glm(view->rotation)) *
 		glm::translate(glm::mat4(), -ack_to_glm(view->position)));
 
