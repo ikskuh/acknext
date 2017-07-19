@@ -54,8 +54,8 @@ ACKFUN VIEW * view_create(WIDGET * parent);
  */
 ACKFUN void view_to_matrix(
     VIEW const * view,
-    MATRIX matView,
-    MATRIX matProjection);
+    MATRIX * matView,
+    MATRIX * matProjection);
 
 /**
  * @ingroup gui scene
@@ -369,7 +369,7 @@ ACKFUN void opengl_setTexture(int slot, BITMAP * texture);
 
 ACKFUN void opengl_setMesh(MESH * mesh);
 
-ACKFUN void opengl_setTransform(MATRIX const matWorld, MATRIX const matView, MATRIX const matProj);
+ACKFUN void opengl_setTransform(MATRIX const * matWorld, MATRIX const * matView, MATRIX const * matProj);
 
 ACKFUN void opengl_draw(
 	unsigned int primitiveType,
@@ -394,13 +394,24 @@ ACKFUN MATERIAL * mtl_create();
 
 ACKFUN void mtl_remove(MATERIAL * mtl);
 
-// Matrix API
+// Value API
 
-ACKFUN void mat_id(MATRIX mat);
+ACKFUN void mat_id(MATRIX * mat);
 
-ACKFUN void mat_mul(MATRIX mat, MATRIX const lhs, MATRIX const rhs);
+ACKFUN void mat_mul(MATRIX * mat, MATRIX const * lhs, MATRIX const * rhs);
 
-ACKFUN void mat_copy(MATRIX dst, MATRIX const src);
+ACKFUN void mat_copy(MATRIX * dst, MATRIX const * src);
+
+
+ACKFUN void vec_zero(VECTOR * dst);
+
+ACKFUN void vec_set(VECTOR * dst, VECTOR const * src);
+
+
+
+ACKFUN void quat_id(QUATERNION * dst);
+
+ACKFUN void quat_set(QUATERNION * dst, QUATERNION const * src);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -413,17 +424,7 @@ ACKFUN void mat_copy(MATRIX dst, MATRIX const src);
  * @param z
  * @return
  */
-static inline VECTOR const * vector(var x, var y, var z)
-{
-	static int index = 0;
-	static VECTOR values[32];
-
-	values[index].x = x;
-	values[index].y = y;
-	values[index].z = z;
-
-    return &values[index++];
-}
+ACKFUN VECTOR const * vector(var x, var y, var z);
 
 /**
  * @brief Constructions a point
@@ -449,33 +450,12 @@ static inline SIZE size(int width, int height)
 
 /**
  * @brief Returns a quaternion based on euler angles
- * @param pan  The rotation around the z-axis
+ * @param pan  The rotation around the y-axis
  * @param tilt The rotation around the y-axis
  * @param roll The rotation around the x-axis
  * @return Quaternion defining the euler rotation.
  */
-static inline QUATERNION euler(var pan, var tilt, var roll)
-{
-    QUATERNION q;
-
-    pan *= DEG_TO_RAD;
-    tilt *= DEG_TO_RAD;
-    roll *= DEG_TO_RAD;
-
-    var t0 = cos(roll * 0.5f);
-    var t1 = sin(roll * 0.5f);
-    var t2 = cos(pan * 0.5f);
-    var t3 = sin(pan * 0.5f);
-    var t4 = cos(tilt * 0.5f);
-    var t5 = sin(tilt * 0.5f);
-
-    q.w = t0 * t2 * t4 + t1 * t3 * t5;
-    q.x = t0 * t3 * t4 - t1 * t2 * t5;
-    q.y = t0 * t2 * t5 + t1 * t3 * t4;
-    q.z = t1 * t2 * t4 - t0 * t3 * t5;
-
-    return q;
-}
+ACKFUN QUATERNION const * euler(var pan, var tilt, var roll);
 
 static inline COLOR hexcolor(uint32_t hex)
 {

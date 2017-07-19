@@ -27,13 +27,15 @@ ACKFUN ENTITY * ent_create(char const * source, VECTOR const * position, void (*
 	}
 
     ENTITY * ent = new ENTITY;
-    ent->position = *position;
-    ent->parent = NULL;
+    vec_set(&ent->position, position);
+	quat_set(&ent->rotation, euler(0,0,0));
+    ent->parent = nullptr;
+	ent->material = nullptr;
     ent->flags = NONE;
 	ent->_detail = new ENTITYdetail(ent);
 	ent->_detail->model = model;
 
-	if(entmain != NULL) {
+	if(entmain != nullptr) {
 		TASK * hMain = task_start(entmain, ent);
 
 		scheduler_setvar(hMain, &me, &ent, sizeof(me));

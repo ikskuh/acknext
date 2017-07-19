@@ -382,7 +382,10 @@ struct QUATERNION
  * @ingroup math
  * @brief A matrix type used for calculations.
  */
-typedef float MATRIX[4][4];
+struct MATRIX
+{
+	var v[4][4];
+};
 
 /**
  * @ingroup scene
@@ -449,6 +452,11 @@ struct ENTITY
      * to the position of their parent.
      */
     struct ENTITY * parent;
+
+	/**
+	 * @brief Overrides the entities default material settings.
+	 */
+	struct MATERIAL * material;
 
     /**
      * @brief Flags modifying the behaviour of the entitiy.
@@ -876,6 +884,7 @@ _EXPORT_STRUCT(VECTOR4)
 _EXPORT_STRUCT(MESH)
 _EXPORT_STRUCT(BITMAP)
 _EXPORT_STRUCT(MATERIAL)
+_EXPORT_STRUCT(MATRIX)
 
 typedef enum FLAGS FLAGS;
 

@@ -7,6 +7,8 @@
 #include "shader-detail.h"
 #include "entity-detail.h"
 
+#define FALLBACK(a, b) ((a) ? (a) : (b))
+
 WIDGET * render_root = nullptr;
 
 static GLuint vao;
@@ -137,7 +139,7 @@ static void draw_view(VIEW * view, const SIZE & size)
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 	MATRIX matView, matProj;
-	view_to_matrix(view, matView, matProj);
+	view_to_matrix(view, &matView, &matProj);
 
 	LEVEL * level = view->level;
 	for(ENTITY * ent : level->_detail->entities)
@@ -147,20 +149,26 @@ static void draw_view(VIEW * view, const SIZE & size)
 			continue;
 		}
 		MATRIX matWorld;
-		glm_to_ack(matWorld,
+		glm_to_ack(&matWorld,
 		    glm::translate(glm::mat4(), ack_to_glm(ent->position)) *
 			glm::mat4_cast(ack_to_glm(ent->rotation)));
 
-
+		if(ent->material != nullptr) {
+			opengl_setMaterial(ent->material);
+		}
 
 		for(MESH & mesh : detail.model->meshes)
 		{
-			opengl_setMesh(&mesh);
+			opengl_setIndexBuffer(mesh.indexBuffer);
+			opengl_setVertexBuffer(mesh.vertexBuffer);
+			if(ent->material == nullptr) {
+				opengl_setMaterial(mesh.material);
+			}
 
 			opengl_setTransform(
-				matWorld,
-				matView,
-				matProj);
+				&matWorld,
+				&matView,
+				&matProj);
 
 			opengl_draw(GL_TRIANGLES, 0, mesh.indexBuffer->size / sizeof(INDEX));
 		}
@@ -269,40 +277,40 @@ ACKFUN void opengl_setIndexBuffer(BUFFER * buffer)
 	currentIndexBuffer = buffer;
 }
 
-ACKFUN void opengl_setTransform(MATRIX const matWorld, MATRIX const matView, MATRIX const matProj)
+ACKFUN void opengl_setTransform(MATRIX const * matWorld, MATRIX const * matView, MATRIX const * matProj)
 {
+	MATRIX mat;
 	int pgm = shader_getObject(currentShader);
 	int cnt = shader_getUniformCount(currentShader);
 	for(int i = 0; i < cnt; i++)
 	{
 		UNIFORM const * uni = shader_getUniform(currentShader, i);
-		MATRIX mat;
 		switch(uni->variable) {
 			case MAT_WORLD:
-				mat_copy(mat, matWorld);
+				mat_copy(&mat, matWorld);
 				break;
 			case MAT_VIEW:
-				mat_copy(mat, matView);
+				mat_copy(&mat, matView);
 				break;
 			case MAT_PROJ:
-				mat_copy(mat, matProj);
+				mat_copy(&mat, matProj);
 				break;
 
 			case MAT_WORLDVIEW: {
-				mat_copy(mat, matWorld);
-				mat_mul(mat, mat, matView);
+				mat_copy(&mat, matWorld);
+				mat_mul(&mat, &mat, matView);
 				break;
 			}
 			case MAT_WORLDVIEWPROJ: {
-				mat_copy(mat, matWorld);
-				mat_mul(mat, mat, matView);
-				mat_mul(mat, mat, matProj);
+				mat_copy(&mat, matWorld);
+				mat_mul(&mat, &mat, matView);
+				mat_mul(&mat, &mat, matProj);
 				break;
 			}
 			case MAT_VIEWPROJ: {
 				MATRIX mat;
-				mat_copy(mat, matView);
-				mat_mul(mat, mat, matProj);
+				mat_copy(&mat, matView);
+				mat_mul(&mat, &mat, matProj);
 				break;
 			}
 
@@ -311,19 +319,21 @@ ACKFUN void opengl_setTransform(MATRIX const matWorld, MATRIX const matView, MAT
 				continue;
 		}
 
+		/*
 		engine_log("Matrix %d:\n%1.3f %1.3f %1.3f %1.3f\n%1.3f %1.3f %1.3f %1.3f\n%1.3f %1.3f %1.3f %1.3f\n%1.3f %1.3f %1.3f %1.3f",
 			uni->variable,
-			mat[0][0], mat[0][1], mat[0][2], mat[0][3],
-			mat[1][0], mat[1][1], mat[1][2], mat[1][3],
-			mat[2][0], mat[2][1], mat[2][2], mat[2][3],
-			mat[3][0], mat[3][1], mat[3][2], mat[3][3]);
+			mat.v[0][0], mat.v[0][1], mat.v[0][2], mat.v[0][3],
+			mat.v[1][0], mat.v[1][1], mat.v[1][2], mat.v[1][3],
+			mat.v[2][0], mat.v[2][1], mat.v[2][2], mat.v[2][3],
+			mat.v[3][0], mat.v[3][1], mat.v[3][2], mat.v[3][3]);
+		//*/
 
 		glProgramUniformMatrix4fv(
 			pgm,
 			uni->location,
 			1,
 			GL_FALSE,
-			&mat[0][0]);
+			&mat.v[0][0]);
 	}
 }
 
@@ -346,8 +356,6 @@ ACKFUN void opengl_draw(
 		GL_UNSIGNED_INT,
 		(const void *)(sizeof(INDEX) * offset));
 }
-
-#define FALLBACK(a, b) ((a) ? (a) : (b))
 
 ACKFUN void opengl_setShader(SHADER * shader)
 {

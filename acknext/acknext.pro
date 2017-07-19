@@ -22,7 +22,8 @@ SOURCES += \
     bitmap.cpp \
     material.cpp \
     entity.cpp \
-    matrix.cpp
+    matrix.cpp \
+    utils.cpp
 
 HEADERS += \
     $$PWD/../include/acknext.h \

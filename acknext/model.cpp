@@ -20,6 +20,11 @@ Model::~Model()
 
 static std::unordered_map<std::string, std::unique_ptr<Model>> models;
 
+static VECTOR ass_to_ack(const aiVector3D & vec)
+{
+	return (VECTOR){ -vec.z, vec.x, vec.y };
+}
+
 Model * model_load(std::string const & file)
 {
 	using namespace Assimp;
@@ -138,19 +143,13 @@ Model * model_load(std::string const & file)
 				auto const & pos = src->mVertices[i];
 				auto & dst = vertices[i];
 
-				dst.position.x = pos.x;
-				dst.position.y = pos.y;
-				dst.position.z = pos.z;
+				dst.position = ass_to_ack(pos);
 
 				auto const & normal = src->mNormals[i];
-				dst.normal.x = normal.x;
-				dst.normal.y = normal.y;
-				dst.normal.z = normal.z;
+				dst.normal = ass_to_ack(normal);
 
 				auto const & tanget = src->mTangents[i];
-				dst.tangent.x = tanget.x;
-				dst.tangent.y = tanget.y;
-				dst.tangent.z = tanget.z;
+				dst.tangent = ass_to_ack(tanget);
 
 				// Initialize vertex with white color as
 				// default color
