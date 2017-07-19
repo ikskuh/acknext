@@ -67,7 +67,7 @@ extern VIEW * camera;
  * @ingroup scene
  * @brief The default level that will contain all created entities.
  */
-extern LEVEL * world;
+extern LEVEL * ACKCONST world;
 
 /**
  * @ingroup scheduler

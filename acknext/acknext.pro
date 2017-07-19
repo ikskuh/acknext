@@ -3,7 +3,7 @@ CONFIG += c++11
 CONFIG -= app_bundle
 CONFIG -= qt
 CONFIG    += link_pkgconfig
-PKGCONFIG += assimp
+PKGCONFIG += assimp ode
 
 SOURCES += \
     engine.cpp \

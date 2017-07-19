@@ -9,6 +9,9 @@ struct ENTITYdetail
 	ENTITY * ent;
 	Model * model;
 
+	dBody * body;
+	dGeom * shapeGeom, * polygonGeom;
+
 	ENTITYdetail(ENTITY * ent);
 	ENTITYdetail(ENTITYdetail const &) = delete;
 	ENTITYdetail(ENTITYdetail &&) = delete;

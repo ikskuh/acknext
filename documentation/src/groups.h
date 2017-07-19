@@ -42,14 +42,16 @@
  * @defgroup math Math
  * @brief This module provides some basic math for game development
  *
+ * @defgroup collision Collision
+ * @brief This module provides methods for checking collision and
+ *        intersection tests.
  *
+ * @defgroup physics Physics
+ * @brief This module provides an integration of the ODE physics engine.
  *
- *
- *
- *
- *
- *
- *
+ * @defgroup opengl OpenGL API Helpers
+ * @brief This module contains functions that help interfacing OpenGL
+ *        in combination with engine objects.
  *
  *
  *

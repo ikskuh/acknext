@@ -10,6 +10,23 @@ action rotator()
 	}
 }
 
+// Collision system
+void coltest()
+{
+	// benötigt collider-welt, da mehr als ein LEVEL möglich
+	// falls NULL, wird ::world verwendet
+	COLLISION const * hit = c_trace(world, from, to, flags);
+
+	hit->contact;  // VECTOR(position)
+	hit->distance; // var(distance)
+	hit->normal;   // VECTOR(normal)
+	hit->other;    // ENTITY*('you')
+	hit->flags;    // HITFLAGS(info)
+
+	// verwendet alle LEVEL, an die 'me' gebunden ist
+	COLLISION const * hit = c_move(me, absdist, reldist, flags);
+}
+
 void main()
 {
 	for(int i = 0; i < 12; i++) {

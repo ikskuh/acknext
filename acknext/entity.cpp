@@ -2,14 +2,22 @@
 #include "level-detail.h"
 #include "entity-detail.h"
 
-ENTITYdetail::ENTITYdetail(ENTITY * ent) : ent(ent), model(nullptr)
+ENTITYdetail::ENTITYdetail(ENTITY * ent) : ent(ent), model(nullptr), body(nullptr), shapeGeom(nullptr), polygonGeom(nullptr)
 {
 
 }
 
 ENTITYdetail::~ENTITYdetail()
 {
+	delete this->body;
+	delete this->shapeGeom;
+	delete this->polygonGeom;
+}
 
+static dGeom * model_to_geom(Model * model)
+{
+	// ???
+	return nullptr;
 }
 
 ACKFUN ENTITY * ent_create(char const * source, VECTOR const * position, void (*entmain)())
@@ -34,6 +42,10 @@ ACKFUN ENTITY * ent_create(char const * source, VECTOR const * position, void (*
     ent->flags = NONE;
 	ent->_detail = new ENTITYdetail(ent);
 	ent->_detail->model = model;
+
+	if(model != nullptr) {
+		ent->_detail->polygonGeom = model_to_geom(model);
+	}
 
 	if(entmain != nullptr) {
 		TASK * hMain = task_start(entmain, ent);

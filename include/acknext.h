@@ -330,7 +330,7 @@ ACKFUN UNIFORM const * shader_getUniform(SHADER * shader, int index);
 ACKFUN int shader_getUniformCount(SHADER * shader);
 
 /**
- * @ingroup rendering
+ * @ingroup opengl
  * @brief Returns the OpenGL program object for a shader.
  * @param shader The Acknext @ref SHADER object.
  * @returns OpenGL program object
@@ -345,32 +345,104 @@ ACKFUN void shader_remove(SHADER * shader);
 
 // BUFFER API
 
+/**
+ * @ingroup rendering
+ * @brief Constructs a new buffer object.
+ * @param type The type of the buffer object
+ * @returns Pointer to the buffer or NULL on failure.
+ *
+ * Creates a new OpenGL buffer object that can be used to store
+ * rendering data.
+ *
+ * @see BUFFERTYPE
+ */
 ACKFUN BUFFER * buffer_create(enum BUFFERTYPE type);
 
+/**
+ * @ingroup rendering
+ * @brief Sets up a buffer object and its data.
+ * @param buffer The buffer object that should be initialized.
+ * @param size   The size of the buffer in bytes.
+ * @param data   A pointer to data of at least `size` bytes or NULL if no initial data.
+ *
+ * This function initializes a buffer object with a data storage so it
+ * can be used for rendering. It also allows to set an inital set of
+ * data for the buffer.
+ */
 ACKFUN void buffer_set(BUFFER * buffer, size_t size, void * data);
 
+/**
+ * @ingroup rendering
+ * @brief Updates an already initialized buffer with new data.
+ * @param buffer The buffer object.
+ * @param offset An offset in the buffer. Value is in bytes.
+ * @param size   The size of the memory block.
+ * @param data   A pointer to the memory block.
+ *
+ * It copies the contents of the memory referenced via `data` into the buffer.
+ */
 ACKFUN void buffer_update(BUFFER * buffer, size_t offset, size_t size, void * data);
 
+/**
+ * @ingroup opengl
+ * @brief Returns the OpenGL object id for the buffer object.
+ */
 ACKFUN unsigned int buffer_getObject(BUFFER * buffer);
 
+/**
+ * @ingroup rendering
+ * @brief Destroys a buffer object.
+ */
 ACKFUN void buffer_remove(BUFFER * buffer);
 
 // Render-API
 
+/**
+ * @ingroup opengl
+ * @todo document
+ */
 ACKFUN void opengl_setVertexBuffer(BUFFER * buffer);
 
+/**
+ * @ingroup opengl
+ * @todo document
+ */
 ACKFUN void opengl_setIndexBuffer(BUFFER * buffer);
 
+/**
+ * @ingroup opengl
+ * @todo document
+ */
 ACKFUN void opengl_setShader(SHADER * shader);
 
+/**
+ * @ingroup opengl
+ * @todo document
+ */
 ACKFUN void opengl_setMaterial(MATERIAL * material);
 
+/**
+ * @ingroup opengl
+ * @todo document
+ */
 ACKFUN void opengl_setTexture(int slot, BITMAP * texture);
 
+/**
+ * @ingroup opengl
+ * @todo document
+ */
 ACKFUN void opengl_setMesh(MESH * mesh);
 
+/**
+ * @ingroup opengl
+ * @todo document
+ */
 ACKFUN void opengl_setTransform(MATRIX const * matWorld, MATRIX const * matView, MATRIX const * matProj);
 
+/**
+ * @ingroup opengl
+ * @todo document
+ */
 ACKFUN void opengl_draw(
 	unsigned int primitiveType,
 	unsigned int offset,
@@ -378,39 +450,123 @@ ACKFUN void opengl_draw(
 
 // Bitmap API
 
+/**
+ * @ingroup rendering
+ * @brief Creates a new bitmap texture and returns a pointer to it.
+ * @remarks This texture is not yet initialized and must be set up with
+ *          @ref bmap_set.
+ * @see bmap_set
+ */
 ACKFUN BITMAP * bmap_create();
 
+/**
+ * @ingroup rendering
+ * @brief Creates a new bitmap.
+ *
+ * @param width  The width of the bitmap in pixels.
+ * @param height The height of the bitmap in pixels.
+ * @param format The pixel format this bitmap uses.
+ *
+ * @see PIXELFORMAT
+ * @see bmap_create
+ * @see bmap_set
+ */
 ACKFUN BITMAP * bmap_createblack(int width, int height, enum PIXELFORMAT format);
 
+/**
+ * @ingroup rendering
+ * @brief Loads a bitmap from a file.
+ *
+ * @param fileName The name of the file that should be loaded
+ * @returns Pointer to the loaded bitmap or NULL on failure.
+ */
 ACKFUN BITMAP * bmap_load(char const * fileName);
 
+/**
+ * @ingroup rendering
+ * @brief Sets the contents of the bitmap.
+ *
+ * @param bitmap The bitmap which should be set up.
+ * @param width  The width of the image data in pixels.
+ * @param height The height of the image data in pixels.
+ * @param format The format of the bitmap.
+ * @param data   A pointer to the initial image data or NULL if default
+ *
+ * This function initializes and prefills a bitmap texture. It sets the
+ * size, format and optionally the initial data.
+ *
+ * @todo document data depending on format
+ */
 ACKFUN void bmap_set(BITMAP * bitmap, int width, int height, enum PIXELFORMAT format, void const * data);
 
+/**
+ * @ingroup rendering
+ * @brief Destroys a previously created or loaded bitmap.
+ *
+ * @see bmap_create
+ * @see bmap_createblack
+ * @see bmap_load
+ */
 ACKFUN void bmap_remove(BITMAP * bitmap);
 
 // Material API
 
+/**
+ * @ingroup rendering
+ * @brief Constructs a new material
+ */
 ACKFUN MATERIAL * mtl_create();
 
+/**
+ * @ingroup rendering
+ * @brief Destroys a previously constructed material.
+ * @see mtl_create
+ */
 ACKFUN void mtl_remove(MATERIAL * mtl);
 
 // Value API
 
+/**
+ * @ingroup math
+ * @todo document
+ */
 ACKFUN void mat_id(MATRIX * mat);
 
+/**
+ * @ingroup math
+ * @todo document
+ */
 ACKFUN void mat_mul(MATRIX * mat, MATRIX const * lhs, MATRIX const * rhs);
 
+/**
+ * @ingroup math
+ * @todo document
+ */
 ACKFUN void mat_copy(MATRIX * dst, MATRIX const * src);
 
 
+/**
+ * @ingroup math
+ * @todo document
+ */
 ACKFUN void vec_zero(VECTOR * dst);
 
+/**
+ * @ingroup math
+ * @todo document
+ */
 ACKFUN void vec_set(VECTOR * dst, VECTOR const * src);
 
-
-
+/**
+ * @ingroup math
+ * @todo document
+ */
 ACKFUN void quat_id(QUATERNION * dst);
 
+/**
+ * @ingroup math
+ * @todo document
+ */
 ACKFUN void quat_set(QUATERNION * dst, QUATERNION const * src);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -418,6 +574,7 @@ ACKFUN void quat_set(QUATERNION * dst, QUATERNION const * src);
 #ifndef ACKNEXT_NO_PRIMITIVE_CTORS
 
 /**
+ * @ingroup math
  * @brief Constructs a vector
  * @param x
  * @param y
@@ -427,6 +584,7 @@ ACKFUN void quat_set(QUATERNION * dst, QUATERNION const * src);
 ACKFUN VECTOR const * vector(var x, var y, var z);
 
 /**
+ * @ingroup math
  * @brief Constructions a point
  * @param x
  * @param y
@@ -438,6 +596,7 @@ static inline POINT point(int x, int y)
 }
 
 /**
+ * @ingroup math
  * @brief Constructs a size
  * @param width
  * @param height
@@ -449,6 +608,7 @@ static inline SIZE size(int width, int height)
 }
 
 /**
+ * @ingroup math
  * @brief Returns a quaternion based on euler angles
  * @param pan  The rotation around the y-axis
  * @param tilt The rotation around the y-axis
@@ -457,6 +617,13 @@ static inline SIZE size(int width, int height)
  */
 ACKFUN QUATERNION const * euler(var pan, var tilt, var roll);
 
+/**
+ * @ingroup rendering
+ * @brief Constructs a color from hexadecimal notation.
+ * @param hex Hexadezimal notation in the format `0xAARRGGBB`
+ * @remark If alpha is not "defined" in the hex code, it will be 0!
+ * @return COLOR structure
+ */
 static inline COLOR hexcolor(uint32_t hex)
 {
 	return (COLOR) {

@@ -154,6 +154,10 @@ Model * model_load(std::string const & file)
 				// Initialize vertex with white color as
 				// default color
 				dst.color = (COLOR){1,1,1,1};
+
+				dst.texcoord0 = (UVCOORD){0,0};
+				dst.texcoord1 = (UVCOORD){0,0};
+				dst.weights = (VECTOR4){1,0,0,0};
 			}
 
 			if(src->HasTextureCoords(0))

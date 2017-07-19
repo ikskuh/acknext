@@ -75,27 +75,19 @@ enum FLAGS
      * Marks a widget as automatically sized when the widgets
      * defined area is zero.
      *
-     * @see WIDGET::size
+	 * @see gui, WIDGET::size
      */
     AUTOSIZE = (1<<5),
 
 	/**
-	 * When a uniform has this flag, its value will be automatically filled
-	 * in by the engine.
-	 *
-	 * @see UNIFORM
-	 */
-	AUTOFILL = (1<<6),
-
-	/**
-	 * @ingroup rendering
+	 * @ingroup opengl
 	 * When this flag is set in @ref engine_flags, the
 	 * engines internal rendering is completly disabled
 	 * and the user must call everything manually.
 	 *
-	 * @see engine_swap
+	 * @see opengl, engine_swap
 	 */
-	CUSTOMDRAW = (1<<7),
+	CUSTOMDRAW = (1<<6),
 };
 
 /**
@@ -204,6 +196,7 @@ enum BUFFERTYPE
 
 	/**
 	 * A buffer for uint32 indices.
+	 * @see INDEX
 	 **/
 	INDEX_BUFFER = 2,
 
@@ -648,7 +641,8 @@ struct TASK
 };
 
 /**
- * An engine object handle.
+ * @ingroup engine
+ * @brief An engine object handle.
  *
  * Handles are unique identifiers for engine objects that
  * won't become "dangling". Handles still can point to
@@ -663,6 +657,7 @@ typedef uint32_t HANDLE;
 struct SHADER;
 
 /**
+ * @ingroup rendering
  * @brief An enumeration of predefined shader variables.
  */
 enum SHADERVARIABLE
@@ -717,11 +712,29 @@ enum SHADERVARIABLE
  */
 struct UNIFORM
 {
+	/**
+	 * @brief Shader program location of the uniform.
+	 */
 	int location;
+
+	/**
+	 * @brief The name of the uniform in the shader.
+	 */
 	char name[128];
+
+	/**
+	 * @brief OpenGL type that is assigned to the uniform.
+	 */
 	unsigned int type;
+
+	/**
+	 * @brief The size of the uniform value in bytes.
+	 */
 	int sizeInBytes;
-	enum FLAGS flags;
+
+	/**
+	 * @brief Contains the index of the predefined shader variable or 0.
+	 */
 	enum SHADERVARIABLE variable;
 };
 
@@ -729,7 +742,7 @@ struct UNIFORM
  * @ingroup rendering
  * @brief An OpenGL buffer object
  */
-struct BUFFER;
+typedef struct BUFFER BUFFER;
 
 /**
  * @ingroup rendering
@@ -737,9 +750,21 @@ struct BUFFER;
  */
 struct BITMAP
 {
+	/**
+	 * @brief Width of the bitmap in pixels.
+	 */
 	ACKCONST int width;
+
+	/**
+	 * @brief Height of the bitmap in pixels.
+	 */
 	ACKCONST int height;
+
+	/**
+	 * @brief Format of the bitmap.
+	 */
 	enum PIXELFORMAT format;
+
     ACKNEXT_BITMAP_DETAIL ACKCONST * ACKCONST _detail;
 };
 
@@ -841,15 +866,68 @@ struct MESH
 /**
  * @ingroup rendering
  * @brief A vertex of a @ref MESH.
+ *
+ * **Shader input attributes:**
+ * ```
+ * layout(location = 0) in vec3 vPosition;
+ * layout(location = 1) in vec3 vNormal;
+ * layout(location = 2) in vec3 vTangent;
+ * layout(location = 3) in vec3 vColor;
+ * layout(location = 4) in vec2 vTexCoord0;
+ * layout(location = 5) in vec2 vTexCoord1;
+ * layout(location = 6) in vec4 vBoneWeights;
+ * ```
  */
 struct VERTEX
 {
+	/**
+	 * @brief The position of the vertex.
+	 */
 	struct VECTOR position;
+
+	/**
+	 * @brief Surface normal of the vertex.
+	 */
 	struct VECTOR normal;
+
+	/**
+	 * @brief A surface tangent of the vertex.
+	 */
 	struct VECTOR tangent;
+
+	/**
+	 * @brief Vertex color.
+	 *
+	 * When vertex coloring is used, this value contains the color that was
+	 * assigned to the vertex. Otherwise, it contains `(1,1,1,1)`.
+	 */
 	struct COLOR color;
+
+	/**
+	 * @brief First pair of texture coordinates.
+	 *
+	 * Usually contains the coordinates of the surface color in the diffuse
+	 * texture of the material.
+	 */
 	struct UVCOORD texcoord0;
+
+	/**
+	 * @brief Second pair of texture coordinates.
+	 *
+	 * Can be used for additional shader information and has no use in the
+	 * engines default shader.
+	 */
 	struct UVCOORD texcoord1;
+
+	/**
+	 * @brief Bone blend weights.
+	 *
+	 * Contains the blend weights of the vertex for the four bones assigned
+	 * with its mesh.
+	 *
+	 * When no bones are present or no bone animation is used, this value
+	 * contains `(1,0,0,0)`.
+	 */
 	struct VECTOR4 weights;
 } __attribute__((__packed__));
 
@@ -858,6 +936,34 @@ struct VERTEX
  * @brief An index of a @ref MESH.
  */
 typedef uint32_t INDEX;
+
+/**
+ * @ingroup collision
+ * @brief The result of a successful collision test.
+ */
+struct COLLISION
+{
+	/**
+	 * @brief The position of the nearest contact or intersection point.
+	 */
+	struct VECTOR contanct;
+
+	/**
+	 * @brief The normal of the hit surface.
+	 */
+	struct VECTOR normal;
+
+	/**
+	 * @brief The distance that was either moved or progressed by the trace
+	 *        until the collision occurred.
+	 */
+	var distance;
+
+	/**
+	 * @brief The entity that was hit while moving.
+	 */
+	struct ENTITY * other;
+};
 
 #define _EXPORT_STRUCT(name) typedef struct name name;
 
@@ -875,7 +981,6 @@ _EXPORT_STRUCT(ENTITY)
 _EXPORT_STRUCT(STAGE)
 _EXPORT_STRUCT(BITMAP)
 _EXPORT_STRUCT(TASK)
-_EXPORT_STRUCT(BUFFER)
 _EXPORT_STRUCT(VERTEX)
 _EXPORT_STRUCT(SHADER)
 _EXPORT_STRUCT(UNIFORM)
@@ -885,6 +990,7 @@ _EXPORT_STRUCT(MESH)
 _EXPORT_STRUCT(BITMAP)
 _EXPORT_STRUCT(MATERIAL)
 _EXPORT_STRUCT(MATRIX)
+_EXPORT_STRUCT(COLLISION)
 
 typedef enum FLAGS FLAGS;
 

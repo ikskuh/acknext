@@ -9,4 +9,5 @@ SUBDIRS += \
     scripts
 
 HEADERS += \
-    documentation/src/groups.h
+    documentation/src/groups.h \
+    documentation/src/mainpage.h

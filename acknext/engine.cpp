@@ -9,6 +9,7 @@
 #include <fstream>
 
 #include <json.hpp>
+#include <ode/ode.h>
 
 #include "engine.h"
 
@@ -193,8 +194,13 @@ ACKFUN bool engine_open(int argc, char ** argv)
 		}
 	}
 
+	engine_log("Initialize physics...");
+	dInitODE();
+
+	engine_log("Initialize renderer...");
     initialize_renderer();
 
+	engine_log("Initialize scheduler...");
     scheduler_initialize();
 
 	{ // Initialize engine state

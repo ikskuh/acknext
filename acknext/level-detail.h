@@ -1,7 +1,7 @@
 #ifndef LEVELDETAIL_H
 #define LEVELDETAIL_H
 
-#include <acknext.h>
+#include "engine.h"
 #include <set>
 
 struct LEVELdetail
@@ -10,11 +10,18 @@ struct LEVELdetail
 
     std::set<ENTITY*> entities;
 
+	dWorld world;
+	dSimpleSpace space;
+	dJointGroup contactGroup;
+
     LEVELdetail(LEVEL *level) :
         level(level),
-        entities()
+        entities(),
+	    world(),
+	    space(),
+	    contactGroup()
     {
-
+		this->world.setGravity(0.0, -9.81, 0.0);
     }
 
     ~LEVELdetail()
