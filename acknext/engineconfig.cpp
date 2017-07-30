@@ -2,6 +2,9 @@
 
 #include "dotconf.h"
 
+#include <string.h>
+#include <stdlib.h>
+
 EngineConfig engine_config;
 
 
@@ -21,6 +24,7 @@ static DOTCONF_CB(op_resolution);
 static DOTCONF_CB(op_libraryPath);
 static DOTCONF_CB(op_includePath);
 static DOTCONF_CB(op_libraries);
+static DOTCONF_CB(op_sourceFiles);
 
 static const configoption_t options[] = {
 	{"Window.Title",         ARG_STR,  op_title,       NULL, CTX_ALL},
@@ -29,11 +33,13 @@ static const configoption_t options[] = {
     {"Compiler.LibraryPath", ARG_STR,  op_libraryPath, NULL, CTX_ALL},
     {"Compiler.IncludePath", ARG_STR,  op_includePath, NULL, CTX_ALL},
 	{"Compiler.Libraries",   ARG_LIST, op_libraries,   NULL, CTX_ALL},
+    {"Compiler.Source",      ARG_LIST, op_sourceFiles, NULL, CTX_ALL},
 	LAST_CONTEXT_OPTION
 };
 
 int acknext_conf_errorhandler(configfile_t * configfile, int type, unsigned long dc_errno, const char *msg)
 {
+	(void)dc_errno;
 	switch(type)
 	{
 		default:
@@ -77,11 +83,26 @@ DOTCONF_CB(op_title)
 
 DOTCONF_CB(op_fullscreen)
 {
+	if(!strcmp("Yes", cmd->data.str) || !strcmp("yes", cmd->data.str)) {
+		engine_config.fullscreen = FullscreenType::Fullscreen;
+	}
+	else if(!strcmp("Desktop", cmd->data.str) || !strcmp("desktop", cmd->data.str)) {
+		engine_config.fullscreen = FullscreenType::DesktopFullscreen;
+	}
+	else if(!strcmp("No", cmd->data.str) || !strcmp("no", cmd->data.str)) {
+		engine_config.fullscreen = FullscreenType::Windowed;
+	}
 	return NULL;
 }
 
 DOTCONF_CB(op_resolution)
 {
+	if(cmd->arg_count != 2) {
+		dotconf_warning(cmd->configfile, 0, ERR_WRONG_ARG_COUNT, "Resolution requires two numbers!");
+		return NULL;
+	}
+	engine_config.resolution.width = std::atoi(cmd->data.list[0]);
+	engine_config.resolution.height = std::atoi(cmd->data.list[1]);
 	return NULL;
 }
 
@@ -101,5 +122,12 @@ DOTCONF_CB(op_libraries)
 {
 	for (int i = 0; i < cmd->arg_count; i++)
 		engine_config.libraries.emplace_back(cmd->data.list[i]);
+	return NULL;
+}
+
+DOTCONF_CB(op_sourceFiles)
+{
+	for (int i = 0; i < cmd->arg_count; i++)
+		engine_config.sourceFiles.emplace_back(cmd->data.list[i]);
 	return NULL;
 }

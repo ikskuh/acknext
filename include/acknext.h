@@ -736,6 +736,16 @@ static inline COLOR hexcolor(uint32_t hex)
 	};
 }
 
+static inline COLOR RGB(var r, var g, var b)
+{
+	return (COLOR) { r, g, b, 1.0 };
+}
+
+static inline COLOR RGBA(var r, var g, var b, var a)
+{
+	return (COLOR) { r, g, b, a };
+}
+
 #endif // ACKNEXT_NO_PRIMITIVE_CTORS
 
 ////////////////////////////////////////////////////////////////////////////////

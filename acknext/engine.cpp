@@ -52,8 +52,6 @@ ACKFUN bool engine_open(int argc, char ** argv)
 
     engine_log("Begin initalizing engine.");
 
-	std::vector<char const *> sourceFiles;
-
 	// Parse arguments
 	{
 		static struct option long_options[] =
@@ -118,7 +116,7 @@ ACKFUN bool engine_open(int argc, char ** argv)
 
 		for(int i = optind; i < argc; i++)
 		{
-			sourceFiles.emplace_back(argv[i]);
+			engine_config.sourceFiles.emplace_back(argv[i]);
 		}
 	}
 
@@ -130,8 +128,8 @@ ACKFUN bool engine_open(int argc, char ** argv)
         return false;
     }
 
-	for(auto & str : sourceFiles) {
-		if(compiler_add(str) == false) {
+	for(auto & str : engine_config.sourceFiles) {
+		if(compiler_add(str.c_str()) == false) {
 			return false;
 		}
 	}

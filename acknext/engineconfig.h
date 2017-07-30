@@ -24,6 +24,7 @@ struct EngineConfig
 	std::vector<std::string> includePaths;
 	std::vector<std::string> libraryPaths;
 	std::vector<std::string> libraries;
+	std::vector<std::string> sourceFiles;
 
 	std::string title;
 	FullscreenType fullscreen;
