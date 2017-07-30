@@ -43,7 +43,7 @@ Model * model_load(std::string const & file)
 		| aiProcess_RemoveRedundantMaterials
 		| aiProcess_OptimizeMeshes
 		| aiProcess_OptimizeGraph
-		// | aiProcess_FlipUVs
+		| aiProcess_FlipUVs
 		;
 
 	aiScene const * scene = importer.ReadFile(file,	flags);

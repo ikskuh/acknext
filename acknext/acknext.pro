@@ -3,7 +3,7 @@ CONFIG += c++11
 CONFIG -= app_bundle
 CONFIG -= qt
 CONFIG    += link_pkgconfig
-PKGCONFIG += assimp ode
+PKGCONFIG += assimp ode dotconf
 
 SOURCES += \
     engine.cpp \
@@ -23,7 +23,8 @@ SOURCES += \
     material.cpp \
     entity.cpp \
     matrix.cpp \
-    utils.cpp
+    utils.cpp \
+    engineconfig.cpp
 
 HEADERS += \
     $$PWD/../include/acknext.h \
@@ -40,7 +41,8 @@ HEADERS += \
     buffer-detail.h \
     bitmap-detail.h \
     shader-detail.h \
-    entity-detail.h
+    entity-detail.h \
+    engineconfig.h
 
 INCLUDEPATH += $$PWD/../include/
 
@@ -63,6 +65,7 @@ LIBS += -L$$PWD/../../tcc-0.9.26/ -ldl -ltcc
 INCLUDEPATH += $$PWD/../../tcc-0.9.26
 DEPENDPATH += $$PWD/../../tcc-0.9.26
 
+# Used for levels
 INCLUDEPATH += $$PWD/../../json/src
 
 DISTFILES += \

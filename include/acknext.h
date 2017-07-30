@@ -569,6 +569,108 @@ ACKFUN void quat_id(QUATERNION * dst);
  */
 ACKFUN void quat_set(QUATERNION * dst, QUATERNION const * src);
 
+// Collision API
+
+/**
+ * @ingroup collision
+ * @brief A collision hull of an entity.
+ */
+struct HULL;
+
+/**
+ * @ingroup collision
+ * @brief Adds a box collider to an @ref ENTITY.
+ *
+ * @param ent    The entity where the collider should be added
+ * @param offset The center of the box relative to the entities local coordinates.
+ * @param extends The size of the box.
+ * @returns Pointer to the created @ref HULL or `NULL` on failure.
+ *
+ * @see c_addSphereHull
+ */
+ACKFUN struct HULL * c_addBoxHull(struct ENTITY * ent, struct VECTOR const * offset, struct VECTOR const * extends);
+
+/**
+ * @ingroup collision
+ * @brief Adds a sphere collider to an @ref ENTITY.
+ *
+ * @param ent    The entity where the collider should be added
+ * @param offset The center of the sphere relative to the entities local coordinates.
+ * @param radius The radius of the sphere.
+ * @returns Pointer to the created @ref HULL or `NULL` on failure.
+ *
+ * @see c_addBoxHull
+ */
+ACKFUN struct HULL * c_addSphereHull(struct ENTITY * ent, struct VECTOR const * offset, var radius);
+
+/**
+ * @ingroup collision
+ * @brief Removes a collider from an @ref ENTITY.
+ *
+ * @param hull The hull to be removed
+ */
+ACKFUN void c_removeHull(struct HULL * hull);
+
+/**
+ * @ingroup collision
+ * @brief Sets the offset of a collision hull.
+ *
+ * @param hull   The collision hull that should be displaced.
+ * @param offset The new center of the hull in entity local coordinates.
+ */
+ACKFUN void c_setHullOffset(struct HULL * hull, struct VECTOR const * offset);
+
+/**
+ * @ingroup collision
+ * @brief Sets the rotation of a collision hull.
+ *
+ * @param hull   The collision hull that should be rotated.
+ * @param offset The new rotation relative to the entities rotation.
+ */
+ACKFUN void c_setHullRotation(struct HULL * hull, struct QUATERNION const * offset);
+
+/**
+ * @ingroup collision
+ * @brief Shoots a ray through the collider space.
+ *
+ * @param from     The start of the ray
+ * @param to       The end of the ray
+ * @param selector A collision mask that defines which entities should be considered.
+ *                 Use `-1` for hitting all entities.
+ * @param flags    Flags modifying the behaviour of @ref c_trace
+ */
+ACKFUN struct COLLISION * c_trace(
+	struct VECTOR const * from,
+	struct VECTOR const * to,
+	int selector,
+    enum COLLISIONFLAGS flags);
+
+/**
+ * @ingroup collision
+ * @brief Moves an entity until it collides with another object.
+ * @param which       Is the @ref ENTITY that should be moved
+ * @param translation The direction and distance the entity should be moved.
+ * @param flags       Flags modifying the behaviour of this @ref c_move.
+ */
+ACKFUN struct COLLISION * c_move(
+	struct ENTITY * which,
+	struct VECTOR const * translation,
+	enum COLLISIONFLAGS flags);
+
+/**
+ * @ingroup collision
+ * @brief Teleports an entity to a given position/location if no collision will occur on the target position
+ * @param which          Is the entity that should be warped
+ * @param targetPosition The new position of the entity or `NULL` if no change should happen
+ * @param targetRotation The new rotation of the entity or `NULL` if no change should happen
+ * @param flags          Flags modifying the behaviour of this @ref c_warp.
+ */
+ACKFUN struct COLLISION * c_warp(
+	struct ENTITY * which,
+	struct VECTOR const * targetPosition,
+	struct QUATERNION const * targetRotation,
+	enum COLLISIONFLAGS flags);
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifndef ACKNEXT_NO_PRIMITIVE_CTORS

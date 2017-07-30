@@ -11,6 +11,7 @@ int main(int argc, char *argv[])
         cout << "Failed to initialize engine: " << engine_lasterror(NULL) << endl;
         return 1;
     }
+
     while(engine_frame())
     {
         // Now: Render!

@@ -6,6 +6,7 @@ action rotator()
 	{
 		quat_set(&my->rotation, euler(45.0 * total_secs, 0, 0));
 		my->y = 14 * sin(total_secs + atan2(my->x, my->z));
+
 		wait();
 	}
 }
@@ -13,9 +14,10 @@ action rotator()
 // Collision system
 void coltest()
 {
+	/*
 	// benötigt collider-welt, da mehr als ein LEVEL möglich
 	// falls NULL, wird ::world verwendet
-	COLLISION const * hit = c_trace(world, from, to, flags);
+	COLLISION const * hit = c_trace(from, to, -1, flags);
 
 	hit->contact;  // VECTOR(position)
 	hit->distance; // var(distance)
@@ -25,6 +27,7 @@ void coltest()
 
 	// verwendet alle LEVEL, an die 'me' gebunden ist
 	COLLISION const * hit = c_move(me, absdist, reldist, flags);
+	*/
 }
 
 void main()
@@ -50,8 +53,8 @@ void main()
 
 	while(true)
 	{
-		// quat_set(&camera->rotation, euler(30.0 * total_secs, 0, 0));
-		camera->z -= 1.0 * time_step;
+		camera->rotation = *euler(30.0 * total_secs, 0, 0);
+		// camera->z -= 1.0 * time_step;
 		wait();
 	}
 }

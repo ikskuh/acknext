@@ -6,7 +6,8 @@ SUBDIRS += \
     acknext \
     demo-cpp \
     demo-c \
-    scripts
+    scripts \
+    Qtnext
 
 HEADERS += \
     documentation/src/groups.h \

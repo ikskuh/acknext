@@ -4,9 +4,8 @@
 #include <set>
 #include <memory>
 
-#include <json.hpp>
-
 #include "level-detail.h"
+#include <json.hpp>
 
 struct LEVELdeleter
 {

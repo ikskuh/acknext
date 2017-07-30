@@ -7,11 +7,12 @@
 #include <getopt.h>
 #include <chrono>
 #include <fstream>
+#include <vector>
 
-#include <json.hpp>
 #include <ode/ode.h>
 
 #include "engine.h"
+#include "engineconfig.h"
 
 struct
 {
@@ -34,20 +35,22 @@ static FILE *logfile = nullptr;
 
 struct engine engine;
 
-nlohmann::json engine_config;
+struct ENGINE_BACKEND engine_backend;
 
 enum FLAGS engine_flags = NONE;
 
 #define SDL_CHECKED(x, y) if((x) < 0) { engine_setsdlerror(); return y; }
+
+
+static int diag_flag = 0;
+static int has_config = 0;
+static int no_sdl = 0;
 
 ACKFUN bool engine_open(int argc, char ** argv)
 {
     startupTime = std::chrono::steady_clock::now();
 
     engine_log("Begin initalizing engine.");
-
-	int diag_flag = 0;
-	int has_config = 0;
 
 	std::vector<char const *> sourceFiles;
 
@@ -56,18 +59,19 @@ ACKFUN bool engine_open(int argc, char ** argv)
 		static struct option long_options[] =
 		{
 			/* These options set a flag. */
-			{"diag",    no_argument,       &diag_flag, 1},
+			{ "diag",    no_argument,       &diag_flag, 1},
 			/* These options don’t set a flag.
 					 We distinguish them by their indices. */
 			// {"diag",    no_argument,       0, 'd'},
-			{"config",  required_argument, 0, 'c'},
+			{ "config",  required_argument, 0, 'c'},
+			{ "no-sdl", no_argument, &no_sdl, 'X' },
 			{0, 0, 0, 0}
 		};
 		while (1)
 		{
 			/* getopt_long stores the option index here. */
 			int option_index = 0;
-			int c = getopt_long (argc, argv, "dc:",
+			int c = getopt_long (argc, argv, "Xdc:",
 			                     long_options, &option_index);
 
 			/* Detect the end of the options. */
@@ -89,14 +93,11 @@ ACKFUN bool engine_open(int argc, char ** argv)
 				case 'd':
 					diag_flag = 1;
 					break;
+				case 'X':
+					no_sdl = 1;
+					break;
 				case 'c': {
-					std::ifstream configFile(optarg);
-					if(configFile.is_open() == false) {
-						engine_log("Failed to open configuration %s!", optarg);
-					} else {
-						configFile >> engine_config;
-						has_config = true;
-					}
+					engine_config.load(optarg);
 					break;
 				}
 				case '?': break;
@@ -122,27 +123,7 @@ ACKFUN bool engine_open(int argc, char ** argv)
 	}
 
 	if(!has_config) {
-		std::ifstream configFile("acknext.cfg");
-		if(configFile.is_open() == false) {
-			engine_config = R"json({
-				"title": "Acknext A1",
-			    "resolution": [ 1280, 720 ],
-			    "fullscreen": "yes",
-				"includePath": [
-					"/usr/include/",
-					"/home/felix/projects/tcc-0.9.26/include/",
-					"/home/felix/projects/acknext/include/",
-					"/home/felix/projects/gl3w/include/"
-				],
-				libraryPath: [
-					"/tmp/build-acknext-Desktop-Debug/acknext/"
-				],
-				"libraries": [ "acknext", "m" ]
-			})json"_json;
-		} else {
-			configFile >> engine_config;
-			has_config = true;
-		}
+		engine_config.load("acknext.cfg");
 	}
 
 	if(compiler_init() == false) {
@@ -155,42 +136,41 @@ ACKFUN bool engine_open(int argc, char ** argv)
 		}
 	}
 
-    SDL_CHECKED(SDL_Init(SDL_INIT_EVERYTHING), false)
+	if(no_sdl == 0)
+	{
+		SDL_CHECKED(SDL_Init(SDL_INIT_EVERYTHING), false)
 
-    SDL_CHECKED(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3), false)
-    SDL_CHECKED(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3), false)
-    SDL_CHECKED(SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG), false)
-    SDL_CHECKED(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1), false)
+		SDL_CHECKED(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3), false)
+		SDL_CHECKED(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3), false)
+		SDL_CHECKED(SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG), false)
+		SDL_CHECKED(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1), false)
 
-	{ // Create window and initialize SDL
-		auto title = engine_config.at("title").get<std::string>();
-		auto resolution = engine_config.at("resolution");
-		auto fullscreen = engine_config.at("fullscreen").get<std::string>();
+		{ // Create window and initialize SDL
+			auto flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_MOUSE_FOCUS;
+			if(engine_config.fullscreen == FullscreenType::Fullscreen) {
+				flags |= SDL_WINDOW_FULLSCREEN;
+			}
+			else if(engine_config.fullscreen == FullscreenType::DesktopFullscreen) {
+				flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+			}
 
-		auto flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_MOUSE_FOCUS;
-		if(fullscreen == "yes") {
-			flags |= SDL_WINDOW_FULLSCREEN;
-		}
-		else if(fullscreen == "desktop") {
-			flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-		}
+			engine.window = SDL_CreateWindow(
+				engine_config.title.c_str(),
+				SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+				engine_config.resolution.width, engine_config.resolution.height,
+				flags);
+			if(engine.window == nullptr)
+			{
+				engine_setsdlerror();
+				return false;
+			}
 
-		engine.window = SDL_CreateWindow(
-			title.c_str(),
-			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-			resolution.at(0).get<int>(), resolution.at(1).get<int>(),
-			flags);
-		if(engine.window == nullptr)
-		{
-			engine_setsdlerror();
-			return false;
-		}
-
-		engine.context = SDL_GL_CreateContext(engine.window);
-		if(engine.context == nullptr)
-		{
-			engine_setsdlerror();
-			return false;
+			engine.context = SDL_GL_CreateContext(engine.window);
+			if(engine.context == nullptr)
+			{
+				engine_setsdlerror();
+				return false;
+			}
 		}
 	}
 
@@ -238,29 +218,38 @@ ACKFUN bool engine_frame()
         total_secs = timePoint.count();
     }
 
-    SDL_GetWindowSize(engine.window, &screen_size.width, &screen_size.height);
+	if(no_sdl == 0)
+	{
+		SDL_GetWindowSize(engine.window, &screen_size.width, &screen_size.height);
 
-    input_update();
+		input_update();
 
-    SDL_Event event;
+		SDL_Event event;
 
-    // Update Frame
-    while(SDL_PollEvent(&event))
-    {
-        switch(event.type)
-        {
-            case SDL_QUIT:
-            {
-                // TODO: Initialize engine shutdown here.
-                return false;
-            }
-            case SDL_KEYDOWN:
-            {
-                input_callback(event.key.keysym.sym, event.key.keysym.scancode);
-                break;
-            }
-        }
-    }
+		// Update Frame
+		while(SDL_PollEvent(&event))
+		{
+			switch(event.type)
+			{
+				case SDL_QUIT:
+				{
+					// TODO: Initialize engine shutdown here.
+					return false;
+				}
+				case SDL_KEYDOWN:
+				{
+					input_callback(event.key.keysym.sym, event.key.keysym.scancode);
+					break;
+				}
+			}
+		}
+	}
+	else
+	{
+		if(engine_backend.getSize) {
+			engine_backend.getSize(&screen_size.width, &screen_size.height);
+		}
+	}
 
     scheduler_update();
 

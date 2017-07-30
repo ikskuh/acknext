@@ -2,7 +2,7 @@
 #define SHADERDETAIL_H
 
 #include "engine.h"
-
+#include <vector>
 
 struct SHADER
 {

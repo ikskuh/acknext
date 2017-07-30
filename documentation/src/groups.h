@@ -19,7 +19,7 @@
  * tasks to be executed. Each task has a set of its own global variables which
  * will be swapped accordingly.
  *
- * Tasks can be enabled/disabled by using the @ref task_mask and
+ * Tasks can be enabled/disabled by using the @ref TASK.mask and
  * @ref task_enabled. If a bit is set in both variables, the task will be
  * executed.
  *

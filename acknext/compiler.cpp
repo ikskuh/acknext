@@ -5,6 +5,7 @@
 #include <string>
 
 #include "libtcc.h"
+#include "engineconfig.h"
 
 struct SCRIPT
 {
@@ -31,20 +32,20 @@ public:
         bool success = true;
 
 		engine_log("Set up compiler...");
-		for(auto & val : engine_config.at("includePath"))
+		for(auto & val : engine_config.includePaths)
 		{
-			engine_log("include path: %s", val.get<std::string>().c_str());
-			success &= this->addIncludePath(val.get<std::string>().c_str());
+			engine_log("include path: %s", val.c_str());
+			success &= this->addIncludePath(val.c_str());
 		}
-		for(auto & val : engine_config.at("libraryPath"))
+		for(auto & val : engine_config.libraryPaths)
 		{
-			engine_log("library path: %s", val.get<std::string>().c_str());
-			success &= this->addLibraryPath(val.get<std::string>().c_str());
+			engine_log("library path: %s", val.c_str());
+			success &= this->addLibraryPath(val.c_str());
 		}
-		for(auto & val : engine_config.at("libraries"))
+		for(auto & val : engine_config.libraries)
 		{
-			engine_log("library:      %s", val.get<std::string>().c_str());
-			success &= this->addLibrary(val.get<std::string>().c_str());
+			engine_log("library:      %s", val.c_str());
+			success &= this->addLibrary(val.c_str());
 		}
 		engine_log("Compiler setup %s.", (success ? "successful" : "failed"));
         return success;

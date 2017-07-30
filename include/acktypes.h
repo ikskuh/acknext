@@ -963,6 +963,22 @@ struct COLLISION
 	 * @brief The entity that was hit while moving.
 	 */
 	struct ENTITY * other;
+
+	/**
+	 * @brief The @ref HULL of @ref other that was hit.
+	 */
+	struct HULL * hull;
+};
+
+enum COLLISIONFLAGS
+{
+	CF_NONE,
+};
+
+struct ENGINE_BACKEND
+{
+	void (*swapBuffers)();
+	void (*getSize)(int * width, int * height);
 };
 
 #define _EXPORT_STRUCT(name) typedef struct name name;
@@ -991,6 +1007,7 @@ _EXPORT_STRUCT(BITMAP)
 _EXPORT_STRUCT(MATERIAL)
 _EXPORT_STRUCT(MATRIX)
 _EXPORT_STRUCT(COLLISION)
+_EXPORT_STRUCT(ENGINE_BACKEND)
 
 typedef enum FLAGS FLAGS;
 

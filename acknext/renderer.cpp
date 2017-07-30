@@ -22,7 +22,11 @@ void (APIENTRY render_log)(GLenum source,GLenum type,GLuint id,GLenum severity,G
 
 ACKFUN void engine_swap()
 {
-	SDL_GL_SwapWindow(engine.window);
+	if(engine_backend.swapBuffers) {
+		engine_backend.swapBuffers();
+	} else {
+		SDL_GL_SwapWindow(engine.window);
+	}
 }
 
 void initialize_renderer()

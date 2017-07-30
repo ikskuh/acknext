@@ -97,6 +97,8 @@ extern enum FLAGS engine_flags;
 extern struct ENTITY * ACKCONST me;
 extern struct ENTITY * ACKCONST my;
 
+extern struct ENGINE_BACKEND engine_backend;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #define _ACKKEY(name, key, scan) extern int key_##name;
