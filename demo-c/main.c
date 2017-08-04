@@ -27,7 +27,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-
 	VIEW * view = view_create(draw_something, &COLOR_CYAN);
 
 	view = view_create(draw_something, &COLOR_RED);

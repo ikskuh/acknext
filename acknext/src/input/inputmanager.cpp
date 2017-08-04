@@ -3,14 +3,22 @@
 
 ACKNEXT_API_BLOCK
 {
+#define _ACKNEXT_KEYDEF(_name,_scancode) BUTTONSTATE key_##_name = RELEASED;
+#include <acknext/keyboard-config.h>
+#undef _ACKNEXT_KEYDEF
+
+#define _ACKNEXT_KEYDEF(_name,_scancode) EVENT * on_##_name = nullptr;
+#include <acknext/keyboard-config.h>
+#undef _ACKNEXT_KEYDEF
+
 	POINT mouse_pos = { 0, 0 };
 	VECTOR4 mouse_delta = { 0, 0, 0, 0 };
 
-	BUTTONSTATE mouse_left = 0;
-	BUTTONSTATE mouse_middle = 0;
-	BUTTONSTATE mouse_right = 0;
-	BUTTONSTATE mouse_x1 = 0;
-	BUTTONSTATE mouse_x2 = 0;
+	BUTTONSTATE mouse_left = RELEASED;
+	BUTTONSTATE mouse_middle = RELEASED;
+	BUTTONSTATE mouse_right = RELEASED;
+	BUTTONSTATE mouse_x1 = RELEASED;
+	BUTTONSTATE mouse_x2 = RELEASED;
 
 	EVENT * on_mouse_left = nullptr;
 	EVENT * on_mouse_middle = nullptr;
@@ -44,12 +52,37 @@ void InputManager::beginFrame()
 
 void InputManager::keyDown(SDL_KeyboardEvent const & ev)
 {
-
+	switch(ev.keysym.scancode)
+	{
+#define _ACKNEXT_KEYDEF(_name,_scancode) \
+		case _scancode: \
+			key_##_name = PRESSED; \
+			event_invoke(on_##_name, nullptr); \
+			break;
+#include <acknext/keyboard-config.h>
+#undef _ACKNEXT_KEYDEF
+		case SDL_SCANCODE_UNKNOWN:
+			engine_log("You pressed a key that isn't known to SDL! Bad boy!");
+			break;
+		case SDL_NUM_SCANCODES: abort(); // Just hard-die here
+	}
 }
 
 void InputManager::keyUp(SDL_KeyboardEvent const & ev)
 {
-
+	switch(ev.keysym.scancode)
+	{
+#define _ACKNEXT_KEYDEF(_name,_scancode) \
+		case _scancode: \
+			key_##_name = RELEASED; \
+			break;
+#include <acknext/keyboard-config.h>
+#undef _ACKNEXT_KEYDEF
+		case SDL_SCANCODE_UNKNOWN:
+			engine_log("You pressed a key that isn't known to SDL! Bad boy!");
+			break;
+		case SDL_NUM_SCANCODES: abort(); // Just hard-die here
+	}
 }
 
 void InputManager::mouseDown(SDL_MouseButtonEvent const & ev)
