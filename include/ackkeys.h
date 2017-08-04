@@ -35,6 +35,11 @@ _ACKKEY(x, SDLK_x, SDL_SCANCODE_X)
 _ACKKEY(y, SDLK_y, SDL_SCANCODE_Y)
 _ACKKEY(z, SDLK_z, SDL_SCANCODE_Z)
 
+_ACKKEY(cuu, SDLK_UP, SDL_SCANCODE_UP)
+_ACKKEY(cur, SDLK_RIGHT, SDL_SCANCODE_RIGHT)
+_ACKKEY(cul, SDLK_LEFT, SDL_SCANCODE_LEFT)
+_ACKKEY(cud, SDLK_DOWN, SDL_SCANCODE_DOWN)
+
 #else
 #error ackkeys.h is meant to be used with the _ACKKEY macro defined!
 #endif

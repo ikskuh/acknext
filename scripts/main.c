@@ -1,5 +1,5 @@
 #include <acknext.h>
-
+/*
 action rotator()
 {
 	while(true)
@@ -14,7 +14,6 @@ action rotator()
 // Collision system
 void coltest()
 {
-	/*
 	// benötigt collider-welt, da mehr als ein LEVEL möglich
 	// falls NULL, wird ::world verwendet
 	COLLISION const * hit = c_trace(from, to, -1, flags);
@@ -27,7 +26,6 @@ void coltest()
 
 	// verwendet alle LEVEL, an die 'me' gebunden ist
 	COLLISION const * hit = c_move(me, absdist, reldist, flags);
-	*/
 }
 
 void main()
@@ -51,10 +49,18 @@ void main()
 	ent->material = mtlRail;
 	quat_set(&ent->rotation, euler(0, 0, 0));
 
+	var pan = 0.0;
+	var tilt = 0.0;
+
 	while(true)
 	{
-		camera->rotation = *euler(30.0 * total_secs, 0, 0);
-		// camera->z -= 1.0 * time_step;
+		pan += 90.0 * (key_cul - key_cur) * time_step;
+		tilt += 90.0 * (key_cuu - key_cud) * time_step;
+		camera->rotation = *euler(pan, tilt, 0);
+		camera->z -= 1.0 * (key_w - key_s) * time_step;
+		camera->x += 1.0 * (key_d - key_a) * time_step;
+		engine_log("%f %f", pan, tilt);
 		wait();
 	}
 }
+*/

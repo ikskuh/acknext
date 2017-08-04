@@ -451,10 +451,10 @@ struct ENTITY
 	 */
 	struct MATERIAL * material;
 
-    /**
-     * @brief Flags modifying the behaviour of the entitiy.
-     */
-    enum FLAGS flags;
+	/**
+	 * @brief Flags modifying the behaviour of the entitiy.
+	 */
+	enum FLAGS flags;
 
 	ACKNEXT_ENTITY_DETAIL ACKCONST * ACKCONST _detail;
 };

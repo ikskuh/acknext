@@ -4,10 +4,10 @@ CONFIG += ordered
 
 SUBDIRS += \
     acknext \
-    demo-cpp \
-    demo-c \
-    scripts \
-    Qtnext
+#	demo-cpp \
+#	scripts \
+#	Qtnext
+	demo-c
 
 HEADERS += \
     documentation/src/groups.h \

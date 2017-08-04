@@ -1,0 +1,926 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.2">
+  <zoom_level>8</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>848</x>
+      <y>496</y>
+      <w>200</w>
+      <h>248</h>
+    </coordinates>
+    <panel_attributes>ENTITY
+--
+bg=white
+position : VECTOR
+rotation : QUATERNION
+scale : VECTOR
+groups : BITFIELD
+model : MODEL</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>16</x>
+      <y>112</y>
+      <w>96</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>VECTOR
+--
+x : var
+y : var
+z : var
+bg=green</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>16</x>
+      <y>200</y>
+      <w>96</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>COLOR
+--
+r : var
+g : var
+b : var
+a : var
+bg=green</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>120</x>
+      <y>112</y>
+      <w>96</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>QUATERNION
+--
+w : var
+x : var
+y : var
+z : var
+bg=green</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>224</x>
+      <y>112</y>
+      <w>112</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>MATRIX
+--
+values : var[4][4];
+bg=green</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>120</x>
+      <y>200</y>
+      <w>96</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>POINT
+--
+x : int
+y : int
+bg=green</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>224</x>
+      <y>200</y>
+      <w>96</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>SIZE
+--
+width : int
+height : int
+bg=green</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>360</x>
+      <y>104</y>
+      <w>168</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>BITMAP
+--
+width : int
+height : int
+format : BITMAPFMT
+
+bg=white</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>360</x>
+      <y>176</y>
+      <w>168</w>
+      <h>192</h>
+    </coordinates>
+    <panel_attributes>MATERIAL
+--
+shader : SHADER
+colorTexture : BITMAP
+attributeTexture : BITMAP
+emissionTexture : BITMAP
+color : COLOR
+emission : COLOR
+roughness : var
+metallic : var
+fresnell : var
+bg=white</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>536</x>
+      <y>176</y>
+      <w>168</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>VERTEX
+--
+position : VECTOR
+normal : VECTOR
+tangent : VECTOR
+color : COLOR
+texcoord0 : UVCOORD
+texcoord1 : UVCOORD
+boneWeights   : VECTOR4
+bg=white</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>224</x>
+      <y>288</y>
+      <w>96</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>VECTOR4
+--
+x : var
+y : var
+z : var
+w : var
+bg=green</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>536</x>
+      <y>104</y>
+      <w>168</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>MESH
+--
+bg=white
+vertexBuffer : BUFFER
+indexBuffer : BUFFER
+material : MATERIAL</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>632</x>
+      <y>640</y>
+      <w>168</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>COLLISION
+--
+bg=white
+contact : VECTOR
+normal : VECTOR
+other : ENTITY
+hull : HULL</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>360</x>
+      <y>640</y>
+      <w>184</w>
+      <h>192</h>
+    </coordinates>
+    <panel_attributes>VIEW
+--
+bg=white
+position : POINT
+size : SIZE
+render : void(*)(void * context)
+context : void*
+layer : var
+flags : VIEWFLAGS</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>712</x>
+      <y>104</y>
+      <w>152</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>SHADER
+--
+bg=gray</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>872</x>
+      <y>104</y>
+      <w>168</w>
+      <h>96</h>
+    </coordinates>
+    <panel_attributes>UNIFORM
+--
+name : char const *
+location : int
+type : GLenum
+size : int
+variable : SHADERVAR
+bg=white</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>352</x>
+      <y>80</y>
+      <w>712</w>
+      <h>528</h>
+    </coordinates>
+    <panel_attributes>Scene Rendering
+--
+bg=light_gray
+layer=-10</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>8</x>
+      <y>80</y>
+      <w>336</w>
+      <h>296</h>
+    </coordinates>
+    <panel_attributes>Core
+--
+bg=light_gray
+layer=-10</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>1072</x>
+      <y>80</y>
+      <w>384</w>
+      <h>528</h>
+    </coordinates>
+    <panel_attributes>Input
+--
+bg=light_gray
+layer=-10</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>624</x>
+      <y>616</y>
+      <w>440</w>
+      <h>296</h>
+    </coordinates>
+    <panel_attributes>Collision
+--
+bg=light_gray
+layer=-10</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>712</x>
+      <y>176</y>
+      <w>152</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>BUFFER
+--
+bg=gray</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>352</x>
+      <y>616</y>
+      <w>264</w>
+      <h>296</h>
+    </coordinates>
+    <panel_attributes>Generic Video
+--
+bg=light_gray
+layer=-10</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1080</x>
+      <y>104</y>
+      <w>168</w>
+      <h>288</h>
+    </coordinates>
+    <panel_attributes>GAMEPAD
+--
+bg=white
+index   : int
+leftStick : VECTOR2
+rightStick : VECTOR2
+leftTrigger : var
+rightTrigger : var
+a : bool
+b : bool
+x : bool
+y : bool
+leftButton : bool
+rightButton : bool
+start : bool
+back : bool
+leftStickButton : bool
+rightStickButton : bool
+--
+aPressed : EVENT
+bPressed : EVENT
+xPressed : EVENT
+yPressed : EVENT
+…</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>120</x>
+      <y>288</y>
+      <w>96</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>VECTOR2
+--
+x : var
+y : var
+bg=green</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1256</x>
+      <y>104</y>
+      <w>168</w>
+      <h>192</h>
+    </coordinates>
+    <panel_attributes>JOYSTICK
+--
+bg=white
+index   : int
+axis    : var[8]
+buttons : bool[16]</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>1072</x>
+      <y>616</y>
+      <w>384</w>
+      <h>296</h>
+    </coordinates>
+    <panel_attributes>Scheduler
+--
+bg=light_gray
+layer=-10</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1080</x>
+      <y>640</y>
+      <w>200</w>
+      <h>264</h>
+    </coordinates>
+    <panel_attributes>TASK
+--
+bg=white
+priority   : var
+entryPoint : void* (*) (void*)
+enableMask : BITFIELD
+result     : void*
+--
+finished : EVENT
+failed   : EVENT</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>16</x>
+      <y>288</y>
+      <w>96</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>BITFIELD
+--
+&lt;&lt;uint64&gt;&gt;
+bg=green</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>360</x>
+      <y>488</y>
+      <w>168</w>
+      <h>112</h>
+    </coordinates>
+    <panel_attributes>CAMERA
+--
+bg=white
+position : VECTOR
+rotation : QUATERNION
+renderMask : BITFIELD
+zNear : var
+zFar : var
+arc : var
+flags : CAMERAFLAGS</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>536</x>
+      <y>304</y>
+      <w>168</w>
+      <h>88</h>
+    </coordinates>
+    <panel_attributes>PIPELINE
+--
+bg=white</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>536</x>
+      <y>400</y>
+      <w>168</w>
+      <h>88</h>
+    </coordinates>
+    <panel_attributes>STAGE
+--
+bg=white
+type : STAGETYPE
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>360</x>
+      <y>376</y>
+      <w>168</w>
+      <h>104</h>
+    </coordinates>
+    <panel_attributes>LIGHT
+--
+bg=white
+type : LIGHTTYPE
+position : VECTOR
+direction : VECTOR
+arc : var
+strength : var
+color : COLOR</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>872</x>
+      <y>208</y>
+      <w>168</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>STAGETYPE
+--
+bg=orange
+- Entity
+- PostProcessing
+- Custom</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>872</x>
+      <y>280</y>
+      <w>168</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>LIGHTTYPE
+--
+bg=orange
+- Ambient
+- Directional
+- Point
+- Spot</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>872</x>
+      <y>368</y>
+      <w>168</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>BITMAPFMT
+--
+bg=orange
+- RGB
+- RGBA
+- RGBA16F
+- RGBA32F</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>248</x>
+      <y>8</y>
+      <w>96</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>Enumeration
+--
+bg=orange
+- Member A
+- Member B
+- Member C</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>128</x>
+      <y>8</y>
+      <w>112</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>Value Struct
+--
+field : type
+bg=green</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>8</x>
+      <y>8</y>
+      <w>112</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>Reference Struct
+--
+bg=white
+field : type</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>632</x>
+      <y>728</y>
+      <w>168</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>HULL
+--
+bg=gray</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>456</x>
+      <y>8</y>
+      <w>112</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>Opaque Handle
+--
+bg=gray</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>712</x>
+      <y>248</y>
+      <w>152</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>INDEX
+--
+bg=green
+&lt;&lt;uint32&gt;&gt;</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>352</x>
+      <y>8</y>
+      <w>96</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>Flag Enum
+--
+bg=pink
+- Option A
+- Option B
+- Option C</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>360</x>
+      <y>840</y>
+      <w>184</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>VIEWFLAGS
+--
+bg=pink
+- FULLSCREEN
+- VISIBLE</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>8</x>
+      <y>384</y>
+      <w>336</w>
+      <h>96</h>
+    </coordinates>
+    <panel_attributes>Scripting (C)
+--
+bg=light_gray
+layer=-10
+lt=.</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>16</x>
+      <y>408</y>
+      <w>88</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>CSCRIPT
+--
+bg=gray</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>712</x>
+      <y>320</y>
+      <w>152</w>
+      <h>96</h>
+    </coordinates>
+    <panel_attributes>SHADERVAR
+--
+bg=orange
+- matWorld
+- matView
+- matProj
+- vecColor
+. …</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>576</x>
+      <y>8</y>
+      <w>112</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>bg=cyan
+Function Block
+--
+void proto0(int a)
+int proto1()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>8</x>
+      <y>488</y>
+      <w>336</w>
+      <h>96</h>
+    </coordinates>
+    <panel_attributes>Scripting (Lua)
+--
+bg=light_gray
+layer=-10
+lt=.
+
+To be done later...</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>696</x>
+      <y>8</y>
+      <w>104</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>Internal Module
+--
+bg=light_gray
+layer=-10</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>808</x>
+      <y>8</y>
+      <w>112</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>External Module
+--
+bg=light_gray
+layer=-10
+lt=.</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>8</x>
+      <y>592</y>
+      <w>336</w>
+      <h>96</h>
+    </coordinates>
+    <panel_attributes>Physics (ODE)
+--
+bg=light_gray
+layer=-10
+lt=.
+
+To be done later...</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>536</x>
+      <y>496</y>
+      <w>168</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>CAMERAFLAGS
+--
+bg=pink
+- ISOMETRIC</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>1464</x>
+      <y>80</y>
+      <w>136</w>
+      <h>528</h>
+    </coordinates>
+    <panel_attributes>Event Handling
+--
+bg=light_gray
+layer=-10</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1472</x>
+      <y>104</y>
+      <w>112</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>EVENT
+--
+bg=gray</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>712</x>
+      <y>424</y>
+      <w>152</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>MODEL
+--
+bg=gray</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>1464</x>
+      <y>616</y>
+      <w>136</w>
+      <h>296</h>
+    </coordinates>
+    <panel_attributes>Virtual FS
+--
+bg=light_gray
+layer=-10</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1472</x>
+      <y>640</y>
+      <w>120</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>FILEHANDLE
+--
+bg=white
+name : char const *
+size : size_t
+type : FILETYPE</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1472</x>
+      <y>712</y>
+      <w>120</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>FILETYPE
+--
+bg=orange
+- PHYSICAL
+- VIRTUAL</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>

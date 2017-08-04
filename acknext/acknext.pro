@@ -2,75 +2,107 @@ TEMPLATE = lib
 CONFIG += c++11
 CONFIG -= app_bundle
 CONFIG -= qt
-CONFIG    += link_pkgconfig
-PKGCONFIG += assimp ode dotconf
+unix: CONFIG += link_pkgconfig
+unix: PKGCONFIG += ode dotconf sdl2 SDL2_image SDL2_mixer
 
-SOURCES += \
-    engine.cpp \
-    variables.cpp \
-    renderer.cpp \
-    scheduler.cpp \
-    compiler.cpp \
-    $$PWD/../coroutine/coroutine.c \
-    video.cpp \
-    scene.cpp \
-    input.cpp \
-    view.cpp \
-    model.cpp \
-    shader.cpp \
-    buffer.cpp \
-    bitmap.cpp \
-    material.cpp \
-    entity.cpp \
-    matrix.cpp \
-    utils.cpp \
-    engineconfig.cpp
+CONFIG += ackGraphics
 
-HEADERS += \
-    $$PWD/../include/acknext.h \
-    $$PWD/../include/acktypes.h \
-    $$PWD/../include/ackvars.h \
-    ../include/ackcfg.h \
-    engine.h \
-    $$PWD/../coroutine/coroutine.h \
-    ../include/ackcpp.h \
-    ../include/ackkeys.h \
-    level-detail.h \
-    model.h \
-    ackglm.hpp \
-    buffer-detail.h \
-    bitmap-detail.h \
-    shader-detail.h \
-    entity-detail.h \
-    engineconfig.h
+INCLUDEPATH += $$PWD/include
+INCLUDEPATH += $$PWD/src
 
-INCLUDEPATH += $$PWD/../include/
+DEPENDPATH += $$PWD/include
+DEPENDPATH += $$PWD/src
 
 DEFINES += _ACKNEXT_INTERNAL_
-DEFINES += "ACKNEXT_LEVEL_DETAIL='struct LEVELdetail'"
-DEFINES += "ACKNEXT_BITMAP_DETAIL='struct BITMAPdetail'"
-DEFINES += "ACKNEXT_ENTITY_DETAIL='struct ENTITYdetail'"
 
+ackGraphics {
+	include(../../gl3w/gl3w.pri)
+	unix: PKGCONFIG += assimp gl
+}
 
-# QMAKE_LINK=ld
-# message($$QMAKE_LINK)
+ackScript {
+	INCLUDEPATH += $$PWD/../../tcc-0.9.26
+	DEPENDPATH += $$PWD/../../tcc-0.9.26
+	LIBS += -L$$PWD/../../tcc-0.9.26/ -ldl -ltcc
+}
 
-# QMAKE_LFLAGS += -rpath $$PWD/../../tcc-0.9.26/ -ltcc
+ackJSON {
+	# Used for levels
+	INCLUDEPATH += $$PWD/../../json/src
+}
 
-unix: CONFIG += link_pkgconfig
-unix: PKGCONFIG += sdl2 SDL2_image SDL2_mixer gl
+ackScheduler {
+	DISTFILES += \
+		linker.ld
+	QMAKE_LFLAGS += -T$$quote($$PWD/linker.ld)
+}
 
-LIBS += -L$$PWD/../../tcc-0.9.26/ -ldl -ltcc
+HEADERS += \
+    src/graphics/opengl/buffer.hpp \
+    src/graphics/opengl/shader.hpp \
+    src/graphics/opengl/uniform.hpp \
+    src/graphics/scene/material.hpp \
+    src/graphics/scene/mesh.hpp \
+    src/graphics/scene/stage.hpp \
+    src/graphics/scene/pipeline.hpp \
+    src/graphics/scene/model.hpp \
+    src/graphics/scene/light.hpp \
+    src/graphics/scene/camera.hpp \
+    src/graphics/opengl/bitmap.hpp \
+    src/scene/entity.hpp \
+    src/collision/collision.hpp \
+    src/collision/hull.hpp \
+    src/graphics/core/view.hpp \
+    src/scheduler/task.hpp \
+    src/virtfs/filehandle.hpp \
+    src/events/event.hpp \
+    src/input/gamepad.hpp \
+    src/input/joystick.hpp \
+    src/core/engineobject.hpp \
+    src/engine.hpp \
+    include/acknext.h \
+    include/acknext/config.h \
+    include/acknext/event.h \
+    include/acknext/math.h \
+    include/acknext/view.h \
+    include/acknext/ackdef.h \
+    include/acknext/ackvars.h \
+    include/acknext/core.h \
+    src/core/config.hpp \
+    src/core/log.hpp \
+    src/graphics/core.hpp \
+    include/acknext/ackenum.h \
+    src/input/inputmanager.hpp \
+    include/acknext/input.h \
+    include/acknext/keyboard-config.h
 
-INCLUDEPATH += $$PWD/../../tcc-0.9.26
-DEPENDPATH += $$PWD/../../tcc-0.9.26
-
-# Used for levels
-INCLUDEPATH += $$PWD/../../json/src
-
-DISTFILES += \
-    linker.ld
-
-QMAKE_LFLAGS += -T$$quote($$PWD/linker.ld)
-
-include(../../gl3w/gl3w.pri)
+SOURCES += \
+    src/graphics/opengl/buffer.cpp \
+    src/graphics/opengl/shader.cpp \
+    src/graphics/opengl/uniform.cpp \
+    src/graphics/scene/material.cpp \
+    src/graphics/scene/mesh.cpp \
+    src/graphics/scene/stage.cpp \
+    src/graphics/scene/pipeline.cpp \
+    src/graphics/scene/model.cpp \
+    src/graphics/scene/light.cpp \
+    src/graphics/scene/camera.cpp \
+    src/graphics/opengl/bitmap.cpp \
+    src/scene/entity.cpp \
+    src/collision/collision.cpp \
+    src/collision/hull.cpp \
+    src/graphics/core/view.cpp \
+    src/scheduler/task.cpp \
+    src/virtfs/filehandle.cpp \
+    src/events/event.cpp \
+    src/input/gamepad.cpp \
+    src/input/joystick.cpp \
+    src/math/vector.cpp \
+    src/math/var.cpp \
+    src/core/init.cpp \
+    src/core/config.cpp \
+    src/core/log.cpp \
+    src/core/errorhandling.cpp \
+    src/graphics/core/graphics-core.cpp \
+    src/core/globals.cpp \
+    src/input/inputmanager.cpp
