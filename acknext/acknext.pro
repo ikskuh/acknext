@@ -105,4 +105,5 @@ SOURCES += \
     src/core/errorhandling.cpp \
     src/graphics/core/graphics-core.cpp \
     src/core/globals.cpp \
-    src/input/inputmanager.cpp
+    src/input/inputmanager.cpp \
+    src/input/input-strings.cpp

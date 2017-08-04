@@ -28,9 +28,14 @@ typedef int BUTTONSTATE;
 #include "keyboard-config.h"
 #undef _ACKNEXT_KEYDEF
 
+ACKVAR ACKCONST BUTTONSTATE key_any;
+ACKVAR ACKCONST EVENT * on_anykey;
+
+ACKVAR ACKCONST int key_lastpressed;
+
 // Mouse input
 ACKVAR ACKCONST POINT mouse_pos;
-ACKVAR ACKCONST VECTOR4 mouse_delta;
+ACKVAR ACKCONST VECTOR4 mickey;
 
 ACKVAR ACKCONST BUTTONSTATE mouse_left;
 ACKVAR ACKCONST BUTTONSTATE mouse_middle;
@@ -44,5 +49,10 @@ ACKVAR EVENT * ACKCONST on_mouse_middle;
 ACKVAR EVENT * ACKCONST on_mouse_right;
 ACKVAR EVENT * ACKCONST on_mouse_x1;
 ACKVAR EVENT * ACKCONST on_mouse_x2;
+
+// Functions
+ACKFUN char const * str_for_key(int scancode);
+
+ACKFUN int key_for_string(char const * keyname);
 
 #endif // INPUT_H

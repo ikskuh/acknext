@@ -19,6 +19,11 @@ void print_something()
 	   mouse_x2);
 }
 
+void print_keydown()
+{
+	engine_log("keypress:\t%d\t'%s'", key_lastpressed, str_for_key(key_lastpressed));
+}
+
 int main(int argc, char *argv[])
 {
     if(engine_open(argc, argv) == false)
@@ -42,6 +47,8 @@ int main(int argc, char *argv[])
 	event_attach(on_mouse_middle, print_something);
 	event_attach(on_mouse_x1, print_something);
 	event_attach(on_mouse_x2, print_something);
+
+	event_attach(on_anykey, print_keydown);
 
     while(engine_frame())
     {

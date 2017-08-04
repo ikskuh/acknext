@@ -11,8 +11,13 @@ ACKNEXT_API_BLOCK
 #include <acknext/keyboard-config.h>
 #undef _ACKNEXT_KEYDEF
 
+	BUTTONSTATE key_any = RELEASED;
+	EVENT * on_anykey = nullptr;
+
+	int key_lastpressed = 0;
+
 	POINT mouse_pos = { 0, 0 };
-	VECTOR4 mouse_delta = { 0, 0, 0, 0 };
+	VECTOR4 mickey = { 0, 0, 0, 0 };
 
 	BUTTONSTATE mouse_left = RELEASED;
 	BUTTONSTATE mouse_middle = RELEASED;
@@ -34,6 +39,12 @@ void InputManager::init()
 	on_mouse_middle = demote(new Event(false));
 	on_mouse_x1 = demote(new Event(false));
 	on_mouse_x2 = demote(new Event(false));
+
+#define _ACKNEXT_KEYDEF(_name,_scancode) on_##_name = demote(new Event(false));
+#include <acknext/keyboard-config.h>
+#undef _ACKNEXT_KEYDEF
+
+	on_anykey = demote(new Event(false));
 }
 
 void InputManager::shutdown()
@@ -43,11 +54,27 @@ void InputManager::shutdown()
 	delete promote<Event>(on_mouse_right);
 	delete promote<Event>(on_mouse_x1);
 	delete promote<Event>(on_mouse_x2);
+
+#define _ACKNEXT_KEYDEF(_name,_scancode) delete promote<Event>(on_##_name);
+#include <acknext/keyboard-config.h>
+#undef _ACKNEXT_KEYDEF
+
+	delete promote<Event>(on_anykey);
 }
 
 void InputManager::beginFrame()
 {
-	mouse_delta = (VECTOR4) { 0, 0, 0, 0 };
+	mickey = (VECTOR4) { 0, 0, 0, 0 };
+}
+
+static void update_anykey()
+{
+	// This hurts a bit, but is also kinda cool
+	key_any = (0
+#define _ACKNEXT_KEYDEF(_name,_scancode) || key_##_name
+#include <acknext/keyboard-config.h>
+#undef _ACKNEXT_KEYDEF
+		) ? PRESSED : RELEASED;
 }
 
 void InputManager::keyDown(SDL_KeyboardEvent const & ev)
@@ -63,9 +90,12 @@ void InputManager::keyDown(SDL_KeyboardEvent const & ev)
 #undef _ACKNEXT_KEYDEF
 		case SDL_SCANCODE_UNKNOWN:
 			engine_log("You pressed a key that isn't known to SDL! Bad boy!");
-			break;
+			return;
 		case SDL_NUM_SCANCODES: abort(); // Just hard-die here
 	}
+	key_lastpressed = ev.keysym.scancode;
+	update_anykey();
+	event_invoke(on_anykey, nullptr);
 }
 
 void InputManager::keyUp(SDL_KeyboardEvent const & ev)
@@ -80,9 +110,10 @@ void InputManager::keyUp(SDL_KeyboardEvent const & ev)
 #undef _ACKNEXT_KEYDEF
 		case SDL_SCANCODE_UNKNOWN:
 			engine_log("You pressed a key that isn't known to SDL! Bad boy!");
-			break;
+			return;
 		case SDL_NUM_SCANCODES: abort(); // Just hard-die here
 	}
+	update_anykey();
 }
 
 void InputManager::mouseDown(SDL_MouseButtonEvent const & ev)
@@ -137,13 +168,13 @@ void InputManager::mouseUp(SDL_MouseButtonEvent const & ev)
 void InputManager::mouseMove(SDL_MouseMotionEvent const & ev)
 {
 	mouse_pos = (POINT) { ev.x, ev.y };
-	mouse_delta.x += ev.xrel;
-	mouse_delta.y += ev.yrel;
+	mickey.x += ev.xrel;
+	mickey.y += ev.yrel;
 }
 
 void InputManager::mouseWheel(SDL_MouseWheelEvent const & ev)
 {
-	mouse_delta.z += ev.x;
-	mouse_delta.w += ev.y;
+	mickey.z += ev.x;
+	mickey.w += ev.y;
 }
 
