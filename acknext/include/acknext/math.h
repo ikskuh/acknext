@@ -36,6 +36,11 @@ typedef struct
 
 typedef struct
 {
+	var u, v;
+} UVCOORD;
+
+typedef struct
+{
 	int x, y;
 } POINT;
 
@@ -100,5 +105,13 @@ ACKFUN VECTOR * vec_normalize(VECTOR * vec, var length);
 // vec_accelerate( VECTOR* distance,VECTOR* speed,VECTOR* accel,var friction): VECTOR*
 // vec_for_angle(VECTOR* vec,ANGLE* ang)
 // vec_to_angle (ANGLE* ang, VECTOR* dir);
+
+// MATRIX Api:
+
+ACKFUN MATRIX * mat_id(MATRIX * mat);
+
+ACKFUN MATRIX * mat_copy(MATRIX * dst, MATRIX const * src);
+
+ACKFUN MATRIX * mat_mul(MATRIX * dst, MATRIX const * lhs, MATRIX const * rhs);
 
 #endif // _ACKNEXT_MATH_H_

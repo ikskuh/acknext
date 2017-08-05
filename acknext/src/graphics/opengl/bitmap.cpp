@@ -141,6 +141,7 @@ ACKNEXT_API_BLOCK
 		bitmap->width = width;
 		bitmap->height = height;
 		bitmap->format = format;
+		bitmap->depth = 1;
 	}
 
 	void bmap_remove(BITMAP * bitmap)

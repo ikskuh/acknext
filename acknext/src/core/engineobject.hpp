@@ -10,7 +10,11 @@ class EngineObject
 {
 public:
 	typedef T cdataType;
+	// Maybe think of another solution later...
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
 	static const ptrdiff_t cdataOffset = offsetof(EngineObject<T>, cdata);
+#pragma GCC diagnostic pop
 protected:
 	T cdata;
 public:

@@ -26,7 +26,7 @@ enum.SHADERTYPE =
 {
 	postfix = "SHADER",
 	"VERTEX",
-	"INDEX",
+	"FRAGMENT",
 	"GEOMETRY",
 	"TESSCTRL",
 	"TESSEVAL",
@@ -88,4 +88,5 @@ enum.ERROR =
 	"InvalidArgument",
 	"InvalidOperation",
 	"SDL",
+	"OutOfBounds",
 }

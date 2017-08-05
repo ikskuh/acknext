@@ -28,10 +28,10 @@ typedef struct
 
 typedef struct
 {
-	int ACKCONST index;
+	int ACKCONST location;
 	char ACKCONST name[128];
 	GLDATA ACKCONST type;
-	size_t ACKCONST size;
+	int ACKCONST size;
 	SHADERVAR ACKCONST var;
 } UNIFORM;
 

@@ -29,6 +29,8 @@ struct Config
 	std::string title;
 	FullscreenType fullscreen;
 	SIZE resolution;
+
+	std::string organization, application;
 };
 
 extern Config engine_config;

@@ -13,6 +13,8 @@ INCLUDEPATH += $$PWD/src
 DEPENDPATH += $$PWD/include
 DEPENDPATH += $$PWD/src
 
+LIBS += -lphysfs
+
 DEFINES += _ACKNEXT_INTERNAL_
 
 ackGraphics {
@@ -40,7 +42,6 @@ ackScheduler {
 HEADERS += \
     src/graphics/opengl/buffer.hpp \
     src/graphics/opengl/shader.hpp \
-    src/graphics/opengl/uniform.hpp \
     src/graphics/scene/material.hpp \
     src/graphics/scene/mesh.hpp \
     src/graphics/scene/stage.hpp \
@@ -78,12 +79,13 @@ HEADERS += \
     include/acknext/core-graphics.h \
     include/acknext/blob.h \
     src/core/blob.hpp \
-    include/acknext/opengl.h
+    include/acknext/opengl.h \
+    include/acknext/scene.h \
+    include/acknext/filesys.h
 
 SOURCES += \
     src/graphics/opengl/buffer.cpp \
     src/graphics/opengl/shader.cpp \
-    src/graphics/opengl/uniform.cpp \
     src/graphics/scene/material.cpp \
     src/graphics/scene/mesh.cpp \
     src/graphics/scene/stage.cpp \
@@ -111,4 +113,8 @@ SOURCES += \
     src/core/globals.cpp \
     src/input/inputmanager.cpp \
     src/input/input-strings.cpp \
-    src/core/blob.cpp
+    src/core/blob.cpp \
+    src/graphics/opengl/opengl.cpp \
+    src/math/matrix.cpp \
+    src/graphics/graphics-resource.cpp \
+    src/virtfs/physfs-integration.cpp

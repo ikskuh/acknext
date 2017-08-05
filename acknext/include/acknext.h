@@ -13,6 +13,8 @@
 #include "acknext/core-graphics.h"
 #include "acknext/blob.h"
 #include "acknext/opengl.h"
+#include "acknext/scene.h"
+#include "acknext/filesys.h"
 
 // Global variables
 #include "acknext/ackvars.h"

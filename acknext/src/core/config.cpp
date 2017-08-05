@@ -16,6 +16,8 @@ Config::Config()
     includePaths = { };
     fullscreen = FullscreenType::Windowed;
     title = "Acknext Engine";
+	organization = "teamretro";
+	application = "acknext";
 }
 
 static DOTCONF_CB(op_title);
