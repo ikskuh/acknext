@@ -51,4 +51,8 @@ typedef uint32_t INDEX;
 // model api:
 ACKFUN MODEL * model_load(char const * fileName);
 
+ACKFUN MODEL * model_get(char const * fileName); // uses caching
+
+ACKFUN void model_remove(MODEL * model); // only created or loaded ones
+
 #endif // _ACKNEXT_SCENE_H_

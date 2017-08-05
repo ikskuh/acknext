@@ -104,6 +104,15 @@ ACKNEXT_API_BLOCK
 		}
 	}
 
+	void file_flush(ACKFILE * file)
+	{
+		if(file == nullptr) {
+			engine_seterror(ERR_INVALIDARGUMENT, "file must not be NULL");
+		} else {
+			PHYSFS_flush(file);
+		}
+	}
+
 	void file_close(ACKFILE * file)
 	{
 		if(file == nullptr) {

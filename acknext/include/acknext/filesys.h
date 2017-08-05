@@ -28,6 +28,8 @@ ACKFUN int64_t file_size(ACKFILE * file);
 
 ACKFUN bool file_eof(ACKFILE * file);
 
+ACKFUN void file_flush(ACKFILE * file);
+
 ACKFUN void file_close(ACKFILE * file);
 
 #endif // _ACKNEXT_FILESYS_H_

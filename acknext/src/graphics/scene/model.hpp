@@ -3,10 +3,16 @@
 
 #include <engine.hpp>
 
+#include <vector>
+
 class Model : public EngineObject<MODEL>
 {
 public:
-	Model();
+	bool userCreated;
+	std::vector<MATERIAL> materials;
+	std::vector<MESH> meshes;
+public:
+	explicit Model();
 	NOCOPY(Model);
 	~Model();
 };

@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <acknext.h>
 
+#include <GL/gl3w.h>
+
 int main(int argc, char *argv[])
 {
 	if(engine_open(argc, argv) == false)
@@ -9,11 +11,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-	filesys_addResource("packed.zip", NULL);
-
-	if(bmap_load("packed.png") != NULL) {
-		engine_log("Load successful!");
-	}
+	MODEL * model = model_get("earth.mdl");
 
     while(engine_frame())
     {

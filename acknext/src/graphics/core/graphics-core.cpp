@@ -38,8 +38,6 @@ void render_init()
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
-	glEnable(GL_DEPTH_TEST);
-
 	glCreateVertexArrays(1, &vao);
 	glEnableVertexArrayAttrib(vao, 0);
 	glEnableVertexArrayAttrib(vao, 1);
