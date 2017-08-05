@@ -16,6 +16,7 @@
 #include "acknext/scene.h"
 #include "acknext/filesys.h"
 #include "acknext/scheduler.h"
+#include "acknext/ackentity.h"
 
 // Global variables
 #include "acknext/ackvars.h"

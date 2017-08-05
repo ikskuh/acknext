@@ -18,7 +18,8 @@ typedef struct
 
 typedef struct
 {
-
+	size_t ACKCONST size;
+	BUFFERTYPE ACKCONST type;
 } BUFFER;
 
 typedef struct

@@ -90,7 +90,9 @@ HEADERS += \
     include/acknext/filesys.h \
     include/acknext/scheduler.h \
     include/acknext/ackmath.h \
-    src/virtfs/physfsrwops.h
+    include/acknext/ackentity.h \
+    src/virtfs/physfsrwops.h \
+    src/graphics/scene/ackglm.hpp
 
 SOURCES += \
     src/graphics/opengl/buffer.cpp \
@@ -127,4 +129,5 @@ SOURCES += \
     src/virtfs/physfs-integration.cpp \
     src/scheduler/scheduler.cpp \
     src/virtfs/physfsrwops.c \
-    src/math/quaternion.cpp
+    src/math/quaternion.cpp \
+    src/graphics/scene/scene-renderer.cpp

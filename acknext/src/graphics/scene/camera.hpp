@@ -1,11 +1,16 @@
 #ifndef CAMERA_HPP
 #define CAMERA_HPP
 
+#include <engine.hpp>
 
-class Camera
+class Camera : public EngineObject<CAMERA>
 {
 public:
-	Camera();
+	bool userCreated;
+public:
+	explicit Camera();
+	NOCOPY(Camera);
+	~Camera();
 };
 
 #endif // CAMERA_HPP

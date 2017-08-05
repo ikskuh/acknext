@@ -73,13 +73,6 @@ enum.SHADERVAR =
 	"texEmission",
 }
 
-enum.FILETYPE = 
-{
-	postfix = "_FILE",
-	"Physical",
-	"Virtual",
-}
-
 enum.ERROR = 
 {
 	prefix = "ERR_",
@@ -100,4 +93,11 @@ enum.TASKSTATE =
 	"SUSPENDED",
 	"DISABLED",
 	"RUNNING",
+}
+
+enum.CAMERATYPE =
+{
+	"Perspective",
+	"Isometric",
+	"Custom_Projection",
 }

@@ -8,7 +8,6 @@ class Buffer : public EngineObject<BUFFER>
 public:
 	GLuint id;
 	GLenum type;
-	size_t size;
 public:
 	explicit Buffer(BUFFERTYPE type);
 	NOCOPY(Buffer);

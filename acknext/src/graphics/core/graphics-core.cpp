@@ -6,6 +6,7 @@
 #include "../opengl/shader.hpp"
 #include "../opengl/buffer.hpp"
 #include "../opengl/bitmap.hpp"
+#include "../scene/camera.hpp"
 
 GLuint vao;
 Shader * defaultShader;
@@ -118,6 +119,9 @@ void render_init()
 	uint32_t white = 0xFFFFFFFF;
 	defaultWhiteTexture = promote<Bitmap>(bmap_create(TEX_2D));
 	bmap_set(demote(defaultWhiteTexture), 1, 1, FORMAT_RGBA8, &white);
+
+	camera = camera_create();
+	promote<Camera>(::camera)->userCreated = false;
 }
 
 void render_frame()

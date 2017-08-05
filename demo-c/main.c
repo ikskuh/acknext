@@ -5,7 +5,11 @@
 
 void gamemain()
 {
-	MODEL * model = model_get("earth.mdl");
+	camera->position.z = 16;
+
+	view_create(render_scene_with_camera, camera);
+
+	ent_create("earth.mdl", vector(0, 0, -32), NULL);
 }
 
 

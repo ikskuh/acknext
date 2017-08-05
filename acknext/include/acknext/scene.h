@@ -4,6 +4,7 @@
 #include "config.h"
 #include <stdint.h>
 #include "ackmath.h"
+#include "ackenum.h"
 #include "core-graphics.h"
 
 typedef struct
@@ -42,6 +43,17 @@ typedef struct
 	// TODO: Implement something useful here
 } MODEL;
 
+typedef struct
+{
+	VECTOR position;
+	QUATERNION rotation;
+	var zNear, zFar;
+	var arc;
+	var aspect;
+	MATRIX projection;
+	CAMERATYPE type;
+} CAMERA;
+
 /**
  * @ingroup rendering
  * @brief An index of a @ref MESH.
@@ -54,5 +66,21 @@ ACKFUN MODEL * model_load(char const * fileName);
 ACKFUN MODEL * model_get(char const * fileName); // uses caching
 
 ACKFUN void model_remove(MODEL * model); // only created or loaded ones
+
+// render api:
+ACKVAR CAMERA * ACKCONST camera;
+
+ACKVAR COLOR sky_color;
+
+ACKFUN CAMERA * camera_create();
+
+ACKFUN void camera_remove(CAMERA * camera);
+
+ACKFUN void camera_to_matrix(
+    CAMERA const * view,
+    MATRIX * matView,
+    MATRIX * matProjection);
+
+ACKFUN void render_scene_with_camera(CAMERA * camera);
 
 #endif // _ACKNEXT_SCENE_H_

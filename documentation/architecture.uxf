@@ -119,12 +119,13 @@ bg=green</panel_attributes>
       <x>360</x>
       <y>104</y>
       <w>168</w>
-      <h>64</h>
+      <h>80</h>
     </coordinates>
     <panel_attributes>BITMAP
 --
 width : int
 height : int
+depth : int
 format : BITMAPFMT
 
 bg=white</panel_attributes>
@@ -134,9 +135,9 @@ bg=white</panel_attributes>
     <id>UMLClass</id>
     <coordinates>
       <x>360</x>
-      <y>176</y>
+      <y>192</y>
       <w>168</w>
-      <h>192</h>
+      <h>176</h>
     </coordinates>
     <panel_attributes>MATERIAL
 --
@@ -481,7 +482,6 @@ bg=green</panel_attributes>
 bg=white
 position : VECTOR
 rotation : QUATERNION
-renderMask : BITFIELD
 zNear : var
 zFar : var
 arc : var
@@ -513,6 +513,7 @@ bg=white</panel_attributes>
 --
 bg=white
 type : STAGETYPE
+renderMask : BITFIELD
 </panel_attributes>
     <additional_attributes/>
   </element>

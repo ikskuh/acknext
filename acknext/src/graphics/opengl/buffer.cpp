@@ -16,6 +16,8 @@ Buffer::Buffer(BUFFERTYPE type) :
 	type(getBufferType(type))
 {
 	glCreateBuffers(1, &this->id);
+	api().type = type;
+	api().size = 0;
 }
 
 Buffer::~Buffer()
@@ -46,7 +48,7 @@ ACKNEXT_API_BLOCK
 			size,
 		    data,
 			GL_STATIC_DRAW);
-		buf->size = size;
+		buffer->size = size;
 	}
 
 	void buffer_update(BUFFER * buffer, size_t offset, size_t size, void * data)
@@ -60,7 +62,7 @@ ACKNEXT_API_BLOCK
 			engine_seterror(ERR_INVALIDARGUMENT, "data must be set.");
 			return;
 		}
-		if((offset + size) > size_t(buf->size)) {
+		if((offset + size) > size_t(buffer->size)) {
 			engine_seterror(ERR_INVALIDARGUMENT, "offset and size must contained in the buffer.");
 			return;
 		}

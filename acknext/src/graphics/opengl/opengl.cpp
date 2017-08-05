@@ -27,7 +27,7 @@ ACKNEXT_API_BLOCK
 				engine_seterror(ERR_INVALIDARGUMENT, "Buffer is not a vertex buffer.");
 				return;
 			}
-			if((buffer->size % sizeof(VERTEX)) != 0) {
+			if((_buffer->size % sizeof(VERTEX)) != 0) {
 				engine_seterror(ERR_INVALIDARGUMENT, "Buffer size is not divisible by vertex size.");
 				return;
 			}
@@ -50,7 +50,7 @@ ACKNEXT_API_BLOCK
 				engine_seterror(ERR_INVALIDARGUMENT, "Buffer is not an index buffer.");
 				return;
 			}
-			if((buffer->size % sizeof(INDEX)) != 0) {
+			if((_buffer->size % sizeof(INDEX)) != 0) {
 				engine_seterror(ERR_INVALIDARGUMENT, "Buffer size is not divisible by index size.");
 				return;
 			}
@@ -130,7 +130,7 @@ ACKNEXT_API_BLOCK
 			engine_seterror(ERR_INVALIDOPERATION, "Either index, vertex or both buffers are not set.");
 			return;
 		}
-		if((offset + count) > (currentIndexBuffer->size / sizeof(INDEX))) {
+		if((offset + count) > (currentIndexBuffer->api().size / sizeof(INDEX))) {
 			engine_seterror(ERR_INVALIDOPERATION, "offset and count index the index buffer outside of its range.");
 			return;
 		}
