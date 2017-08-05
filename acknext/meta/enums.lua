@@ -89,6 +89,7 @@ enum.ERROR =
 	"InvalidOperation",
 	"SDL",
 	"OutOfBounds",
+	"FileSystem",
 }
 
 enum.TASKSTATE = 

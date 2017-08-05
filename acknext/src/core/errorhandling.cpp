@@ -25,7 +25,7 @@ ACKNEXT_API_BLOCK
 		vsprintf(buffer, message, list);
 		va_end(list);
 
-		engine_log("Error: %s", message);
+		engine_log("Error: %s", buffer);
 
 		engine_lasterror_text = buffer;
 	}

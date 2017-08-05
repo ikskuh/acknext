@@ -8,6 +8,7 @@
 #define NOCOPY(Class) Class(Class const &) = delete; Class(Class&&) = delete
 
 #include "core/engineobject.hpp"
+#include "virtfs/physfsrwops.h"
 
 #include <GL/gl3w.h>
 

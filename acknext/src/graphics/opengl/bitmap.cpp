@@ -61,13 +61,20 @@ ACKNEXT_API_BLOCK
 
 	BITMAP * bmap_load(char const * fileName)
 	{
-		SDL_Surface * surface = IMG_Load(fileName);
+		SDL_RWops *rwops = PHYSFSRWOPS_openRead(fileName);
+		if(rwops == nullptr) {
+			engine_setsdlerror();
+			return nullptr;
+		}
+
+		SDL_Surface * surface = IMG_Load_RW(rwops, 1);
 		if(surface == nullptr) {
 			engine_setsdlerror();
 			return nullptr;
 		}
 		SDL_Surface * converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ABGR8888, 0);
 		if(converted == nullptr) {
+			engine_setsdlerror();
 			SDL_FreeSurface(surface);
 			return nullptr;
 		}

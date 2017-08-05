@@ -63,7 +63,6 @@ HEADERS += \
     src/collision/hull.hpp \
     src/graphics/core/view.hpp \
     src/scheduler/task.hpp \
-    src/virtfs/filehandle.hpp \
     src/events/event.hpp \
     src/input/gamepad.hpp \
     src/input/joystick.hpp \
@@ -90,7 +89,8 @@ HEADERS += \
     include/acknext/scene.h \
     include/acknext/filesys.h \
     include/acknext/scheduler.h \
-    include/acknext/ackmath.h
+    include/acknext/ackmath.h \
+    src/virtfs/physfsrwops.h
 
 SOURCES += \
     src/graphics/opengl/buffer.cpp \
@@ -107,7 +107,6 @@ SOURCES += \
     src/collision/collision.cpp \
     src/collision/hull.cpp \
     src/graphics/core/view.cpp \
-    src/virtfs/filehandle.cpp \
     src/events/event.cpp \
     src/input/gamepad.cpp \
     src/input/joystick.cpp \
@@ -126,4 +125,5 @@ SOURCES += \
     src/math/matrix.cpp \
     src/graphics/graphics-resource.cpp \
     src/virtfs/physfs-integration.cpp \
-    src/scheduler/scheduler.cpp
+    src/scheduler/scheduler.cpp \
+    src/virtfs/physfsrwops.c

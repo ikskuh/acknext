@@ -6,6 +6,7 @@
 #include <chrono>
 #include <getopt.h>
 #include <physfs.h>
+#include <unistd.h>
 
 using std::chrono::steady_clock;
 using std::chrono::high_resolution_clock;
@@ -114,17 +115,23 @@ ACKNEXT_API_BLOCK
 		}
 
 		engine_log("Initialize virtual file system...");
-		PHYSFS_init(argv[0]);
+		{
+			PHYSFS_init(argv[0]);
 
-		PHYSFS_setSaneConfig (
-			engine_config.organization.c_str(),
-			engine_config.application.c_str(),
-			"ARP",    // scan for default archive
-			0,        // no cd
-			0);       // filesys > pack
+			PHYSFS_setSaneConfig (
+				engine_config.organization.c_str(),
+				engine_config.application.c_str(),
+				"ARP",    // scan for default archive
+				0,        // no cd
+				0);       // filesys > pack
 
-		engine_log("app dir:  %s", PHYSFS_getBaseDir());
-		engine_log("save dir: %s", PHYSFS_getWriteDir());
+			char buffer[256];
+			PHYSFS_addToSearchPath(getcwd(buffer, 256), 0);
+
+			engine_log("app dir:  %s", PHYSFS_getBaseDir());
+			engine_log("save dir: %s", PHYSFS_getWriteDir());
+			engine_log("work dir: %s", buffer);
+		}
 
 		// if(compiler_init() == false) {
 		// 	return false;

@@ -8,6 +8,8 @@
 // now this is sufficient
 typedef struct PHYSFS_File ACKFILE;
 
+ACKFUN void filesys_addResource(char const * resource, char const * path);
+
 ACKFUN ACKFILE * file_open_read(char const * name);
 
 ACKFUN ACKFILE * file_open_write(char const * name);
@@ -19,6 +21,10 @@ ACKFUN int64_t file_read(ACKFILE *file, void *buffer, uint32_t objSize, uint32_t
 ACKFUN int64_t file_write(ACKFILE *file, const void *buffer, uint32_t objSize, uint32_t objCount);
 
 ACKFUN void file_seek(ACKFILE * file, uint64_t position);
+
+ACKFUN int64_t file_tell(ACKFILE * file);
+
+ACKFUN int64_t file_size(ACKFILE * file);
 
 ACKFUN bool file_eof(ACKFILE * file);
 

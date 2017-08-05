@@ -4,6 +4,17 @@
 
 ACKNEXT_API_BLOCK
 {
+	void filesys_addResource(char const * resource, char const * path)
+	{
+		if(resource == nullptr) {
+			engine_seterror(ERR_INVALIDARGUMENT, "name must not be NULL");
+			return;
+		}
+		if(PHYSFS_mount(resource, path, 1) == 0) {
+			engine_seterror(ERR_FILESYSTEM, "%s", PHYSFS_getLastError());
+		}
+	}
+
 	ACKFILE * file_open_read(char const * name)
 	{
 		if(name == nullptr) {
@@ -70,6 +81,26 @@ ACKNEXT_API_BLOCK
 			return true;
 		} else {
 			return PHYSFS_eof(file);
+		}
+	}
+
+	int64_t file_tell(ACKFILE * file)
+	{
+		if(file == nullptr) {
+			engine_seterror(ERR_INVALIDARGUMENT, "file must not be NULL");
+			return true;
+		} else {
+			return PHYSFS_tell(file);
+		}
+	}
+
+	int64_t file_size(ACKFILE * file)
+	{
+		if(file == nullptr) {
+			engine_seterror(ERR_INVALIDARGUMENT, "file must not be NULL");
+			return true;
+		} else {
+			return PHYSFS_fileLength(file);
 		}
 	}
 

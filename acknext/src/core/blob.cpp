@@ -25,6 +25,31 @@ ACKNEXT_API_BLOCK
 		return demote(new Blob(size));
 	}
 
+	BLOB * blob_load(char const * fileName)
+	{
+		if(fileName == nullptr) {
+			engine_seterror(ERR_INVALIDARGUMENT, "fileName must not be NULL!");
+			return nullptr;
+		}
+		ACKFILE * file = file_open_read(fileName);
+		if(file == nullptr) {
+			engine_seterror(ERR_FILESYSTEM, "The given file `%s` was not found.", fileName);
+			return nullptr;
+		}
+
+		int64_t size = file_size(file);
+		if(size < 0) {
+			file_close(file);
+			return nullptr;
+		}
+
+		BLOB * blob = blob_create(size_t(size));
+		file_read(file, blob->data, 1, blob->size);
+		file_close(file);
+
+		return blob;
+	}
+
 	BLOB * blub_clone(BLOB const * blob)
 	{
 		Blob const * b = promote<Blob>(blob);
