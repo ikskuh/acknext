@@ -13,6 +13,7 @@ class CoError
 public:
 	static const int kill = 1;
 	static const int exception = 2;
+	static const int exit = 3;
 private:
 	int id;
 public:
@@ -124,12 +125,21 @@ ACKNEXT_API_BLOCK
 		return demote(task);
 	}
 
+	void task_exit()
+	{
+		if(::current == nullptr) {
+			engine_seterror(ERR_INVALIDOPERATION, "task_exit() failed because no task is running!");
+			abort();
+		}
+		// kill ourselves
+		throw CoError(CoError::exit);
+	}
+
 	void task_kill(TASK * _task)
 	{
 		Task * task = promote<Task>(_task);
 		if(task == nullptr) {
-			engine_seterror(ERR_INVALIDARGUMENT, "task must not be NULL!");
-			return;
+			task = ::current;
 		}
 		if(::current == task) {
 			// kill ourselves
@@ -166,7 +176,8 @@ ACKNEXT_API_BLOCK
 Task::Task(ENTRYPOINT function, void *context) :
     EngineObject<TASK>(),
     shutdown(false),
-    id(coroutine_new(::schedule, &Task::Trampoline, this))
+    id(coroutine_new(::schedule, &Task::Trampoline, this)),
+    success(false)
 {
 	api().function = function;
 	api().context = context;
@@ -207,6 +218,18 @@ void Task::resume()
 	task_current = nullptr;
 	::current = nullptr;
 	this->updateStatus();
+
+	if(this->alive() == false)
+	{
+		if(this->success)
+		{
+			event_invoke(this->api().finished, this->api().context);
+		}
+		else
+		{
+			event_invoke(this->api().failed, this->api().context);
+		}
+	}
 }
 
 void Task::updateStatus()
@@ -241,6 +264,7 @@ void Task::Trampoline(struct schedule *, void * ud)
 	try
 	{
 		co->api().function(co->api().context);
+		co->success = true;
 	}
 	catch(int i)
 	{
@@ -248,8 +272,18 @@ void Task::Trampoline(struct schedule *, void * ud)
 	}
 	catch(const CoError & err)
 	{
-		// This is a wanted shutdown!
-		engine_log("Coroutine Shutdown: %d", err.reason());
+		switch(err.reason()) {
+			case CoError::kill:
+				co->success = false;
+				break;
+			case CoError::exit:
+				co->success = true;
+				break;
+			default:
+				// This is a wanted shutdown!
+				engine_log("Coroutine Shutdown: %d", err.reason());
+				break;
+		}
 	}
 	catch(const std::exception & except)
 	{

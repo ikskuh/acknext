@@ -9,20 +9,24 @@ void draw_something(COLOR * cc)
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void key_event()
+void tasker(int * data)
 {
-	for(int i = 0; i < 10; i++)
+	engine_log("task entry");
+	while(!key_space)
 	{
-		engine_log("Yay: %d", i);
-		for(int j = 0; j < 60; j++) {
-			task_yield();
-		}
+		if(key_b) task_kill(NULL);
+		if(key_c) task_exit();
+		task_yield();
 	}
 }
 
-void synchro()
+void failure(int * data)
 {
-	engine_log("Ich bin synchroooon!");
+	*data = 2;
+}
+void success(int * data)
+{
+	*data = 1;
 }
 
 int main(int argc, char *argv[])
@@ -33,16 +37,17 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-	VIEW * view = view_create(draw_something, &COLOR_CYAN);
+	view_create(draw_something, &COLOR_CYAN);
 
-	event_attach(on_space, key_event);
+	int value = 0;
+	TASK * task = task_defer(tasker, &value);
 
-	if(task_start(synchro, NULL) ->state == TASK_DEAD) {
-		engine_log("It worked!");
-	}
+	event_attach(task->finished, success);
+	event_attach(task->failed, failure);
 
     while(engine_frame())
     {
+		engine_log("Task state: %d", value);
         // Now: Run!
     }
 

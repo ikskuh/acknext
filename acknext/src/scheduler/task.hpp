@@ -24,6 +24,7 @@ class Task : public EngineObject<TASK>
 public:
 	bool shutdown;
 	int id;
+	bool success;
 public:
 	Task(ENTRYPOINT function, void * context);
 	NOCOPY(Task);

@@ -24,7 +24,9 @@ ACKFUN TASK * task_start(ENTRYPOINT function, void * context);
 
 ACKFUN TASK * task_defer(ENTRYPOINT function, void * context);
 
-ACKFUN void task_kill(TASK * task);
+ACKFUN void task_exit(); // gamestudio can't handle the swag
+
+ACKFUN void task_kill(TASK * task); // at all!
 
 ACKFUN void task_yield(); // wait(1)
 
