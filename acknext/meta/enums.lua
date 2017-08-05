@@ -15,7 +15,24 @@ enum.LIGHTTYPE =
 	"Spot",
 }
 
-enum.BITMAPFMT = 
+enum.BUFFERTYPE = 
+{
+	postfix = "BUFFER",
+	"VERTEX",
+	"INDEX",
+};
+
+enum.SHADERTYPE = 
+{
+	postfix = "SHADER",
+	"VERTEX",
+	"INDEX",
+	"GEOMETRY",
+	"TESSCTRL",
+	"TESSEVAL",
+};
+
+enum.PIXELFORMAT = 
 {
 	prefix = "FORMAT_",
 	"Rgb",
@@ -34,6 +51,16 @@ enum.SHADERVAR =
 	"matViewProj",
 	"matWorldViewProj",
 	-- TODO: Complete!
+	"vecViewDir",
+	"vecViewPos",
+	"vecViewPort",
+
+	"vecColor",
+	"vecEmission",
+	"vecAttributes",
+	"texColor",
+	"texAttributes",
+	"texEmission",
 }
 
 enum.FILETYPE = 

@@ -74,7 +74,11 @@ HEADERS += \
     include/acknext/ackenum.h \
     src/input/inputmanager.hpp \
     include/acknext/input.h \
-    include/acknext/keyboard-config.h
+    include/acknext/keyboard-config.h \
+    include/acknext/core-graphics.h \
+    include/acknext/blob.h \
+    src/core/blob.hpp \
+    include/acknext/opengl.h
 
 SOURCES += \
     src/graphics/opengl/buffer.cpp \
@@ -106,4 +110,5 @@ SOURCES += \
     src/graphics/core/graphics-core.cpp \
     src/core/globals.cpp \
     src/input/inputmanager.cpp \
-    src/input/input-strings.cpp
+    src/input/input-strings.cpp \
+    src/core/blob.cpp

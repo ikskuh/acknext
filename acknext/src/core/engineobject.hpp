@@ -40,6 +40,19 @@ static inline T * promote(typename T::cdataType * value)
 }
 
 template<typename T>
+static inline T const * promote(typename T::cdataType const * value)
+{
+	if(value != nullptr) {
+		uintptr_t ptr = reinterpret_cast<uintptr_t>(value);
+		ptr	-= T::cdataOffset;
+		EngineObject<typename T::cdataType> const * obj = reinterpret_cast<EngineObject<typename T::cdataType> const *>(ptr);
+		return static_cast<T const *>(obj);
+	} else {
+		return nullptr;
+	}
+}
+
+template<typename T>
 static inline T * demote(EngineObject<T> * value)
 {
 	if(value != nullptr) {

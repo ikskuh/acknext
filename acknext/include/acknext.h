@@ -10,6 +10,9 @@
 #include "acknext/math.h"
 #include "acknext/input.h"
 #include "acknext/core.h"
+#include "acknext/core-graphics.h"
+#include "acknext/blob.h"
+#include "acknext/opengl.h"
 
 // Global variables
 #include "acknext/ackvars.h"
