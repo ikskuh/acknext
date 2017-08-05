@@ -126,4 +126,5 @@ SOURCES += \
     src/graphics/graphics-resource.cpp \
     src/virtfs/physfs-integration.cpp \
     src/scheduler/scheduler.cpp \
-    src/virtfs/physfsrwops.c
+    src/virtfs/physfsrwops.c \
+    src/math/quaternion.cpp
