@@ -39,11 +39,36 @@ void scheduler_update();
 
 ACKNEXT_API_BLOCK
 {
+	char ** engine_argv = { };
+	int engine_argc = 0;
+
+	int engine_main(void (*main)(), int argc, char ** argv)
+	{
+		if(engine_open(argc, argv) == false)
+	    {
+			fprintf(stderr, "Failed to initialize engine: %s\n", engine_lasterror_text);
+	        return 1;
+	    }
+
+		task_start(reinterpret_cast<ENTRYPOINT>(main), nullptr);
+
+	    while(engine_frame())
+	    {
+
+	    }
+
+	    engine_close();
+		return 0;
+	}
+
 	bool engine_open(int argc, char ** argv)
 	{
 		startupTime = std::chrono::steady_clock::now();
 
 		engine_log("Begin initalizing engine.");
+
+		engine_argv = argv;
+		engine_argc = argc;
 
 		engine_config.load("acknext.cfg");
 
