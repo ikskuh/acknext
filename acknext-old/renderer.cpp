@@ -9,8 +9,6 @@
 
 #define FALLBACK(a, b) ((a) ? (a) : (b))
 
-WIDGET * render_root = nullptr;
-
 static GLuint vao;
 static SHADER * defaultShader;
 static BITMAP * defaultWhiteTexture;

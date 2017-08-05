@@ -9,14 +9,14 @@ static struct schedule * schedule;
 
 struct CoError
 {
-    int reason;
+	int reason;
 };
 
 extern "C"
 {
-    struct memptr;
-    extern struct memptr _taskdata_start;
-    extern struct memptr _taskdata_end;
+	struct memptr;
+	extern struct memptr _taskdata_start;
+	extern struct memptr _taskdata_end;
 }
 
 struct TaskGlobals

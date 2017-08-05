@@ -28,9 +28,12 @@ void Event::detach(EVENTHANDLER ptr)
 
 void Event::invoke(void * arg)
 {
-	// TODO: Fork each event into a scheduler task!
 	for(EVENTHANDLER const & ev : this->handlers) {
+#ifdef ACKNEXT_HAS_SCHEDULER
+		task_start(ev, arg);
+#else
 		ev(arg);
+#endif
 	}
 }
 
