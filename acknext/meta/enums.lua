@@ -35,10 +35,20 @@ enum.SHADERTYPE =
 enum.PIXELFORMAT = 
 {
 	prefix = "FORMAT_",
-	"Rgb",
-	"Rgba",
+	"Rgb8",
+	"Rgba8",
 	"Rgba16f",
 	"Rgba32f",
+}
+
+enum.TEXTURETYPE = 
+{
+	prefix = "TEX_",
+	"1D",
+	"1D_Array",
+	"2D",
+	"3D",
+	"2D_Array",
 }
 
 enum.SHADERVAR = 

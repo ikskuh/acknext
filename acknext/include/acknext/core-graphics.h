@@ -9,6 +9,7 @@ typedef unsigned int GLDATA;
 
 typedef struct
 {
+	TEXTURETYPE ACKCONST type;
 	int ACKCONST width;
 	int ACKCONST height;
 	int ACKCONST depth; // 3D textures ;)
@@ -36,7 +37,7 @@ typedef struct
 
 // BITMAP api:
 
-ACKFUN BITMAP * bmap_create();
+ACKFUN BITMAP * bmap_create(TEXTURETYPE type);
 
 ACKFUN BITMAP * bmap_createblack(int width, int height, PIXELFORMAT format);
 
