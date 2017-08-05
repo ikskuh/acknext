@@ -5,7 +5,7 @@ CONFIG -= qt
 unix: CONFIG += link_pkgconfig
 unix: PKGCONFIG += ode dotconf sdl2 SDL2_image SDL2_mixer
 
-CONFIG += ackGraphics
+CONFIG += ackGraphics ackScheduler
 
 INCLUDEPATH += $$PWD/include
 INCLUDEPATH += $$PWD/src
@@ -37,6 +37,14 @@ ackScheduler {
 	DISTFILES += \
 		linker.ld
 	QMAKE_LFLAGS += -T$$quote($$PWD/linker.ld)
+
+	HEADERS += \
+		$$PWD/../coroutine/coroutine.h
+
+	SOURCES += \
+		$$PWD/../coroutine/coroutine.c
+
+	DEFINES += ACKNEXT_HAS_SCHEDULER
 }
 
 HEADERS += \
@@ -64,7 +72,6 @@ HEADERS += \
     include/acknext.h \
     include/acknext/config.h \
     include/acknext/event.h \
-    include/acknext/math.h \
     include/acknext/view.h \
     include/acknext/ackdef.h \
     include/acknext/ackvars.h \
@@ -81,7 +88,9 @@ HEADERS += \
     src/core/blob.hpp \
     include/acknext/opengl.h \
     include/acknext/scene.h \
-    include/acknext/filesys.h
+    include/acknext/filesys.h \
+    include/acknext/scheduler.h \
+    include/acknext/ackmath.h
 
 SOURCES += \
     src/graphics/opengl/buffer.cpp \
@@ -98,7 +107,6 @@ SOURCES += \
     src/collision/collision.cpp \
     src/collision/hull.cpp \
     src/graphics/core/view.cpp \
-    src/scheduler/task.cpp \
     src/virtfs/filehandle.cpp \
     src/events/event.cpp \
     src/input/gamepad.cpp \
@@ -117,4 +125,5 @@ SOURCES += \
     src/graphics/opengl/opengl.cpp \
     src/math/matrix.cpp \
     src/graphics/graphics-resource.cpp \
-    src/virtfs/physfs-integration.cpp
+    src/virtfs/physfs-integration.cpp \
+    src/scheduler/scheduler.cpp

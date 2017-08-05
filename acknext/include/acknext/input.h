@@ -7,7 +7,7 @@
 #endif
 
 #include "config.h"
-#include "math.h"
+#include "ackmath.h"
 #include "event.h"
 
 typedef int BUTTONSTATE;

@@ -2,7 +2,7 @@
 #define _ACKNEXT_CORE_GRAPHICS_H_
 
 #include "config.h"
-#include "math.h"
+#include "ackmath.h"
 #include "ackenum.h"
 
 typedef unsigned int GLDATA;

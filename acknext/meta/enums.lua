@@ -90,3 +90,13 @@ enum.ERROR =
 	"SDL",
 	"OutOfBounds",
 }
+
+enum.TASKSTATE = 
+{
+	prefix = "TASK_",
+	"DEAD",
+	"READY",
+	"SUSPENDED",
+	"DISABLED",
+	"RUNNING",
+}

@@ -9,6 +9,9 @@ typedef float var;
 
 typedef uint64_t BITFIELD;
 
+#define BITFIELD_NONE 0
+#define BITFIELD_ALL ((uint64_t)-1)
+
 typedef struct
 {
 	var x, y;

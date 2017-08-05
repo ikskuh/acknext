@@ -7,7 +7,7 @@
 // Structures and functions
 #include "acknext/event.h"
 #include "acknext/view.h"
-#include "acknext/math.h"
+#include "acknext/ackmath.h"
 #include "acknext/input.h"
 #include "acknext/core.h"
 #include "acknext/core-graphics.h"
@@ -15,6 +15,7 @@
 #include "acknext/opengl.h"
 #include "acknext/scene.h"
 #include "acknext/filesys.h"
+#include "acknext/scheduler.h"
 
 // Global variables
 #include "acknext/ackvars.h"

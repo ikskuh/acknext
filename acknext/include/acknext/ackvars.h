@@ -2,7 +2,7 @@
 #define _ACKNEXT_ACKVARS_H_
 
 #include "config.h"
-#include "math.h"
+#include "ackmath.h"
 
 ACKVAR ACKCONST SIZE screen_size;
 

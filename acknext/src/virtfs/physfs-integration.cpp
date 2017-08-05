@@ -8,6 +8,7 @@ ACKNEXT_API_BLOCK
 	{
 		if(name == nullptr) {
 			engine_seterror(ERR_INVALIDARGUMENT, "name must not be NULL");
+			return nullptr;
 		} else {
 			return PHYSFS_openRead(name);
 		}
@@ -17,6 +18,7 @@ ACKNEXT_API_BLOCK
 	{
 		if(name == nullptr) {
 			engine_seterror(ERR_INVALIDARGUMENT, "name must not be NULL");
+			return nullptr;
 		} else {
 			return PHYSFS_openWrite(name);
 		}
@@ -26,6 +28,7 @@ ACKNEXT_API_BLOCK
 	{
 		if(name == nullptr) {
 			engine_seterror(ERR_INVALIDARGUMENT, "name must not be NULL");
+			return nullptr;
 		} else {
 			return PHYSFS_openAppend(name);
 		}

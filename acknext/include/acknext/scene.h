@@ -3,7 +3,7 @@
 
 #include "config.h"
 #include <stdint.h>
-#include "math.h"
+#include "ackmath.h"
 #include "core-graphics.h"
 
 typedef struct

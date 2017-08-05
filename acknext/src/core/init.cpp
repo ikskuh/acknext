@@ -31,6 +31,11 @@ void render_init();
 void render_frame();
 void render_shutdown();
 
+// scheduler.cpp
+void scheduler_init();
+void scheduler_shutdown();
+void scheduler_update();
+
 ACKNEXT_API_BLOCK
 {
 	bool engine_open(int argc, char ** argv)
@@ -179,8 +184,8 @@ ACKNEXT_API_BLOCK
 		engine_log("Initialize renderer...");
 		render_init();
 
-		// engine_log("Initialize scheduler...");
-		// scheduler_initialize();
+		engine_log("Initialize scheduler...");
+		scheduler_init();
 
 		engine_log("Engine ready.");
 
@@ -245,7 +250,7 @@ ACKNEXT_API_BLOCK
 			}
 		}
 
-	    // scheduler_update();
+		scheduler_update();
 
 		// if(!(engine_flags & CUSTOMDRAW)) {
 		//
@@ -260,8 +265,8 @@ ACKNEXT_API_BLOCK
 
 	void engine_close()
 	{
-		// engine_log("Shutting down engine...");
-	    // scheduler_shutdown();
+		engine_log("Shutting down scheduler...");
+	    scheduler_shutdown();
 
 		engine_log("Shutting down input...");
 		InputManager::shutdown();

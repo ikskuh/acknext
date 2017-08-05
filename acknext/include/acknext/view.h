@@ -2,7 +2,7 @@
 #define _ACKNEXT_VIEW_H_
 
 #include "config.h"
-#include "math.h"
+#include "ackmath.h"
 
 typedef void (*RENDERCALL)(void * context);
 

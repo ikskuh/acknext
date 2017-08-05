@@ -28,6 +28,8 @@ static DOTCONF_CB(op_includePath);
 static DOTCONF_CB(op_libraries);
 static DOTCONF_CB(op_sourceFiles);
 
+// TODO: Add option for App.Organization, App.Name
+
 static const configoption_t options[] = {
 	{"Window.Title",         ARG_STR,  op_title,       NULL, CTX_ALL},
     {"Window.Fullscreen",    ARG_STR,  op_fullscreen,  NULL, CTX_ALL},
