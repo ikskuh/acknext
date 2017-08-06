@@ -83,4 +83,9 @@ ACKFUN void camera_to_matrix(
 
 ACKFUN void render_scene_with_camera(CAMERA * camera);
 
+// material api:
+
+ACKFUN MATERIAL * mtl_create();
+ACKFUN void mtl_remove(MATERIAL * mtl);
+
 #endif // _ACKNEXT_SCENE_H_

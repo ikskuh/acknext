@@ -1,20 +1,18 @@
 #include <stdio.h>
 #include <acknext.h>
 
-#include <GL/gl3w.h>
-
-void fail()
-{
-
-}
-
 void gamemain()
 {
 	camera->position.z = 16;
 
+	filesys_addResource("packed.zip", "/packed.zip/");
+
 	view_create(render_scene_with_camera, camera);
 
-	ent_create("earth.mdl", vector(0, 0, 0), NULL);
+	ENTITY * ent = ent_create("earth.mdl", vector(0, 0, 0), NULL);
+
+	ent->material = mtl_create();
+	ent->material->colorTexture = bmap_load("/packed.zip/packed.png");
 
 	for(int x = -4; x <= 4; x++) {
 		for(int z = -4; z <= 4; z++) {

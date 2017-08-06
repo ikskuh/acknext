@@ -79,6 +79,8 @@ static void update_anykey()
 
 void InputManager::keyDown(SDL_KeyboardEvent const & ev)
 {
+	key_lastpressed = ev.keysym.scancode;
+	update_anykey();
 	switch(ev.keysym.scancode)
 	{
 #define _ACKNEXT_KEYDEF(_name,_scancode) \
@@ -93,8 +95,6 @@ void InputManager::keyDown(SDL_KeyboardEvent const & ev)
 			return;
 		case SDL_NUM_SCANCODES: abort(); // Just hard-die here
 	}
-	key_lastpressed = ev.keysym.scancode;
-	update_anykey();
 	event_invoke(on_anykey, nullptr);
 }
 
