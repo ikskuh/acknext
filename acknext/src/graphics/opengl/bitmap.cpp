@@ -21,6 +21,7 @@ static GLenum getTextureFormat(PIXELFORMAT format)
 	switch(format) {
 		case FORMAT_RGB8: return GL_RGB8;
 		case FORMAT_RGBA8: return GL_RGBA8;
+		case FORMAT_BGRA8: return GL_RGBA8;
 		case FORMAT_RGBA16F: return GL_RGBA16F;
 		case FORMAT_RGBA32F: return GL_RGBA32F;
 		default:
@@ -111,14 +112,20 @@ ACKNEXT_API_BLOCK
 			return;
 		}
 
-		GLenum dfmt;
+		GLenum dfmt = GL_INVALID_ENUM;
+		GLenum pfmt = GL_INVALID_ENUM;
 		switch(format) {
 			case FORMAT_RGB8:
 			case FORMAT_RGBA8:
 				dfmt = GL_UNSIGNED_BYTE;
+				pfmt = GL_RGBA;
 				break;
-			case FORMAT_RGBA16F: dfmt = GL_HALF_FLOAT; break;
-			case FORMAT_RGBA32F: dfmt = GL_FLOAT; break;
+			case FORMAT_BGRA8:
+				dfmt = GL_UNSIGNED_BYTE;
+				pfmt = GL_BGRA;
+				break;
+			case FORMAT_RGBA16F: pfmt = GL_RGBA; dfmt = GL_HALF_FLOAT; break;
+			case FORMAT_RGBA32F: pfmt = GL_RGBA; dfmt = GL_FLOAT; break;
 			default: abort();
 		}
 
@@ -135,7 +142,7 @@ ACKNEXT_API_BLOCK
 				0,
 				0, 0,
 				width, height,
-				GL_RGBA,
+				pfmt,
 				dfmt,
 				data);
 		}

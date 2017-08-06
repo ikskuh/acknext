@@ -20,7 +20,7 @@ ACKNEXT_API_BLOCK
 {
 	void opengl_setVertexBuffer(BUFFER * _buffer)
 	{
-		GLuint id;
+		GLuint id = 0;
 		Buffer * buffer = promote<Buffer>(_buffer);
 		if(buffer != nullptr) {
 			if(buffer->type != GL_ARRAY_BUFFER) {
@@ -43,7 +43,7 @@ ACKNEXT_API_BLOCK
 
 	void opengl_setIndexBuffer(BUFFER * _buffer)
 	{
-		GLuint id;
+		GLuint id = 0;
 		Buffer * buffer = promote<Buffer>(_buffer);
 		if(buffer != nullptr) {
 			if(buffer->type != GL_ELEMENT_ARRAY_BUFFER) {

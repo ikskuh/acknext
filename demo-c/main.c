@@ -3,6 +3,11 @@
 
 #include <GL/gl3w.h>
 
+void fail()
+{
+
+}
+
 void gamemain()
 {
 	camera->position.z = 16;

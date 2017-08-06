@@ -37,6 +37,7 @@ enum.PIXELFORMAT =
 	prefix = "FORMAT_",
 	"Rgb8",
 	"Rgba8",
+	"Bgra8",
 	"Rgba16f",
 	"Rgba32f",
 }

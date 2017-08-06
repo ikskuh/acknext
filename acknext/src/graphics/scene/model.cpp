@@ -208,8 +208,22 @@ ACKNEXT_API_BLOCK
 					engine_log("Texture: %s", path.C_Str());
 
 					if(path.data[0] == '*') {
-						engine_log("Missing: Implement internal texture loading!");
-						dst.colorTexture = bmap_load("skin.bmp");
+						if(!scene->HasTextures()) {
+							engine_log("Model '%s' wants to use internal texture, but has none!", fileName);
+						} else {
+							int index = atoi(path.data + 1);
+							aiTexture * tex = scene->mTextures[index];
+							if(tex->achFormatHint != nullptr) {
+								engine_log("Texture format hint: '%s'", tex->achFormatHint);
+							}
+							dst.colorTexture = bmap_create(TEX_2D);
+							bmap_set(
+								dst.colorTexture,
+								tex->mWidth,
+								tex->mHeight,
+								FORMAT_BGRA8,
+								tex->pcData);
+						}
 					} else {
 						dst.colorTexture = bmap_load(path.C_Str());
 					}

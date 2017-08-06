@@ -28,7 +28,7 @@ ACKNEXT_API_BLOCK
 
 		for(ENTITY * ent = ent_next(nullptr); ent != nullptr; ent = ent_next(ent))
 		{
-			Entity * entity = promote<Entity>(ent);
+			// Entity * entity = promote<Entity>(ent);
 			if(ent->model == nullptr) {
 				continue;
 			}

@@ -17,6 +17,10 @@ LIBS += -lphysfs
 
 DEFINES += _ACKNEXT_INTERNAL_
 
+QMAKE_CFLAGS   += -g -rdynamic -O2
+QMAKE_CXXFLAGS += -g -rdynamic -O2
+QMAKE_LFLAGS   += -g -rdynamic -O2
+
 ackGraphics {
 	include(../../gl3w/gl3w.pri)
 	unix: PKGCONFIG += assimp gl
