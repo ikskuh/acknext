@@ -13,6 +13,8 @@ ACKFUN bool engine_frame();
 
 ACKFUN void engine_close();
 
+ACKFUN void engine_shutdown();
+
 ACKFUN void engine_log(char const * format, ...);
 
 ACKFUN void engine_seterror(ERROR code, char const * message, ...);

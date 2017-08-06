@@ -42,7 +42,7 @@ ACKNEXT_API_BLOCK
 	    MATRIX * matProjection)
 	{
 		glm_to_ack(matView,
-			glm::mat4_cast(ack_to_glm(cam->rotation)) *
+			glm::inverse(glm::mat4_cast(ack_to_glm(cam->rotation))) *
 			glm::translate(glm::mat4(), -ack_to_glm(cam->position)));
 		glm_to_ack(matProjection, glm::perspectiveFov(
 		   var(DEG_TO_RAD * cam->arc),

@@ -1,5 +1,6 @@
 #include <engine.hpp>
 #include <math.h>
+#include "../graphics/scene/ackglm.hpp"
 
 #define DEFAULT(x) if(!x) x=vector(0,0,0)
 
@@ -142,7 +143,15 @@ ACKNEXT_API_BLOCK
 
 	VECTOR * vec_normalize(VECTOR * vec, var length)
 	{
-		var scale = length / vec_length(vec);
+		var len = vec_length(vec);
+		if(len == 0) { return vec; }
+		var scale = length / len;
 		return vec_scale(vec, scale);
+	}
+
+	VECTOR * vec_rotate(VECTOR * vec, QUATERNION const * rot)
+	{
+		glm_to_ack(vec, glm::rotate(ack_to_glm(*rot), ack_to_glm(*vec)));
+		return vec;
 	}
 }

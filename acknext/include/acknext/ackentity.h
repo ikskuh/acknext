@@ -10,6 +10,7 @@ typedef struct
 {
 	VECTOR position;
 	QUATERNION rotation;
+	VECTOR scale;
 	MODEL * model;
 	MATERIAL * material;
 

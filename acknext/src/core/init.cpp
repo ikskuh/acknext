@@ -22,6 +22,8 @@ struct
 
 struct engine engine;
 
+bool engine_shutdown_requested = false;
+
 #define SDL_CHECKED(x, y) if((x) < 0) { engine_setsdlerror(); return y; }
 
 // errorhandling.cpp
@@ -227,6 +229,8 @@ ACKNEXT_API_BLOCK
 		// 	return false;
 		// }
 
+		engine_shutdown_requested = false;
+
 		return true;
 	}
 
@@ -292,7 +296,12 @@ ACKNEXT_API_BLOCK
 
 	    lastFrameTime = nextFrameTime;
 	    total_frames++;
-	    return true;
+	    return !engine_shutdown_requested;
+	}
+
+	void engine_shutdown()
+	{
+		engine_shutdown_requested = true;
 	}
 
 	void engine_close()

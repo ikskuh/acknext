@@ -17,6 +17,9 @@ Entity::Entity() :
 	}
 
 	api().removed = demote(new Event(false));
+
+	vec_fill(&api().scale, 1);
+	quat_id(&api().rotation);
 }
 
 Entity::~Entity()

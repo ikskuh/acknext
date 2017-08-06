@@ -29,7 +29,7 @@ typedef struct
 
 typedef struct
 {
-	var w, x, y, z;
+	var x, y, z, w;
 } QUATERNION;
 
 typedef struct
@@ -102,6 +102,8 @@ ACKFUN VECTOR * vec_lerp(VECTOR * vec, VECTOR const * lhs, VECTOR const * rhs, v
 
 ACKFUN VECTOR * vec_normalize(VECTOR * vec, var length);
 
+ACKFUN VECTOR * vec_rotate(VECTOR * vec, QUATERNION const * rot);
+
 // vec_rotate (VECTOR* vDir, ANGLE* vAng)
 // vec_rotateback (VECTOR* vDir, ANGLE* vAng)
 // vec_rotateaxis (VECTOR* vDir,VECTOR* vAxis,var angle)
@@ -124,6 +126,8 @@ ACKFUN QUATERNION * euler(var pan, var tilt, var roll);
 ACKFUN QUATERNION * quat_id(QUATERNION * quat);
 
 ACKFUN QUATERNION * quat_axis_angle(QUATERNION * quat, VECTOR const * axis, var angle);
+
+ACKFUN QUATERNION * quat_set(QUATERNION * lhs, QUATERNION const * rhs);
 
 ACKFUN QUATERNION * quat_mult(QUATERNION * lhs, QUATERNION const * rhs);
 

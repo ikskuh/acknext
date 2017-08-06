@@ -37,7 +37,8 @@ ACKNEXT_API_BLOCK
 			MATRIX matWorld;
 			glm_to_ack(&matWorld,
 				glm::translate(glm::mat4(), ack_to_glm(ent->position)) *
-				glm::mat4_cast(ack_to_glm(ent->rotation)));
+				glm::mat4_cast(ack_to_glm(ent->rotation)) *
+				glm::scale(glm::mat4(), ack_to_glm(ent->scale)));
 
 			if(ent->material != nullptr) {
 				opengl_setMaterial(ent->material);
