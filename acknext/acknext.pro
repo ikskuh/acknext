@@ -92,7 +92,8 @@ HEADERS += \
     include/acknext/ackmath.h \
     include/acknext/ackentity.h \
     src/virtfs/physfsrwops.h \
-    src/graphics/scene/ackglm.hpp
+    src/graphics/scene/ackglm.hpp \
+    include/acknext/acktransforms.h
 
 SOURCES += \
     src/graphics/opengl/buffer.cpp \
@@ -130,4 +131,5 @@ SOURCES += \
     src/scheduler/scheduler.cpp \
     src/virtfs/physfsrwops.c \
     src/math/quaternion.cpp \
-    src/graphics/scene/scene-renderer.cpp
+    src/graphics/scene/scene-renderer.cpp \
+    src/math/transforms.cpp

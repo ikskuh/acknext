@@ -3,6 +3,31 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#ifdef __linux__
+#include <execinfo.h>
+// int backtrace(void **buffer, int size);
+// char **backtrace_symbols(void *const *buffer, int size);
+static void print_stacktrace()
+{
+	void * stack[64];
+	int cnt = backtrace(stack, 64);
+
+	char ** symbols = backtrace_symbols(stack, cnt);
+	if(symbols == nullptr) {
+		for(int i = 2; i < cnt; i++) {
+			engine_log("\t%d [%p]", i - 2, stack[i]);
+		}
+	} else {
+		for(int i = 2; i < cnt; i++) {
+			engine_log("\t%s", symbols[i]);
+		}
+	}
+}
+
+#else
+#error "Implement stack tracing for other OS as well"
+#endif
+
 #define STRINGIFY(x) #x
 
 ACKNEXT_API_BLOCK
@@ -26,6 +51,8 @@ ACKNEXT_API_BLOCK
 		va_end(list);
 
 		engine_log("Error: %s", buffer);
+
+		print_stacktrace();
 
 		engine_lasterror_text = buffer;
 	}
