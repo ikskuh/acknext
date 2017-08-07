@@ -64,6 +64,8 @@ ACKFUN var clamp(var value, var min, var max);
 
 ACKFUN var cycle(var value, var min, var max);
 
+ACKFUN var oscillate(var value, var min, var max);
+
 // VECTOR Api:
 
 ACKFUN VECTOR * vector(var x, var y, var z);
