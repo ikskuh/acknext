@@ -13,10 +13,19 @@ ACKNEXT_API_BLOCK
 {
 	QUATERNION * euler(var pan, var tilt, var roll)
 	{
-		return quat_mult(quat_mult(
-			quat_axis_angle(nullptr, vector(1, 0, 0), roll),
-			quat_axis_angle(nullptr, vector(0, 0, 1), tilt)),
-			quat_axis_angle(nullptr, vector(0, 1, 0), pan));
+		QUATERNION * q = quat_temp(nullptr);
+		QUATERNION t;
+
+		quat_axis_angle(&t, vector(0, 1, 0), pan);
+		quat_set(q, &t);
+
+		quat_axis_angle(&t, vector(1, 0, 0), tilt);
+		quat_mult(q, &t);
+
+		quat_axis_angle(&t, vector(0, 0, 1), roll);
+		quat_mult(q, &t);
+
+		return q;
 	}
 
 	QUATERNION * quat_id(QUATERNION * quat)

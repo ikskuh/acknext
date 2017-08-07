@@ -26,6 +26,8 @@ ACKNEXT_API_BLOCK
 
 		mat_mul(&matViewProj, &matView, &matProj);
 
+		VECTOR src = *vec;
+
 		VECTOR4 vec4;
 		vec4.x = vec->x;
 		vec4.y = vec->y;
@@ -40,6 +42,7 @@ ACKNEXT_API_BLOCK
 
 		vec->x = (size.width - 1) * (0.5 + 0.5 * vec->x);
 		vec->y = (size.height - 1) * (0.5 - 0.5 * vec->y);
+		vec->z = vec_dist(&src, &cam->position); // vec4.z / vec4.w;
 		// vec->z = cam->zFar + (cam->zFar - cam->zNear) * vec->z;
 
 		return vec;
@@ -65,20 +68,26 @@ ACKNEXT_API_BLOCK
 		MATRIX matView, matProj, matViewProj;
 		camera_to_matrix(cam, &matView, &matProj, view);
 
-		mat_mul(&matViewProj, &matView, &matProj);
+		// mat_mul(&matViewProj, &matView, &matProj);
+		mat_copy(&matViewProj, &matView);
 		mat_invert(&matViewProj);
 
 		VECTOR4 vec4;
 		vec4.x = vec->x * (2.0 / (size.width - 1)) - 1.0;
-		vec4.y = vec->y * (2.0 / (size.height - 1)) - 1.0;
+		vec4.y = 1.0 - vec->y * (2.0 / (size.height - 1));
 		vec4.z = vec->z;
+
+		vec4.x *= vec4.z * tan(0.5 * DEG_TO_RAD * cam->arc) * cam->aspect * var(size.width) / var(size.height);
+		vec4.y *= vec4.z * tan(0.5 * DEG_TO_RAD * cam->arc);
+		vec4.z *= -1;
+
 		vec4.w = 1.0;
 
-		engine_log("(%f %f %f %f)", vec4.x, vec4.y, vec4.z, vec4.w);
+		// engine_log("(%f %f %f %f)", vec4.x, vec4.y, vec4.z, vec4.w);
 
 		vec4_transform(&vec4, &matViewProj);
 
-		engine_log("(%f %f %f %f)", vec4.x, vec4.y, vec4.z, vec4.w);
+		// engine_log("(%f %f %f %f)", vec4.x, vec4.y, vec4.z, vec4.w);
 
 		vec->x = vec4.x / vec4.w;
 		vec->y = vec4.y / vec4.w;

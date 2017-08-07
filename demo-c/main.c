@@ -1,6 +1,14 @@
 #include <stdio.h>
 #include <acknext.h>
 
+VECTOR cursor3d;
+
+void paint()
+{
+	ENTITY * ent = ent_create("earth.mdl", &cursor3d, NULL);
+	vec_fill(&ent->scale, 0.25);
+}
+
 void gamemain()
 {
 	filesys_addResource("packed.zip", "/packed.zip/");
@@ -8,7 +16,7 @@ void gamemain()
 	view_create(render_scene_with_camera, camera);
 
 	ENTITY * ent = ent_create("earth.mdl", vector(0, 0, 0), NULL);
-
+	vec_fill(&ent->scale, 0.125);
 	ent->material = mtl_create();
 	ent->material->colorTexture = bmap_load("/packed.zip/packed.png");
 
@@ -21,20 +29,18 @@ void gamemain()
 
 	task_yield();
 
+	event_attach(on_mouse_left, paint);
+
 	var pan = 0;
 	var tilt = 0;
 	while(!key_escape)
 	{
-		pan -= 0.3 * mickey.x;
-		tilt -= 0.3 * mickey.y;
+		if(mouse_right) {
+			pan -= 0.3 * mickey.x;
+			tilt -= 0.3 * mickey.y;
+		}
 
-		QUATERNION qpan, qtilt;
-
-		quat_axis_angle(&qpan, vector(0, 1, 0), pan);
-		quat_axis_angle(&qtilt, vector(1, 0, 0), tilt);
-
-		quat_set(&camera->rotation, &qpan);
-		quat_mult(&camera->rotation, &qtilt);
+		camera->rotation = *euler(pan, tilt, 0);
 
 		VECTOR mov = {
 			key_d - key_a,
@@ -47,18 +53,12 @@ void gamemain()
 
 		vec_add(&camera->position, &mov);
 
-		vec_fill(&ent->scale, 0.25);
 
 		{
-			VECTOR vec = { 0.5 * screen_size.width, 0.5 * screen_size.height, 0.98 };
-
-			vec_for_screen(&vec, NULL, NULL);
-
-			engine_log("(%f %f %f)", vec.x, vec.y, vec.z);
-
-			ent->position = vec;
+			cursor3d = (VECTOR){ mouse_pos.x, mouse_pos.y, 64 };
+			vec_for_screen(&cursor3d, NULL, NULL);
+			ent->position = cursor3d;
 		}
-
 
 		task_yield();
 	}
