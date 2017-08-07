@@ -23,8 +23,9 @@ ACKNEXT_API_BLOCK
 		glClearDepth(1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		// TODO: add current_view for rendering steps
 		MATRIX matView, matProj;
-		camera_to_matrix(perspective, &matView, &matProj);
+		camera_to_matrix(perspective, &matView, &matProj, NULL);
 
 		for(ENTITY * ent = ent_next(nullptr); ent != nullptr; ent = ent_next(ent))
 		{

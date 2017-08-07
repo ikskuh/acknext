@@ -10,4 +10,8 @@ ACKFUN VECTOR * vec_to_screen(VECTOR * vec, CAMERA * camera, VIEW * view);
 
 ACKFUN VECTOR * vec_for_screen(VECTOR * vec, CAMERA * camera, VIEW * view);
 
+ACKFUN VECTOR * vec_transform(VECTOR * vec, MATRIX const * mat);
+
+ACKFUN VECTOR4 * vec4_transform(VECTOR4 * vec, const MATRIX *mat);
+
 #endif // _ACKNEXT_ACKTRANSFORMS_H_

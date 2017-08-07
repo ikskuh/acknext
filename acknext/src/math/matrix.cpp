@@ -1,5 +1,7 @@
 #include <engine.hpp>
 
+#include "../graphics/scene/ackglm.hpp"
+
 static MATRIX * mat_wrap(MATRIX * src)
 {
 	static int index;
@@ -46,5 +48,11 @@ ACKNEXT_API_BLOCK
 		dst = mat_wrap(dst);
 		memcpy(dst, src, sizeof(MATRIX));
 		return dst;
+	}
+
+	MATRIX * mat_invert(MATRIX * mat)
+	{
+		glm_to_ack(mat, glm::inverse(ack_to_glm(*mat)));
+		return mat;
 	}
 }

@@ -28,12 +28,9 @@ void View::draw()
 	if(!(view.flags & VISIBLE)) {
 		return;
 	}
-	POINT pos = view.position;
-	SIZE size = view.size;
-	if(view.flags & FULLSCREEN) {
-		pos = (POINT){ 0, 0 };
-		size = screen_size;
-	}
+	POINT pos;
+	SIZE size;
+	view_to_bounds(&this->api(), &pos, &size);
 
 	if(size.width <= 0 || size.height <= 0) {
 		return;
@@ -67,6 +64,21 @@ ACKNEXT_API_BLOCK
 		View * view = promote<View>(_view);
 		if(view && view->userCreated) {
 			delete view;
+		}
+	}
+
+	void view_to_bounds(VIEW const * view, POINT * pt, SIZE * size)
+	{
+		if(view == nullptr) {
+			if(pt) *pt = (POINT){ 0, 0 };
+			if(size) *size = screen_size;
+		} else {
+			if(pt) *pt = view->position;
+			if(size) *size = view->size;
+			if(view->flags & FULLSCREEN) {
+				if(pt) *pt = (POINT){ 0, 0 };
+				if(size) *size = screen_size;
+			}
 		}
 	}
 }

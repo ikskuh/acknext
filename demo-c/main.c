@@ -3,8 +3,6 @@
 
 void gamemain()
 {
-	camera->position.z = 16;
-
 	filesys_addResource("packed.zip", "/packed.zip/");
 
 	view_create(render_scene_with_camera, camera);
@@ -20,6 +18,8 @@ void gamemain()
 			vec_fill(&ent->scale, 0.25);
 		}
 	}
+
+	task_yield();
 
 	var pan = 0;
 	var tilt = 0;
@@ -46,6 +46,19 @@ void gamemain()
 		vec_rotate(&mov, &camera->rotation);
 
 		vec_add(&camera->position, &mov);
+
+		vec_fill(&ent->scale, 0.25);
+
+		{
+			VECTOR vec = { 0.5 * screen_size.width, 0.5 * screen_size.height, 0.98 };
+
+			vec_for_screen(&vec, NULL, NULL);
+
+			engine_log("(%f %f %f)", vec.x, vec.y, vec.z);
+
+			ent->position = vec;
+		}
+
 
 		task_yield();
 	}

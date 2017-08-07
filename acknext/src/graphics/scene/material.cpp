@@ -4,7 +4,7 @@ Material::Material(bool userCreated) :
     EngineObject<MATERIAL>(),
     userCreated(userCreated)
 {
-	api().color = (COLOR) { 1, 1, 1, };
+	api().color = (COLOR) { 1, 1, 1, 1 };
 }
 
 Material::~Material()

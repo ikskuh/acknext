@@ -6,6 +6,7 @@
 #include "ackmath.h"
 #include "ackenum.h"
 #include "core-graphics.h"
+#include "view.h"
 
 typedef struct
 {
@@ -79,7 +80,8 @@ ACKFUN void camera_remove(CAMERA * camera);
 ACKFUN void camera_to_matrix(
     CAMERA const * view,
     MATRIX * matView,
-    MATRIX * matProjection);
+    MATRIX * matProjection,
+	VIEW const * reference);
 
 ACKFUN void render_scene_with_camera(CAMERA * camera);
 
