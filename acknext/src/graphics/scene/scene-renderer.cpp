@@ -6,6 +6,8 @@
 #include "ackglm.hpp"
 #include "../../scene/entity.hpp"
 
+#include "../debug/debugdrawer.hpp"
+
 ACKNEXT_API_BLOCK
 {
 	CAMERA * camera;
@@ -63,5 +65,6 @@ ACKNEXT_API_BLOCK
 				opengl_draw(GL_TRIANGLES, 0, mesh.indexBuffer->size / sizeof(INDEX));
 			}
 		}
+		DebugDrawer::render(matView, matProj);
 	}
 }

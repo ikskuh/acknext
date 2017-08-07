@@ -188,7 +188,7 @@ ACKNEXT_API_BLOCK
 					dst.color.alpha = cDiffuse.a;
 				}
 
-				if(src.Get(AI_MATKEY_COLOR_DIFFUSE, cEmissive) == aiReturn_SUCCESS) {
+				if(src.Get(AI_MATKEY_COLOR_EMISSIVE, cEmissive) == aiReturn_SUCCESS) {
 					dst.emission.red = cEmissive.r;
 					dst.emission.green = cEmissive.g;
 					dst.emission.blue = cEmissive.b;

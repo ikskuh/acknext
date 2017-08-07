@@ -27,10 +27,15 @@ char const * srcFragmentShader = R"GLSL(#version 330
 	in vec2 uv0;
 
 	uniform sampler2D texColor;
+	uniform sampler2D texEmission;
+	uniform vec3 vecEmission;
 
 	out vec4 fragment;
 
 	void main() {
-		fragment = vec4(color,1) * texture(texColor, uv0);
+		fragment.rgb =
+			      color * texture(texColor, uv0).rgb +
+			vecEmission * texture(texEmission, uv0).rgb;
+		fragment.a = 1.0;
 	}
 )GLSL";

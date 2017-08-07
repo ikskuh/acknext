@@ -97,7 +97,9 @@ HEADERS += \
     include/acknext/ackentity.h \
     src/virtfs/physfsrwops.h \
     src/graphics/scene/ackglm.hpp \
-    include/acknext/acktransforms.h
+    include/acknext/acktransforms.h \
+    src/graphics/debug/debugdrawer.hpp \
+    include/acknext/ackdebug.h
 
 SOURCES += \
     src/graphics/opengl/buffer.cpp \
@@ -136,4 +138,5 @@ SOURCES += \
     src/virtfs/physfsrwops.c \
     src/math/quaternion.cpp \
     src/graphics/scene/scene-renderer.cpp \
-    src/math/transforms.cpp
+    src/math/transforms.cpp \
+    src/graphics/debug/debugdrawer.cpp

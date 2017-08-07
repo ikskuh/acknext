@@ -18,6 +18,7 @@
 #include "acknext/scheduler.h"
 #include "acknext/ackentity.h"
 #include "acknext/acktransforms.h"
+#include "acknext/ackdebug.h"
 
 // Global variables
 #include "acknext/ackvars.h"

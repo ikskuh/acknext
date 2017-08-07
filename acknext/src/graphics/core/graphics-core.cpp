@@ -8,6 +8,8 @@
 #include "../opengl/bitmap.hpp"
 #include "../scene/camera.hpp"
 
+#include "../debug/debugdrawer.hpp"
+
 GLuint vao;
 Shader * defaultShader;
 Bitmap * defaultWhiteTexture;
@@ -122,6 +124,8 @@ void render_init()
 
 	camera = camera_create();
 	promote<Camera>(::camera)->userCreated = false;
+
+	DebugDrawer::initialize();
 }
 
 void render_frame()
@@ -144,11 +148,13 @@ void render_frame()
 	}
 
 	SDL_GL_SwapWindow(engine.window);
+
+	DebugDrawer::reset();
 }
 
 void render_shutdown()
 {
-
+	DebugDrawer::shutdown();
 }
 
 static void (APIENTRY render_log)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam)

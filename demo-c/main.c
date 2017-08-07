@@ -3,10 +3,21 @@
 
 VECTOR cursor3d;
 
+VECTOR previous;
+
 void paint()
 {
 	ENTITY * ent = ent_create("earth.mdl", &cursor3d, NULL);
 	vec_fill(&ent->scale, 0.25);
+
+	VECTOR other = previous;
+	previous = cursor3d;
+
+	while(true)
+	{
+		draw_line3d(&other, &ent->position, &COLOR_RED);
+		task_yield();
+	}
 }
 
 void gamemain()
@@ -52,7 +63,6 @@ void gamemain()
 		vec_rotate(&mov, &camera->rotation);
 
 		vec_add(&camera->position, &mov);
-
 
 		{
 			cursor3d = (VECTOR){ mouse_pos.x, mouse_pos.y, 64 };
