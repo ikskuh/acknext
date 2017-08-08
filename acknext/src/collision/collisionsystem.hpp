@@ -17,6 +17,8 @@ public:
 
 	static void update();
 
+	static void draw();
+
 	static void shutdown();
 };
 

@@ -21,6 +21,8 @@ typedef struct
 	var distance;
 } COLLISION;
 
+ACKVAR bool debug_collision;
+
 // Hull API:
 ACKFUN HULL * hull_createSphere(ENTITY * ent, float radius);
 

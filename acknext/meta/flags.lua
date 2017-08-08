@@ -12,8 +12,9 @@ flags.STAGEFLAGS =
 flags.MOVEFLAGS = 
 {
 	"Glide",
+	"NoMove",
 }
 flags.WARPFLAGS = 
 {
-	"NoTeleport",
+	"NoMove",
 }

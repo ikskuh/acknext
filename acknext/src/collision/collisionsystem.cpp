@@ -14,10 +14,64 @@ void CollisionSystem::initialize()
 	space = dHashSpaceCreate(0);
 }
 
-
 void CollisionSystem::update()
 {
+	int count = dSpaceGetNumGeoms(space);
+	for(int i = 0; i < count; i++)
+	{
+		Hull::fromGeom(dSpaceGetGeom(space, i))->update();
+	}
+}
 
+void CollisionSystem::draw()
+{
+	if(debug_collision == false) {
+		return;
+	}
+
+	COLOR * color = &COLOR_GREEN;
+
+	int count = dSpaceGetNumGeoms(space);
+	for(int i = 0; i < count; i++)
+	{
+		dGeomID g = dSpaceGetGeom(space, i);
+
+		dQuaternion drot;
+		dGeomGetQuaternion(g, drot);
+		QUATERNION rot = { drot[1], drot[2], drot[3], drot[0] };
+
+		dReal const * dpos = dGeomGetPosition(g);
+		VECTOR pos = { dpos[0], dpos[1], dpos[2] };
+
+		// Draw AABB
+		{
+			dReal aabb[6]; // (minx, maxx, miny, maxy, minz, maxz)
+			dGeomGetAABB(g, aabb);
+
+			VECTOR bbmin = {aabb[0], aabb[2], aabb[4] };
+			VECTOR bbmax = {aabb[1], aabb[3], aabb[5] };
+
+			draw_aabb3d(&bbmin, &bbmax, color);
+		}
+
+		switch(dGeomGetClass(g))
+		{
+			case dSphereClass: {
+				var radius = dGeomSphereGetRadius(g);
+				draw_sphere3d(&pos, radius, color);
+				break;
+			}
+			case dBoxClass: {
+				dVector3 size;
+				dGeomBoxGetLengths(g, size);
+
+				draw_box3d(&pos, vector(size[0],size[1],size[2]), &rot, &COLOR_RED);
+
+				break;
+			}
+			default: break;
+		}
+	}
 }
 
 void CollisionSystem::shutdown()
@@ -90,6 +144,8 @@ static void dTraceCallback (void *data, dGeomID o1, dGeomID o2)
 
 ACKNEXT_API_BLOCK
 {
+	bool debug_collision = false;
+
 	ACKFUN COLLISION * c_trace(VECTOR const * _from, VECTOR const * _to, BITFIELD mask)
 	{
 		VECTOR from = *_from;

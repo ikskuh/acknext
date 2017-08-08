@@ -292,9 +292,9 @@ ACKNEXT_API_BLOCK
 
 		scheduler_update();
 
-		// if(!(engine_flags & CUSTOMDRAW)) {
-		//
-		// }
+		CollisionSystem::update();
+
+		CollisionSystem::draw();
 
 		render_frame();
 

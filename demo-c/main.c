@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <acknext.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 
 VECTOR cursor3d;
 
@@ -9,6 +12,7 @@ void paint()
 {
 	ENTITY * ent = ent_create("earth.mdl", &cursor3d, NULL);
 	vec_fill(&ent->scale, 0.25);
+	hull_createSphere(ent, 2.5);
 
 	VECTOR other = previous;
 	previous = cursor3d;
@@ -16,6 +20,15 @@ void paint()
 	while(true)
 	{
 		draw_line3d(&other, &ent->position, &COLOR_RED);
+		task_yield();
+	}
+}
+
+void rotor(ENTITY * ent)
+{
+	while(true)
+	{
+		if(key_r) quat_mult(&ent->rotation, euler(45 * time_step, 0, 0));
 		task_yield();
 	}
 }
@@ -35,14 +48,22 @@ void gamemain()
 		for(int z = -4; z <= 4; z++) {
 			ENTITY * ent = ent_create("earth.mdl", vector(16 * x, 0, 16 * z), NULL);
 			vec_fill(&ent->scale, 0.25);
+			ent->rotation = *euler(
+				360.0 * rand() / (var)RAND_MAX,
+				360.0 * rand() / (var)RAND_MAX,
+				0);
 
-			if(x||z) hull_createSphere(ent, 2.5);
+			task_defer(rotor, ent);
+
+			if(x||z) hull_createBox(ent, vector(5, 5, 5));
 		}
 	}
 
 	task_yield();
 
 	event_attach(on_mouse_left, paint);
+
+	// debug_collision = true;
 
 	var pan = 0;
 	var tilt = 0;
@@ -70,34 +91,15 @@ void gamemain()
 		{
 			cursor3d = (VECTOR){ mouse_pos.x, mouse_pos.y, 64 };
 			vec_for_screen(&cursor3d, NULL, NULL);
+
+			COLLISION * c;
+			if(c = c_trace(&camera->position, &cursor3d, BITFIELD_ALL))
+			{
+				vec_set(&cursor3d, &c->contact);
+			}
+
 			ent->position = cursor3d;
 		}
-
-		VECTOR rot = { 10, 0, 0};
-		for(var i = 0; i < 360; i += 10)
-		{
-			draw_point3d(&rot, &COLOR_GREEN);
-			vec_rotate(&rot, euler(10, 0, 0));
-		}
-
-		for(var i = 0; i < 32; i += 1)
-		{
-			draw_point3d(vec_rotate(vector(i, 0, 0), euler(trace, 0, 0)), &COLOR_GREEN);
-		}
-
-		COLLISION * col = c_trace(
-			&nullvector,
-			vec_rotate(vector(32, 0, 0), euler(trace, 0, 0)),
-			BITFIELD_ALL);
-		if(col != NULL) {
-			draw_line3d(
-				&nullvector,
-				&col->contact,
-				&COLOR_MAGENTA);
-		}
-
-		trace += 10 * time_step;
-
 		task_yield();
 	}
 

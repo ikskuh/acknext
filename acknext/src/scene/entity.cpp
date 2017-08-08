@@ -54,7 +54,8 @@ ACKNEXT_API_BLOCK
 		if(action) {
 			// TODO: Associate the created task with
 			// the entity and kill it on entity destruction
-			task_start(action, ent);
+			// :(
+			task_defer(action, ent);
 		}
 		return ent;
 	}
