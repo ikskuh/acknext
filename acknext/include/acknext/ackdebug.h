@@ -9,4 +9,8 @@ ACKFUN void draw_line3d(
 	VECTOR const * p2,
 	COLOR const * color);
 
+ACKFUN void draw_point3d(
+	VECTOR const * pos,
+	COLOR const * color);
+
 #endif // ACKDEBUG_H

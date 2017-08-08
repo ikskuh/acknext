@@ -26,6 +26,8 @@ public:
 
 public:
 	static void drawLine(VECTOR const & from, VECTOR const & to, COLOR const & color);
+
+	static void drawPoint(VECTOR const & pt, COLOR const & color);
 };
 
 #endif // DEBUGDRAWER_HPP

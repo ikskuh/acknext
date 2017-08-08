@@ -24,7 +24,7 @@ void gamemain()
 {
 	filesys_addResource("packed.zip", "/packed.zip/");
 
-	view_create(render_scene_with_camera, camera);
+	view_create((void*)render_scene_with_camera, camera);
 
 	ENTITY * ent = ent_create("earth.mdl", vector(0, 0, 0), NULL);
 	vec_fill(&ent->scale, 0.125);
@@ -68,6 +68,13 @@ void gamemain()
 			cursor3d = (VECTOR){ mouse_pos.x, mouse_pos.y, 64 };
 			vec_for_screen(&cursor3d, NULL, NULL);
 			ent->position = cursor3d;
+		}
+
+		VECTOR rot = { 10, 0, 0};
+		for(var i = 0; i < 360; i += 10)
+		{
+			draw_point3d(&rot, &COLOR_GREEN);
+			vec_rotate(&rot, euler(10, 0, 0));
 		}
 
 		task_yield();
