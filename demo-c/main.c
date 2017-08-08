@@ -35,6 +35,8 @@ void gamemain()
 		for(int z = -4; z <= 4; z++) {
 			ENTITY * ent = ent_create("earth.mdl", vector(16 * x, 0, 16 * z), NULL);
 			vec_fill(&ent->scale, 0.25);
+
+			if(x||z) hull_createSphere(ent, 2.5);
 		}
 	}
 
@@ -44,6 +46,7 @@ void gamemain()
 
 	var pan = 0;
 	var tilt = 0;
+	var trace = 0;
 	while(!key_escape)
 	{
 		if(mouse_right) {
@@ -76,6 +79,24 @@ void gamemain()
 			draw_point3d(&rot, &COLOR_GREEN);
 			vec_rotate(&rot, euler(10, 0, 0));
 		}
+
+		for(var i = 0; i < 32; i += 1)
+		{
+			draw_point3d(vec_rotate(vector(i, 0, 0), euler(trace, 0, 0)), &COLOR_GREEN);
+		}
+
+		COLLISION * col = c_trace(
+			&nullvector,
+			vec_rotate(vector(32, 0, 0), euler(trace, 0, 0)),
+			BITFIELD_ALL);
+		if(col != NULL) {
+			draw_line3d(
+				&nullvector,
+				&col->contact,
+				&COLOR_MAGENTA);
+		}
+
+		trace += 10 * time_step;
 
 		task_yield();
 	}

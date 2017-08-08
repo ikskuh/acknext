@@ -19,6 +19,7 @@
 #include "acknext/ackentity.h"
 #include "acknext/acktransforms.h"
 #include "acknext/ackdebug.h"
+#include "acknext/ackcol.h"
 
 // Global variables
 #include "acknext/ackvars.h"

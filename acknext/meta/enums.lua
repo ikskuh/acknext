@@ -102,3 +102,14 @@ enum.CAMERATYPE =
 	"Isometric",
 	"Custom_Projection",
 }
+
+enum.HULLTYPE = 
+{
+	prefix = "HULL_",
+	"Sphere",
+	"Box",
+	"Cylinder",
+	"Capsule",
+	"Polygon",
+	"Convex",
+}

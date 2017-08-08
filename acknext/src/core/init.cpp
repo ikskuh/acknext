@@ -2,6 +2,7 @@
 #include "log.hpp"
 #include "config.hpp"
 #include "input/inputmanager.hpp"
+#include "collision/collisionsystem.hpp"
 
 #include <chrono>
 #include <getopt.h>
@@ -218,6 +219,9 @@ ACKNEXT_API_BLOCK
 		engine_log("Initialize renderer...");
 		render_init();
 
+		engine_log("Initialize collision system...");
+		CollisionSystem::initialize();
+
 		engine_log("Initialize scheduler...");
 		scheduler_init();
 
@@ -311,6 +315,9 @@ ACKNEXT_API_BLOCK
 
 		engine_log("Shutting down input...");
 		InputManager::shutdown();
+
+		engine_log("Shutting down collision system...");
+		CollisionSystem::shutdown();
 
 		engine_log("Shutting down renderer...");
 		render_shutdown();

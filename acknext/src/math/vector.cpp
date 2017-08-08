@@ -6,6 +6,8 @@
 
 ACKNEXT_API_BLOCK
 {
+	VECTOR nullvector = { 0, 0, 0 };
+
 	VECTOR * vector(var x, var y, var z)
 	{
 		static VECTOR buffer[ACKNEXT_TEMP_VECTORS];

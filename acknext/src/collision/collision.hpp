@@ -1,11 +1,8 @@
 #ifndef COLLISION_HPP
 #define COLLISION_HPP
 
+#include <engine.hpp>
 
-class Collision
-{
-public:
-	Collision();
-};
+// COLLISION is a primitive type without logic :)
 
 #endif // COLLISION_HPP

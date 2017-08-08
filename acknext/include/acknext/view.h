@@ -3,6 +3,7 @@
 
 #include "config.h"
 #include "ackmath.h"
+#include "ackdef.h"
 
 typedef void (*RENDERCALL)(void * context);
 
@@ -15,7 +16,7 @@ typedef struct
 	SIZE size;
 	var layer;
 
-	BITFIELD flags;
+	VIEWFLAGS flags;
 } VIEW;
 
 ACKFUN VIEW * view_create(RENDERCALL render, void * context);

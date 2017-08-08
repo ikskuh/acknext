@@ -99,7 +99,9 @@ HEADERS += \
     src/graphics/scene/ackglm.hpp \
     include/acknext/acktransforms.h \
     src/graphics/debug/debugdrawer.hpp \
-    include/acknext/ackdebug.h
+    include/acknext/ackdebug.h \
+    include/acknext/ackcol.h \
+    src/collision/collisionsystem.hpp
 
 SOURCES += \
     src/graphics/opengl/buffer.cpp \
@@ -139,4 +141,5 @@ SOURCES += \
     src/math/quaternion.cpp \
     src/graphics/scene/scene-renderer.cpp \
     src/math/transforms.cpp \
-    src/graphics/debug/debugdrawer.cpp
+    src/graphics/debug/debugdrawer.cpp \
+    src/collision/collisionsystem.cpp

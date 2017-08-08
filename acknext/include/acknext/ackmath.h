@@ -57,6 +57,8 @@ typedef struct
 	var red, green, blue, alpha;
 } COLOR;
 
+ACKVAR VECTOR ACKCONST nullvector;
+
 // var Api:
 ACKFUN var lerp(var lhs, var rhs, var factor);
 

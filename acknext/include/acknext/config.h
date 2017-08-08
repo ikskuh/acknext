@@ -27,5 +27,10 @@
 #define ACKNEXT_TEMP_VECTORS     64
 #define ACKNEXT_TEMP_MATRICES    16
 #define ACKNEXT_TEMP_QUATERNIONS 64
+#define ACKNEXT_TEMP_COLLISIONS  16
+
+// The higher the more precision there is
+// also, it can get jittery and slow... :P
+#define ACKNEXT_MAX_CONTACTS     32
 
 #endif // _ACKNEXT_CONFIG_H_
