@@ -1,7 +1,10 @@
 
-RESOURCES=beep.wav
+RESOURCES=$(shell rcc --list builtin.qrc)
 
 all: resource.o
+	
+depends:
+	echo $(addprefix /home/felix/projects/acknext/resource/,$(RESOURCES))
 
 %.o: %.zip
 	objcopy \
@@ -17,3 +20,8 @@ resource.zip: $(RESOURCES)
 
 clean:
 	rm resource.zip
+
+qmake: resource.o
+	mv $< $(OUTFILE)
+	
+.PHONY: clean depends

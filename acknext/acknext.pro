@@ -17,14 +17,11 @@ LIBS += -lphysfs
 
 DEFINES += _ACKNEXT_INTERNAL_
 
-QMAKE_CFLAGS   += -g -rdynamic -O2
-QMAKE_CXXFLAGS += -g -rdynamic -O2
-QMAKE_LFLAGS   += -g -rdynamic -O2
+QMAKE_CFLAGS   += -g -rdynamic
+QMAKE_CXXFLAGS += -g -rdynamic
+QMAKE_LFLAGS   += -g -rdynamic
 
-LIBS           += $$quote($$PWD/../resource/resource.o)
-
-
-message($$LIBS)
+# LIBS           += $$quote($$PWD/../resource/resource.o)
 
 ackGraphics {
 	include(../../gl3w/gl3w.pri)
@@ -155,3 +152,17 @@ SOURCES += \
     src/audio/audiomanager.cpp \
     src/audio/sound.cpp \
     src/virtfs/resourcemanager.cpp
+
+DISTFILES += \
+    $$PWD/../resource/shaders/object.frag \
+    $$PWD/../resource/shaders/object.vert
+
+
+RESOURCES += \
+    $$PWD/../resource/builtin.qrc
+
+custom_rcc.output  = resource.o
+custom_rcc.commands = make -C $$PWD/../resource/ qmake OUTFILE=`pwd`/${QMAKE_FILE_OUT}
+custom_rcc.depend_command = make -C $$PWD/../resource/ depends
+custom_rcc.input = RESOURCES
+QMAKE_EXTRA_COMPILERS += custom_rcc

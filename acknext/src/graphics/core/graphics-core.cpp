@@ -22,6 +22,8 @@ ACKNEXT_API_BLOCK
 {
 	SIZE screen_size;
 
+	var screen_gamma = 2.2;
+
 	COLOR screen_color = { 0, 0, 0.5, 1.0 };
 }
 
@@ -102,17 +104,25 @@ void render_init()
 
 	glBindVertexArray(vao);
 
+	// PHYSFS_mount("/home/felix/project/resource/", "/builtin/", 0);
+
 	SHADER * defaultShader = shader_create();
 
-	if(shader_addSource(defaultShader, VERTEXSHADER, srcVertexShader) == false) {
+	BLOB * blobVertexShader = blob_load("/builtin/shaders/object.vert");
+	BLOB * blobFragmentShader = blob_load("/builtin/shaders/object.frag");
+
+	if(shader_addSource(defaultShader, VERTEXSHADER, (char*)blobVertexShader->data) == false) {
 		abort();
 	}
-	if(shader_addSource(defaultShader, FRAGMENTSHADER, srcFragmentShader) == false) {
+	if(shader_addSource(defaultShader, FRAGMENTSHADER, (char*)blobFragmentShader->data) == false) {
 		abort();
 	}
 	if(shader_link(defaultShader) == false) {
 		abort();
 	}
+
+	blob_remove(blobVertexShader);
+	blob_remove(blobFragmentShader);
 
 	opengl_setShader(defaultShader);
 

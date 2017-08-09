@@ -147,8 +147,12 @@ ACKNEXT_API_BLOCK
 				data);
 		}
 
-		glTextureParameteri(bmp->id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTextureParameteri(bmp->id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		// glTextureParameteri(bmp->id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		// glTextureParameteri(bmp->id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glTextureParameteri(bmp->id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTextureParameteri(bmp->id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
 		glTextureParameteri(bmp->id, GL_TEXTURE_WRAP_R, GL_REPEAT);
 		glTextureParameteri(bmp->id, GL_TEXTURE_WRAP_S, GL_REPEAT);
 

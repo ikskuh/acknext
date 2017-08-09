@@ -61,12 +61,12 @@ bool Config::load(char const * fileName)
 		NULL,
 		CASE_INSENSITIVE | DONT_SUBSTITUTE);
 
-	configfile->errorhandler = acknext_conf_errorhandler;
 	if (!configfile)
 	{
 		engine_log("Failed to open config file %s!", fileName);
 		return false;
 	}
+	configfile->errorhandler = acknext_conf_errorhandler;
 
 	bool success;
 	if ((success = dotconf_command_loop(configfile)))

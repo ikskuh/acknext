@@ -145,6 +145,23 @@ ACKNEXT_API_BLOCK
 	{
 		currentShader = FALLBACK(promote<Shader>(shader), defaultShader);
 		glUseProgram(currentShader->program);
+
+		int pgm = currentShader->program;
+		int cnt = currentShader->uniforms.size();
+		for(int i = 0; i < cnt; i++)
+		{
+			switch(currentShader->uniforms[i].var)
+			{
+				case FGAMMA_VAR:
+					glProgramUniform1f(
+						pgm,
+						currentShader->uniforms[i].location,
+						screen_gamma);
+					break;
+				default:
+					break;
+			}
+		}
 	}
 
 	void opengl_setTexture(int slot, BITMAP * _texture)

@@ -2,8 +2,9 @@
 
 Blob::Blob(size_t size) : EngineObject<BLOB>()
 {
-	api().data = malloc(size);
+	api().data = malloc(size + 1);
 	api().size = size;
+	reinterpret_cast<uint8_t*>(api().data)[api().size] = 0; // zero-terminate
 }
 
 Blob::~Blob()
@@ -14,8 +15,9 @@ Blob::~Blob()
 
 void Blob::resize(size_t size)
 {
-	api().data = realloc(api().data, size);
+	api().data = realloc(api().data, size + 1);
 	api().size = size;
+	reinterpret_cast<uint8_t*>(api().data)[api().size] = 0; // zero-terminate
 }
 
 ACKNEXT_API_BLOCK

@@ -135,8 +135,9 @@ ACKNEXT_API_BLOCK
 		unsigned int flags =
 			  aiProcess_JoinIdenticalVertices
 			| aiProcess_CalcTangentSpace
+		    | aiProcess_GenUVCoords // required for tangent space :(
 			| aiProcess_Triangulate
-			| aiProcess_GenSmoothNormals
+			| aiProcess_GenNormals
 			| aiProcess_PreTransformVertices // REMOVE THIS LATER!
 			| aiProcess_LimitBoneWeights
 			| aiProcess_ValidateDataStructure
@@ -242,7 +243,7 @@ ACKNEXT_API_BLOCK
 			aiMesh * src = scene->mMeshes[idx];
 
 			if(src->mPrimitiveTypes & ~aiPrimitiveType_TRIANGLE) {
-				engine_log("Invalid primitive type detected!");
+				engine_log("Invalid primitive type detected: %x", src->mPrimitiveTypes);
 				abort();
 			}
 
@@ -252,7 +253,7 @@ ACKNEXT_API_BLOCK
 			}
 
 			if(!src->HasTangentsAndBitangents()) {
-				engine_log("Mesh is missing normals!");
+				engine_log("Mesh is missing normals (tangent/bitangent)q!");
 				abort();
 			}
 

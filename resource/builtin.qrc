@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>shaders/object.vert</file>
+        <file>shaders/object.frag</file>
+        <file>beep.wav</file>
+    </qresource>
+</RCC>

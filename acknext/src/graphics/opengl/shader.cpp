@@ -154,6 +154,8 @@ ACKNEXT_API_BLOCK
 			SETTYPE("texAttributes", GL_SAMPLER_2D, TEXATTRIBUTES_VAR);
 			SETTYPE("texEmission", GL_SAMPLER_2D, TEXEMISSION_VAR);
 
+			SETTYPE("fGamma", GL_FLOAT, FGAMMA_VAR);
+
 			switch(uni->var) {
 				case TEXCOLOR_VAR:
 					glProgramUniform1i(shader->program, uni->location, 0);

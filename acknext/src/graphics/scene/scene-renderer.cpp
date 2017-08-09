@@ -5,8 +5,17 @@
 #include "camera.hpp"
 #include "ackglm.hpp"
 #include "../../scene/entity.hpp"
+#include "../opengl/shader.hpp"
 
 #include "../debug/debugdrawer.hpp"
+
+extern Shader * defaultShader;
+
+Shader * FB(Shader * sh)
+{
+	if(sh) return sh;
+	return defaultShader;
+}
 
 ACKNEXT_API_BLOCK
 {
@@ -61,6 +70,21 @@ ACKNEXT_API_BLOCK
 					&matWorld,
 					&matView,
 					&matProj);
+
+				for(UNIFORM & u : defaultShader->uniforms)
+				{
+					switch(u.var) {
+						case VECVIEWPOS_VAR:
+							glProgramUniform3f(
+								defaultShader->program,
+								u.location,
+								perspective->position.x,
+								perspective->position.y,
+								perspective->position.z);
+							break;
+						default: break;
+					}
+				}
 
 				opengl_draw(GL_TRIANGLES, 0, mesh.indexBuffer->size / sizeof(INDEX));
 			}

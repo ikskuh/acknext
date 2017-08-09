@@ -72,6 +72,8 @@ enum.SHADERVAR =
 	"texColor",
 	"texAttributes",
 	"texEmission",
+	
+	"fGamma",
 }
 
 enum.ERROR = 

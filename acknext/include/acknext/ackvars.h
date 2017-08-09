@@ -5,6 +5,7 @@
 #include "ackmath.h"
 
 ACKVAR ACKCONST SIZE screen_size;
+ACKVAR var screen_gamma;
 
 // Time vars:
 

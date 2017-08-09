@@ -34,57 +34,36 @@ void rotor(ENTITY * ent)
 	}
 }
 
+void quit()
+{
+	engine_shutdown();
+}
+
 void gamemain()
 {
-	filesys_addResource("packed.zip", "/packed.zip/");
-
 	view_create((void*)render_scene_with_camera, camera);
 
-	ENTITY * ent = ent_create("earth.mdl", vector(0, 0, 0), NULL);
-	vec_fill(&ent->scale, 0.125);
+	ENTITY * ent = ent_create("mtltest/dungeon.obj", vector(0, 0, 0), NULL);
 	ent->material = mtl_create();
-	ent->material->colorTexture = bmap_load("/packed.zip/packed.png");
-
-	for(int x = -4; x <= 4; x++) {
-		for(int z = -4; z <= 4; z++) {
-			ENTITY * ent = ent_create("earth.mdl", vector(16 * x, 0, 16 * z), NULL);
-			vec_fill(&ent->scale, 0.25);
-			ent->rotation = *euler(
-				360.0 * rand() / (var)RAND_MAX,
-				360.0 * rand() / (var)RAND_MAX,
-				0);
-
-			if(x||z) hull_createBox(ent, vector(5, 5, 5));
-
-			task_defer(rotor, ent);
-		}
-	}
+	ent->material->colorTexture = bmap_load("mtltest/dungeon-diffuse.png");
+	ent->material->emissionTexture = bmap_load("mtltest/dungeon-emissive.png");
+	ent->material->attributeTexture = bmap_load("mtltest/dungeon-attributes.png");
+	ent->material->emission = (COLOR){2,2,2,2};
+	ent->material->roughness = 1.0;
+	ent->material->metallic = 1.0;
+	ent->material->fresnell = 25.0;
 
 	task_yield();
 
 	// run debug tools :)
 	task_defer(debug_tools, NULL);
 
-	event_attach(on_mouse_left, paint);
+	event_attach(on_escape, quit);
 
-	var trace = 0;
-	while(!key_escape)
+	while(true)
 	{
-		cursor3d = (VECTOR){ mouse_pos.x, mouse_pos.y, 64 };
-		vec_for_screen(&cursor3d, NULL, NULL);
-
-		COLLISION * c;
-		if(c = c_trace(&camera->position, &cursor3d, BITFIELD_ALL))
-		{
-			vec_set(&cursor3d, &c->contact);
-		}
-
-		ent->position = cursor3d;
-
 		task_yield();
 	}
-
-	engine_shutdown();
 }
 
 
