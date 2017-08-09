@@ -28,7 +28,7 @@ void rotor(ENTITY * ent)
 {
 	while(true)
 	{
-		if(key_r) quat_mult(&ent->rotation, euler(45 * time_step, 0, 0));
+		if(key_r) quat_mult(&ent->rotation, euler(45 * time_step, 30 * time_step, 15 * time_step));
 		task_yield();
 	}
 }
@@ -53,9 +53,9 @@ void gamemain()
 				360.0 * rand() / (var)RAND_MAX,
 				0);
 
-			task_defer(rotor, ent);
-
 			if(x||z) hull_createBox(ent, vector(5, 5, 5));
+
+			task_defer(rotor, ent);
 		}
 	}
 
@@ -63,7 +63,7 @@ void gamemain()
 
 	event_attach(on_mouse_left, paint);
 
-	// debug_collision = true;
+	debug_collision = true;
 
 	var pan = 0;
 	var tilt = 0;

@@ -10,18 +10,27 @@ dSpaceID CollisionSystem::space;
 void CollisionSystem::initialize()
 {
 	dInitODE();
-
 	space = dHashSpaceCreate(0);
 }
 
 void CollisionSystem::update()
 {
 	int count = dSpaceGetNumGeoms(space);
+	std::vector<dGeomID> geoms(count);
+
 	for(int i = 0; i < count; i++)
 	{
-		Hull::fromGeom(dSpaceGetGeom(space, i))->update();
+		geoms[i] = dSpaceGetGeom(space, i);
+	}
+
+	for(dGeomID g : geoms)
+	{
+		Hull::fromGeom(g)->update();
 	}
 }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnarrowing"
 
 void CollisionSystem::draw()
 {
@@ -69,10 +78,10 @@ void CollisionSystem::draw()
 
 				break;
 			}
-			default: break;
 		}
 	}
 }
+#pragma GCC diagnostic pop
 
 void CollisionSystem::shutdown()
 {
@@ -148,6 +157,8 @@ ACKNEXT_API_BLOCK
 
 	ACKFUN COLLISION * c_trace(VECTOR const * _from, VECTOR const * _to, BITFIELD mask)
 	{
+		CollisionSystem::update(); // This should be improved...
+
 		VECTOR from = *_from;
 		VECTOR to = *_to;
 		VECTOR * dist = vec_diff(nullptr, &to, &from);
