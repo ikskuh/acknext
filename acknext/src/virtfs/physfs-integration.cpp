@@ -15,53 +15,41 @@ ACKNEXT_API_BLOCK
 		}
 	}
 
-	ACKFILE * file_open_read(char const * name)
+	ACKFILE * file_open_read(char const * fileName)
 	{
-		if(name == nullptr) {
-			engine_seterror(ERR_INVALIDARGUMENT, "name must not be NULL");
-			return nullptr;
-		} else {
-			return PHYSFS_openRead(name);
-		}
+		ARG_NOTNULL(fileName,nullptr);
+		return PHYSFS_openRead(fileName);
 	}
 
-	ACKFILE * file_open_write(char const * name)
+	ACKFILE * file_open_write(char const * fileName)
 	{
-		if(name == nullptr) {
-			engine_seterror(ERR_INVALIDARGUMENT, "name must not be NULL");
-			return nullptr;
-		} else {
-			return PHYSFS_openWrite(name);
-		}
+		ARG_NOTNULL(fileName,nullptr);
+		return PHYSFS_openWrite(fileName);
 	}
 
-	ACKFILE * file_open_append(char const * name)
+	ACKFILE * file_open_append(char const * fileName)
 	{
-		if(name == nullptr) {
-			engine_seterror(ERR_INVALIDARGUMENT, "name must not be NULL");
-			return nullptr;
-		} else {
-			return PHYSFS_openAppend(name);
-		}
+		ARG_NOTNULL(fileName,nullptr);
+		return PHYSFS_openAppend(fileName);
 	}
 
-	int64_t file_read(ACKFILE *file, void *buffer, uint32_t objSize, uint32_t objCount)
+	int64_t file_read(ACKFILE *file, void *buffer, uint32_t size)
 	{
 		if(file == nullptr) {
 			engine_seterror(ERR_INVALIDARGUMENT, "file must not be NULL");
 			return -1;
 		} else {
-			return PHYSFS_read(file, buffer, objSize, objCount);
+			return PHYSFS_readBytes(file, buffer, size);
 		}
 	}
 
-	int64_t file_write(ACKFILE *file, const void *buffer, uint32_t objSize, uint32_t objCount)
+	int64_t file_write(ACKFILE *file, const void *buffer, uint32_t size)
 	{
 		if(file == nullptr) {
 			engine_seterror(ERR_INVALIDARGUMENT, "file must not be NULL");
 			return -1;
 		} else {
-			return PHYSFS_write(file, buffer, objSize, objCount);
+			return PHYSFS_writeBytes(file, buffer, size);
 		}
 	}
 

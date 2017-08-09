@@ -21,6 +21,11 @@ QMAKE_CFLAGS   += -g -rdynamic -O2
 QMAKE_CXXFLAGS += -g -rdynamic -O2
 QMAKE_LFLAGS   += -g -rdynamic -O2
 
+LIBS           += $$quote($$PWD/../resource/resource.o)
+
+
+message($$LIBS)
+
 ackGraphics {
 	include(../../gl3w/gl3w.pri)
 	unix: PKGCONFIG += assimp gl
@@ -101,7 +106,11 @@ HEADERS += \
     src/graphics/debug/debugdrawer.hpp \
     include/acknext/ackdebug.h \
     include/acknext/ackcol.h \
-    src/collision/collisionsystem.hpp
+    src/collision/collisionsystem.hpp \
+    src/audio/audiomanager.hpp \
+    src/audio/sound.hpp \
+    include/acknext/acksound.h \
+    src/virtfs/resourcemanager.hpp
 
 SOURCES += \
     src/graphics/opengl/buffer.cpp \
@@ -142,4 +151,7 @@ SOURCES += \
     src/graphics/scene/scene-renderer.cpp \
     src/math/transforms.cpp \
     src/graphics/debug/debugdrawer.cpp \
-    src/collision/collisionsystem.cpp
+    src/collision/collisionsystem.cpp \
+    src/audio/audiomanager.cpp \
+    src/audio/sound.cpp \
+    src/virtfs/resourcemanager.cpp

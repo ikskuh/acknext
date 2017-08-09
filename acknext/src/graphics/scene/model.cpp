@@ -26,12 +26,12 @@ public:
 
 	size_t Read( void* pvBuffer, size_t pSize, size_t pCount)
 	{
-		return file_read(file, pvBuffer, pSize, pCount);
+		return file_read(file, pvBuffer, pSize * pCount);
 	}
 
 	size_t Write( const void* pvBuffer, size_t pSize, size_t pCount)
 	{
-		return file_write(file, pvBuffer, pSize, pCount);
+		return file_write(file, pvBuffer, pSize * pCount);
 	}
 
 	aiReturn Seek( size_t pOffset, aiOrigin pOrigin)

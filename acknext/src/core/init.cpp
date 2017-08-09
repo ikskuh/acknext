@@ -3,6 +3,8 @@
 #include "config.hpp"
 #include "input/inputmanager.hpp"
 #include "collision/collisionsystem.hpp"
+#include "audio/audiomanager.hpp"
+#include "virtfs/resourcemanager.hpp"
 
 #include <chrono>
 #include <getopt.h>
@@ -154,12 +156,15 @@ ACKNEXT_API_BLOCK
 				0);       // filesys > pack
 
 			char buffer[256];
-			PHYSFS_addToSearchPath(getcwd(buffer, 256), 0);
+			PHYSFS_mount(getcwd(buffer,256),NULL,0);
 
 			engine_log("app dir:  %s", PHYSFS_getBaseDir());
 			engine_log("save dir: %s", PHYSFS_getWriteDir());
 			engine_log("work dir: %s", buffer);
 		}
+
+		engine_log("Initialize builtin resources...");
+		ResourceManager::initialize();
 
 		// if(compiler_init() == false) {
 		// 	return false;
@@ -221,6 +226,9 @@ ACKNEXT_API_BLOCK
 
 		engine_log("Initialize collision system...");
 		CollisionSystem::initialize();
+
+		engine_log("Initialize audio system...");
+		AudioManager::initialize();
 
 		engine_log("Initialize scheduler...");
 		scheduler_init();
@@ -316,6 +324,9 @@ ACKNEXT_API_BLOCK
 		engine_log("Shutting down input...");
 		InputManager::shutdown();
 
+		engine_log("Shutting down audio system...");
+		AudioManager::shutdown();
+
 		engine_log("Shutting down collision system...");
 		CollisionSystem::shutdown();
 
@@ -330,6 +341,9 @@ ACKNEXT_API_BLOCK
 			engine_log("Close window.");
 			SDL_DestroyWindow(engine.window);
 		}
+
+		engine_log("Shutting down builtin resources...");
+		ResourceManager::shutdown();
 
 		engine_log("Shutting down virtual file system...");
 		PHYSFS_deinit();

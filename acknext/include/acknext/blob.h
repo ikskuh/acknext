@@ -12,9 +12,13 @@ typedef struct
 
 ACKFUN BLOB * blob_create(size_t size);
 
+ACKFUN BLOB * blob_load(char const * fileName);
+
 ACKFUN BLOB * blub_clone(BLOB const * blob);
 
 ACKFUN void blob_resize(BLOB * blob, size_t size);
+
+ACKFUN void blob_save(BLOB const * blob, char const * fileName);
 
 ACKFUN void blob_remove(BLOB * blob);
 

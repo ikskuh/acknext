@@ -20,6 +20,7 @@
 #include "acknext/acktransforms.h"
 #include "acknext/ackdebug.h"
 #include "acknext/ackcol.h"
+#include "acknext/acksound.h"
 
 // Global variables
 #include "acknext/ackvars.h"

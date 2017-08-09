@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+void debug_tools();
 
 VECTOR cursor3d;
 
@@ -61,45 +62,25 @@ void gamemain()
 
 	task_yield();
 
+	// run debug tools :)
+	task_defer(debug_tools, NULL);
+
 	event_attach(on_mouse_left, paint);
 
-	debug_collision = true;
-
-	var pan = 0;
-	var tilt = 0;
 	var trace = 0;
 	while(!key_escape)
 	{
-		if(mouse_right) {
-			pan -= 0.3 * mickey.x;
-			tilt -= 0.3 * mickey.y;
-		}
+		cursor3d = (VECTOR){ mouse_pos.x, mouse_pos.y, 64 };
+		vec_for_screen(&cursor3d, NULL, NULL);
 
-		camera->rotation = *euler(pan, tilt, 0);
-
-		VECTOR mov = {
-			key_d - key_a,
-		    key_e - key_q,
-		    key_s - key_w,
-		};
-		vec_normalize(&mov, (10 + 20 * key_lshift) * time_step);
-
-		vec_rotate(&mov, &camera->rotation);
-
-		vec_add(&camera->position, &mov);
-
+		COLLISION * c;
+		if(c = c_trace(&camera->position, &cursor3d, BITFIELD_ALL))
 		{
-			cursor3d = (VECTOR){ mouse_pos.x, mouse_pos.y, 64 };
-			vec_for_screen(&cursor3d, NULL, NULL);
-
-			COLLISION * c;
-			if(c = c_trace(&camera->position, &cursor3d, BITFIELD_ALL))
-			{
-				vec_set(&cursor3d, &c->contact);
-			}
-
-			ent->position = cursor3d;
+			vec_set(&cursor3d, &c->contact);
 		}
+
+		ent->position = cursor3d;
+
 		task_yield();
 	}
 

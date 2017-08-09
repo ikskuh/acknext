@@ -16,9 +16,9 @@ ACKFUN ACKFILE * file_open_write(char const * name);
 
 ACKFUN ACKFILE * file_open_append(char const * name);
 
-ACKFUN int64_t file_read(ACKFILE *file, void *buffer, uint32_t objSize, uint32_t objCount);
+ACKFUN int64_t file_read(ACKFILE *file, void *buffer, uint32_t size);
 
-ACKFUN int64_t file_write(ACKFILE *file, const void *buffer, uint32_t objSize, uint32_t objCount);
+ACKFUN int64_t file_write(ACKFILE *file, const void *buffer, uint32_t size);
 
 ACKFUN void file_seek(ACKFILE * file, uint64_t position);
 

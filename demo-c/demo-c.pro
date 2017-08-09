@@ -3,7 +3,8 @@ CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt
 
-SOURCES += main.c
+SOURCES += main.c \
+    default.c
 
 include(../../gl3w/gl3w.pri)
 

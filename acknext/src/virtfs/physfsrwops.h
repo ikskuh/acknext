@@ -26,8 +26,6 @@
 #include <physfs.h>
 #include <SDL2/SDL.h>
 
-#define PHYSFS_DECL
-
 #ifdef __cplusplus
 extern "C" {
 #endif

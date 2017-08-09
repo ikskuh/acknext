@@ -44,10 +44,26 @@ ACKNEXT_API_BLOCK
 		}
 
 		BLOB * blob = blob_create(size_t(size));
-		file_read(file, blob->data, 1, blob->size);
+		file_read(file, blob->data, blob->size);
 		file_close(file);
 
 		return blob;
+	}
+
+	void blob_save(BLOB const * blob, char const * fileName)
+	{
+		ARG_NOTNULL(blob,);
+		ARG_NOTNULL(fileName,);
+
+		ACKFILE * file = file_open_write(fileName);
+		if(file == nullptr) {
+			engine_seterror(ERR_INVALIDOPERATION, "Could not write to %s!", fileName);
+			return;
+		}
+
+		file_write(file, blob->data, blob->size);
+
+		file_close(file);
 	}
 
 	BLOB * blub_clone(BLOB const * blob)

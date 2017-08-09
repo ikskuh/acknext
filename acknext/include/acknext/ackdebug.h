@@ -29,4 +29,6 @@ ACKFUN void draw_sphere3d(
 	var radius,
 	COLOR const * color);
 
+ACKFUN void beep();
+
 #endif // ACKDEBUG_H

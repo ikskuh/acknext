@@ -4,9 +4,6 @@ CONFIG += ordered
 
 SUBDIRS += \
     acknext \
-#	demo-cpp \
-#	scripts \
-#	Qtnext
 	demo-c
 
 HEADERS += \
