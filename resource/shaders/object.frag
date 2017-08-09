@@ -32,7 +32,7 @@ vec3 reflect( vec3 i, vec3 n )
 	return i - 2.0 * n * dot(n,i);
 }
 
-float Attenuate(vec3 P, vec3 lightCentre, float lightRadius, float cutoff)
+float attenuate(vec3 P, vec3 lightCentre, float lightRadius, float cutoff)
 {
 	// calculate normalized light vector and distance to sphere light surface
 	float r = lightRadius;
@@ -125,9 +125,10 @@ void main() {
 		realNormal = -normal;
 	}
 
+	vec3 lightPosition = vec3(0, 24, -148);
 	vec3 lightColor = vec3(1,1,1);
 	vec3 toView = normalize(vecViewPos - position);
-	vec3 toLight = normalize(vec3(0, 24, -148) - position);
+	vec3 toLight = normalize(lightPosition - position);
 
 	vec4 cDiffuse = vec4(vecColor, 1) * vec4(degamma(color),1) * degamma(texture(texColor, uv0));
 	vec4 cEmissive = vec4(vecEmission, 1) * degamma(texture(texEmission, uv0));
@@ -141,6 +142,12 @@ void main() {
 	float metallic = cAttribute.g;  // 0[dielectric] → 1[metal]
 	float fresnell = cAttribute.b;  // 0[none]       → ∞[rim]
 	float albedo = 0.8;
+
+	float atten = attenuate(
+		position,
+		lightPosition,
+		64,
+		1.0 / 512.0);
 
 	float ond = orenNayarDiffuse(
 		toLight,
@@ -158,8 +165,8 @@ void main() {
 
 	// cts *= dot(normal, toLight); // ??
 
-	vec3 sDiffuse = lightColor * ond * mix(cDiffuse.rgb, vec3(0), metallic);
-	vec3 sSpecular = lightColor * cts * mix(vec3(1), cDiffuse.rgb, metallic);
+	vec3 sDiffuse = atten * lightColor * ond * mix(cDiffuse.rgb, vec3(0), metallic);
+	vec3 sSpecular = atten * lightColor * cts * mix(vec3(1), cDiffuse.rgb, metallic);
 
 	fragment.rgb = withgamma(sDiffuse + sSpecular + cEmissive.rgb);
 	fragment.a = 1.0;
