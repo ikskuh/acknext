@@ -44,9 +44,9 @@ MATERIAL * mtl_from_folder(char const * folder)
 	sprintf(buffer, "%s/attributes.tif", folder);
 	mtl->attributeTexture = bmap_to_mipmap(bmap_load(buffer));
 
-	mtl->roughness = 0.7;
-	mtl->fresnell = 0.0;
-	mtl->metallic = 1.0;
+	mtl->roughness = 0.2;
+	mtl->fresnell = 0.3;
+	mtl->metallic = 0.0;
 
 	return mtl;
 }
@@ -59,16 +59,16 @@ void gamemain()
 	task_defer(debug_tools, NULL);
 	event_attach(on_escape, quit);
 
-	MATERIAL * mtl = mtl_from_folder("mtl_metal");
+	MATERIAL * mtl = mtl_from_folder("mtl_hardwood");
 
-	init(ent_create("unit-cylinder.obj", vector(-15,  15, -50), NULL), mtl, true);
+	init(ent_create("unit-sphere.obj",   vector(-15,  15, -50), NULL), mtl, true);
 	init(ent_create("unit-cylinder.obj", vector(-15, -15, -50), NULL), mtl, true);
-	init(ent_create("unit-cylinder.obj", vector( 15,  15, -50), NULL), mtl, true);
+	init(ent_create("unit-sphere.obj",   vector( 15,  15, -50), NULL), mtl, true);
 	init(ent_create("unit-cylinder.obj", vector( 15, -15, -50), NULL), mtl, true);
 
-	for(int z = 0; z < 4; z++)
+	for(int z = 0; z < 6; z++)
 	{
-		for(int x = -3; x <= 3; x++)
+		for(int x = -6; x <= 6; x++)
 		{
 			init(ent_create("unit-cube.obj", vector(10 * x, -25, -10 * z), NULL), mtl, false);
 		}
