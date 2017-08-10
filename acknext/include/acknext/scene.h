@@ -14,6 +14,7 @@ typedef struct
 	BITMAP * colorTexture;
 	BITMAP * attributeTexture; // r=roughness, g=metallic, b=fresnell
 	BITMAP * emissionTexture;
+	BITMAP * normalTexture; // r,g,b∊[-1;1]
 	COLOR color;
 	COLOR emission;
 	var roughness;

@@ -3,6 +3,8 @@
 #define PI 3.141592653589793
 
 in vec3 position;
+in vec3 tangent;
+in vec3 cotangent;
 in vec3 color;
 in vec2 uv0;
 in vec3 normal;
@@ -10,12 +12,14 @@ in vec3 normal;
 uniform sampler2D texColor;
 uniform sampler2D texEmission;
 uniform sampler2D texAttributes;
+uniform sampler2D texNormalMap;
 
 uniform vec3 vecEmission;
 uniform vec3 vecColor;
 uniform vec3 vecAttributes;
 
 uniform float fGamma;
+uniform vec2 vecTime;
 
 uniform vec3 vecViewPos;
 uniform vec3 vecViewDir;
@@ -120,23 +124,46 @@ float cookTorranceSpecular(
 }
 
 void main() {
-	vec3 realNormal = normal;
-	if(!gl_FrontFacing) {
-		realNormal = -normal;
+
+	mat3 mApplyNormal;
+	vec3 polyNormal;
+	if(gl_FrontFacing) {
+		polyNormal = normal;
+		mApplyNormal = mat3(tangent,cotangent,normal);
+	} else {
+		polyNormal = -normal;
+		mApplyNormal = mat3(-tangent,-cotangent,-normal);
 	}
+
+	vec4 cDiffuse = vec4(vecColor, 1) * vec4(degamma(color),1) * degamma(texture(texColor, uv0));
+	vec4 cEmissive = vec4(vecEmission, 1) * degamma(texture(texEmission, uv0));
+	vec4 cAttribute = vec4(vecAttributes, 1) * texture(texAttributes, uv0);
+	vec4 cNormalMap = texture(texNormalMap, uv0);
+	// cAttribute = [ roughness, metallic, fresnell ]
+
+	cNormalMap.rgb = normalize(2.0 * cNormalMap.rgb - 1.0);
+
+	if(gl_FrontFacing == false) {
+		cNormalMap.rg = -cNormalMap.rg;
+	}
+
+	vec3 realNormal = mApplyNormal * cNormalMap.rgb;
+
+	// Alpha testing
+	if(cDiffuse.a <= 0.5) discard;
 
 	vec3 lightPosition = vec3(0, 24, -148);
 	vec3 lightColor = vec3(1,1,1);
 	vec3 toView = normalize(vecViewPos - position);
 	vec3 toLight = normalize(lightPosition - position);
 
-	vec4 cDiffuse = vec4(vecColor, 1) * vec4(degamma(color),1) * degamma(texture(texColor, uv0));
-	vec4 cEmissive = vec4(vecEmission, 1) * degamma(texture(texEmission, uv0));
-	vec4 cAttribute = vec4(vecAttributes, 1) * texture(texAttributes, uv0);
-	// cAttribute = [ roughness, metallic, fresnell ]
-
-	// Alpha testing
-	if(cDiffuse.a <= 0.5) discard;
+//	fragment = vec4(
+//		0.5 + 0.5 * mix(
+//			realNormal,
+//	        polyNormal,
+//			0.5 + 0.5 * sin(3 * vecTime.x)),
+//		1.0);
+//	return;
 
 	float roughness = cAttribute.r; // 0[smooth]     → 1[matte]
 	float metallic = cAttribute.g;  // 0[dielectric] → 1[metal]
@@ -163,7 +190,7 @@ void main() {
 		roughness,
 		fresnell);
 
-	// cts *= dot(normal, toLight); // ??
+	cts *= max(dot(realNormal, toLight), 0); // ??
 
 	vec3 sDiffuse = atten * lightColor * ond * mix(cDiffuse.rgb, vec3(0), metallic);
 	vec3 sSpecular = atten * lightColor * cts * mix(vec3(1), cDiffuse.rgb, metallic);

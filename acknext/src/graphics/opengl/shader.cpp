@@ -153,8 +153,10 @@ ACKNEXT_API_BLOCK
 			SETTYPE("texColor", GL_SAMPLER_2D, TEXCOLOR_VAR);
 			SETTYPE("texAttributes", GL_SAMPLER_2D, TEXATTRIBUTES_VAR);
 			SETTYPE("texEmission", GL_SAMPLER_2D, TEXEMISSION_VAR);
+			SETTYPE("texNormalMap", GL_SAMPLER_2D, TEXNORMALMAP_VAR);
 
 			SETTYPE("fGamma", GL_FLOAT, FGAMMA_VAR);
+			SETTYPE("vecTime", GL_FLOAT_VEC2, VECTIME_VAR);
 
 			switch(uni->var) {
 				case TEXCOLOR_VAR:
@@ -165,6 +167,9 @@ ACKNEXT_API_BLOCK
 					break;
 				case TEXEMISSION_VAR:
 					glProgramUniform1i(shader->program, uni->location, 2);
+					break;
+				case TEXNORMALMAP_VAR:
+					glProgramUniform1i(shader->program, uni->location, 3);
 					break;
 				default:
 					break;

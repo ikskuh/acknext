@@ -11,7 +11,7 @@ uniform mat4 matWorld;
 uniform mat4 matView;
 uniform mat4 matProj;
 
-out vec3 position, color, normal, tangent;
+out vec3 position, color, normal, tangent, cotangent;
 out vec2 uv0, uv1;
 
 void main() {
@@ -22,6 +22,5 @@ void main() {
 	color = vColor;
 	uv0 = vUV0;
 	uv1 = vUV1;
-
-	// normal = normalize(( matWorld * vec4(normalize(vPosition), 0.0) ).xyz);
+	cotangent = cross(tangent, normal);
 }

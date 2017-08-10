@@ -15,6 +15,13 @@ static Shader * currentShader;
 extern GLuint vao;
 extern Shader * defaultShader;
 extern Bitmap * defaultWhiteTexture;
+extern Bitmap * defaultNormalMap;
+
+void opengl_setTexture(int slot, BITMAP * _texture, Bitmap * _fallback)
+{
+	Bitmap *texture = FALLBACK(promote<Bitmap>(_texture), FALLBACK(_fallback, defaultWhiteTexture));
+	glBindTextureUnit(slot, texture->id);
+}
 
 ACKNEXT_API_BLOCK
 {
@@ -158,6 +165,13 @@ ACKNEXT_API_BLOCK
 						currentShader->uniforms[i].location,
 						screen_gamma);
 					break;
+				case VECTIME_VAR:
+					glProgramUniform2f(
+						pgm,
+						currentShader->uniforms[i].location,
+						total_time,
+						time_step);
+					break;
 				default:
 					break;
 			}
@@ -228,5 +242,6 @@ ACKNEXT_API_BLOCK
 		opengl_setTexture(0, material->colorTexture);
 		opengl_setTexture(1, material->attributeTexture);
 		opengl_setTexture(2, material->emissionTexture);
+		opengl_setTexture(3, material->normalTexture, defaultNormalMap);
 	}
 }

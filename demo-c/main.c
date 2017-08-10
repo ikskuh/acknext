@@ -48,6 +48,7 @@ void gamemain()
 	ent->material->colorTexture = bmap_load("mtltest/dungeon-diffuse.png");
 	ent->material->emissionTexture = bmap_load("mtltest/dungeon-emissive.png");
 	ent->material->attributeTexture = bmap_load("mtltest/dungeon-attributes.png");
+	ent->material->normalTexture = bmap_load("mtltest/dungeon-normals.png");
 	ent->material->emission = (COLOR){2,2,2,2};
 	ent->material->roughness = 1.0;
 	ent->material->metallic = 1.0;

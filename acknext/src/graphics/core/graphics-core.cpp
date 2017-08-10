@@ -13,6 +13,7 @@
 GLuint vao;
 Shader * defaultShader;
 Bitmap * defaultWhiteTexture;
+Bitmap * defaultNormalMap;
 
 // graphics-resource.cpp
 extern char const * srcVertexShader;
@@ -131,6 +132,10 @@ void render_init()
 	uint32_t white = 0xFFFFFFFF;
 	defaultWhiteTexture = promote<Bitmap>(bmap_create(TEX_2D));
 	bmap_set(demote(defaultWhiteTexture), 1, 1, FORMAT_RGBA8, &white);
+
+	uint32_t normalY = 0xFFFF8080;
+	defaultNormalMap = promote<Bitmap>(bmap_create(TEX_2D));
+	bmap_set(demote(defaultNormalMap), 1, 1, FORMAT_RGBA8, &normalY);
 
 	camera = camera_create();
 	promote<Camera>(::camera)->userCreated = false;
