@@ -48,6 +48,8 @@ ACKFUN void bmap_set(BITMAP * bitmap, int width, int height, PIXELFORMAT format,
 
 ACKFUN void bmap_remove(BITMAP * bitmap);
 
+ACKFUN BITMAP * bmap_to_mipmap(BITMAP * bitmap);
+
 // BUFFER api:
 ACKFUN BUFFER * buffer_create(BUFFERTYPE type);
 

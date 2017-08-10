@@ -5,7 +5,8 @@ CONFIG += ordered
 SUBDIRS += \
     acknext \
 	demo-c \
-	shadertest
+	shadertest \
+    mtlconv
 
 HEADERS += \
     documentation/src/groups.h \

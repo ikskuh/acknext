@@ -31,11 +31,7 @@ vec3 withgamma(vec3 v) { return pow(v, vec3(1.0 / fGamma)); }
 vec4 degamma(vec4 v) { return pow(v, vec4(fGamma)); }
 vec4 withgamma(vec4 v) { return pow(v, vec4(1.0 / fGamma)); }
 
-vec3 reflect( vec3 i, vec3 n )
-{
-	return i - 2.0 * n * dot(n,i);
-}
-
+// https://imdoingitwrong.wordpress.com/2011/01/31/light-attenuation/
 float attenuate(vec3 P, vec3 lightCentre, float lightRadius, float cutoff)
 {
 	// calculate normalized light vector and distance to sphere light surface
@@ -152,7 +148,7 @@ void main() {
 	// Alpha testing
 	if(cDiffuse.a <= 0.5) discard;
 
-	vec3 lightPosition = vec3(0, 24, -148);
+	vec3 lightPosition = vec3(0, 10, -30);
 	vec3 lightColor = vec3(1,1,1);
 	vec3 toView = normalize(vecViewPos - position);
 	vec3 toLight = normalize(lightPosition - position);
@@ -168,7 +164,8 @@ void main() {
 	float roughness = cAttribute.r; // 0[smooth]     → 1[matte]
 	float metallic = cAttribute.g;  // 0[dielectric] → 1[metal]
 	float fresnell = cAttribute.b;  // 0[none]       → ∞[rim]
-	float albedo = 0.8;
+	float albedo = 0.96;
+	float occlusion = cAttribute.a;
 
 	float atten = attenuate(
 		position,
@@ -190,10 +187,10 @@ void main() {
 		roughness,
 		fresnell);
 
-	cts *= max(dot(realNormal, toLight), 0); // ??
+	// cts /= max(dot(realNormal, toLight), 0); // ??
 
-	vec3 sDiffuse = atten * lightColor * ond * mix(cDiffuse.rgb, vec3(0), metallic);
-	vec3 sSpecular = atten * lightColor * cts * mix(vec3(1), cDiffuse.rgb, metallic);
+	vec3 sDiffuse = occlusion * atten * lightColor * ond * mix(cDiffuse.rgb, vec3(0), metallic);
+	vec3 sSpecular = occlusion * atten * lightColor * cts * mix(vec3(1), cDiffuse.rgb, metallic);
 
 	fragment.rgb = withgamma(sDiffuse + sSpecular + cEmissive.rgb);
 	fragment.a = 1.0;

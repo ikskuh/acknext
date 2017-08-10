@@ -14,11 +14,11 @@ static void print_stacktrace()
 
 	char ** symbols = backtrace_symbols(stack, cnt);
 	if(symbols == nullptr) {
-		for(int i = 2; i < cnt; i++) {
+		for(int i = 3; i < cnt; i++) {
 			engine_log("\t%d [%p]", i - 2, stack[i]);
 		}
 	} else {
-		for(int i = 2; i < cnt; i++) {
+		for(int i = 3; i < cnt; i++) {
 			engine_log("\t%s", symbols[i]);
 		}
 	}

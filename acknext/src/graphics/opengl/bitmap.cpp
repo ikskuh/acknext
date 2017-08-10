@@ -162,6 +162,18 @@ ACKNEXT_API_BLOCK
 		bitmap->depth = 1;
 	}
 
+	BITMAP * bmap_to_mipmap(BITMAP * _bmp)
+	{
+		Bitmap * bmp = promote<Bitmap>(_bmp);
+		if(bmp == nullptr) {
+			return nullptr;
+		}
+		glGenerateTextureMipmap(bmp->id);
+		glTextureParameteri(bmp->id, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTextureParameteri(bmp->id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		return _bmp;
+	}
+
 	void bmap_remove(BITMAP * bitmap)
 	{
 		Bitmap * bmp = promote<Bitmap>(bitmap);
