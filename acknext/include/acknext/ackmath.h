@@ -140,4 +140,13 @@ ACKFUN QUATERNION * quat_set(QUATERNION * lhs, QUATERNION const * rhs);
 
 ACKFUN QUATERNION * quat_mult(QUATERNION * lhs, QUATERNION const * rhs);
 
+// COLOR Api:
+ACKFUN COLOR * color_rgb(int r, int g, int b);
+ACKFUN COLOR * color_rgba(int r, int g, int b, int a);
+ACKFUN COLOR * color_hex(int hexcode); // 0xFF00FF
+ACKFUN COLOR * color_hexa(int hexcode); // 0xFFFF00FF
+ACKFUN COLOR * color_addgamma(COLOR * c);
+ACKFUN COLOR * color_removegamma(COLOR * c);
+ACKFUN COLOR * color_blend(COLOR * dst, COLOR const * left, COLOR const * right, var f);
+
 #endif // _ACKNEXT_MATH_H_
