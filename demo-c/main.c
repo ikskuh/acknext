@@ -9,6 +9,11 @@ VECTOR cursor3d;
 
 VECTOR previous;
 
+var randv(var lower, var upper)
+{
+	return ((var)rand() / (var)RAND_MAX) * (upper-lower) + lower;
+}
+
 void paint()
 {
 	ENTITY * ent = ent_create("earth.mdl", &cursor3d, NULL);
@@ -65,6 +70,13 @@ void controlLight(LIGHT * light)
 		selectedLight->position.y += 16 * (key_kp_9 - key_kp_3) * time_step;
 		selectedLight->position.z += 16 * (key_kp_2 - key_kp_8) * time_step;
 
+		if(key_kp_2 || key_kp_3 || key_kp_4 || key_kp_6 || key_kp_8 || key_kp_9) {
+			engine_log("(%f %f %f)",
+				selectedLight->position.x,
+				selectedLight->position.y,
+				selectedLight->position.z);
+		}
+
 		draw_point3d(&selectedLight->position, &COLOR_WHITE);
 	}
 }
@@ -79,6 +91,21 @@ void makeLight()
 		lights[i]->color = (COLOR){!!(i&1), !!(i&2), !!(i&4), 1 };
 		lights[i]->intensity = 16;
 		break;
+	}
+}
+
+void torchwood(LIGHT * light)
+{
+	while(true)
+	{
+		var prev = light->intensity;
+		var next = 16 + randv(-1, 1);
+		var time = randv(0.08, 0.15);
+		for(var f = 0; f < 1.0; f += (1.0 / time) * time_step)
+		{
+			light->intensity = lerp(prev, next, f);
+			task_yield();
+		}
 	}
 }
 
@@ -114,6 +141,30 @@ void gamemain()
 	event_attach(on_k, makeLight);
 
 	task_defer(controlLight, NULL);
+
+	float scene[] =
+	{
+	    -40, 26, -51,
+		 40, 26, -51,
+		-60, 26, -71,
+	     60, 26, -71,
+	    -60, 26, -135,
+	     60, 26, -135,
+	    -40, 26, -157,
+		 40, 26, -157,
+	     -8, 26, -270,
+	      8, 26, -270,
+	};
+	for(int i = 0; i < 10; i++)
+	{
+		LIGHT * torch = light_create(POINTLIGHT);
+		torch->intensity = 16;
+		torch->color = *color_hex(0xffd196);
+		torch->position.x = scene[3*i+0];
+		torch->position.y = scene[3*i+1];
+		torch->position.z = scene[3*i+2];
+		task_defer(torchwood, torch);
+	}
 
 	while(true)
 	{
