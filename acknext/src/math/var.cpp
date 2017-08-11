@@ -5,6 +5,22 @@
 
 ACKNEXT_API_BLOCK
 {
+	var maxv(var a, var b)
+	{
+		if(a > b)
+			return a;
+		else
+			return b;
+	}
+
+	var minv(var a, var b)
+	{
+		if(a < b)
+			return a;
+		else
+			return b;
+	}
+
 	var lerp(var lhs, var rhs, var factor)
 	{
 		return lhs * (var(1) - factor)

@@ -60,6 +60,9 @@ typedef struct
 ACKVAR VECTOR ACKCONST nullvector;
 
 // var Api:
+ACKFUN var maxv(var a, var b);
+ACKFUN var minv(var a, var b);
+
 ACKFUN var lerp(var lhs, var rhs, var factor);
 
 ACKFUN var clamp(var value, var min, var max);
