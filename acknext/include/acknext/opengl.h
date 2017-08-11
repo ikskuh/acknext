@@ -26,4 +26,6 @@ ACKFUN void opengl_draw(
 	unsigned int offset,
 	unsigned int count);
 
+ACKVAR int opengl_debugMode;
+
 #endif // _ACKNEXT_OPENGL_H_

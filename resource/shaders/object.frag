@@ -11,6 +11,8 @@ in vec3 color;
 in vec2 uv0;
 in vec3 normal;
 
+uniform int iDebugMode;
+
 uniform sampler2D texColor;
 uniform sampler2D texEmission;
 uniform sampler2D texAttributes;
@@ -174,9 +176,11 @@ void main() {
 	vec4 cNormalMap = texture(texNormalMap, uv0);
 	// cAttribute = [ roughness, metallic, fresnell ]
 
-	cNormalMap.rgb = normalize(2.0 * cNormalMap.rgb - 1.0);
+	cNormalMap.rg = 2.0 * cNormalMap.rg - vec2(1.0);
+	cNormalMap.rgb = normalize(cNormalMap.rgb);
 
-	if(gl_FrontFacing == false) {
+
+	if(!gl_FrontFacing) {
 		cNormalMap.rg = -cNormalMap.rg;
 	}
 
@@ -184,6 +188,18 @@ void main() {
 
 	// Alpha testing
 	if(cDiffuse.a <= 0.5) discard;
+
+	if(iDebugMode == 1) {
+		cDiffuse = vec4(1);
+	} else if(iDebugMode == 2) {
+		fragment.rgb = 0.5 + 0.5 * realNormal;
+		fragment.a = 1.0;
+		return;
+	} else if(iDebugMode == 3) {
+		fragment.rgb = vec3(float(iLightCount) / (LIGHT_LIMIT - 1));
+		fragment.a = 1.0;
+		return;
+	}
 
 
 	float roughness = cAttribute.r; // 0[smooth]     → 1[matte]
@@ -206,8 +222,8 @@ void main() {
 		switch(lights[i].type)
 		{
 			case 0: // ambient
-
-				break;
+				sDiffuse += lights[i].color * mix(cDiffuse.rgb, vec3(0), metallic);
+				continue;
 			case 1: // point
 				atten = attenuate(
 					position,
@@ -217,7 +233,8 @@ void main() {
 				toLight = normalize(lights[i].position - position);
 				break;
 			case 2: // directional
-
+				atten = 1.0;
+				toLight = -lights[i].direction;
 				break;
 			case 3: // spot
 				atten = attenuate(
@@ -245,9 +262,14 @@ void main() {
 			roughness,
 			fresnell);
 
-		sDiffuse += occlusion * atten * lights[i].color * ond * mix(cDiffuse.rgb, vec3(0), metallic);
-		sSpecular += occlusion * atten * lights[i].color * cts * mix(vec3(1), cDiffuse.rgb, metallic);
+		// cts = clamp(dot(toLight, realNormal), 0, 1);
+
+		sDiffuse += atten * lights[i].color * ond * mix(cDiffuse.rgb, vec3(0), metallic);
+		sSpecular += atten * lights[i].color * cts * mix(vec3(1), cDiffuse.rgb, metallic);
 	}
-	fragment.rgb = withgamma(sDiffuse + sSpecular + cEmissive.rgb);
+	fragment.rgb = withgamma(
+		occlusion * sDiffuse +
+		occlusion * sSpecular +
+		cEmissive.rgb);
 	fragment.a = 1.0;
 }

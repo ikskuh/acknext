@@ -25,6 +25,8 @@ void opengl_setTexture(int slot, BITMAP const * _texture, Bitmap const * _fallba
 
 ACKNEXT_API_BLOCK
 {
+	int opengl_debugMode = 0;
+
 	void opengl_setVertexBuffer(BUFFER const * _buffer)
 	{
 		GLuint id = 0;
@@ -161,6 +163,7 @@ ACKNEXT_API_BLOCK
 
 		currentShader->fGamma = screen_gamma;
 		currentShader->vecTime = (VECTOR2){ total_time, time_step };
+		currentShader->iDebugMode = opengl_debugMode;
 	}
 
 	void opengl_setTexture(int slot, BITMAP const * _texture)

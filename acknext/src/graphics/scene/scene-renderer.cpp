@@ -49,6 +49,9 @@ ACKNEXT_API_BLOCK
 			buffer_set(ubo, sizeof(LIGHTDATA) * LIGHT_LIMIT, nullptr);
 		}
 
+		// glEnable(GL_CULL_FACE);
+		// glCullFace(GL_BACK);
+
 		glEnable(GL_DEPTH_TEST);
 		glClearColor(sky_color.red, sky_color.green, sky_color.blue, sky_color.alpha);
 		glClearDepth(1.0);

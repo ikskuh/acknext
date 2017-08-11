@@ -78,6 +78,8 @@ enum.SHADERVAR =
 	
 	"fGamma",
 	"vecTime",
+	
+	"iDebugMode",
 }
 
 enum.ERROR = 

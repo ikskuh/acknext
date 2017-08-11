@@ -44,9 +44,9 @@ MATERIAL * mtl_from_folder(char const * folder)
 	sprintf(buffer, "%s/attributes.tif", folder);
 	mtl->attributeTexture = bmap_to_mipmap(bmap_load(buffer));
 
-	mtl->roughness = 0.2;
-	mtl->fresnell = 0.3;
-	mtl->metallic = 0.0;
+	mtl->roughness = 1.0;
+	mtl->fresnell = 9999.0;
+	mtl->metallic = 1.0;
 
 	return mtl;
 }
@@ -59,7 +59,7 @@ void gamemain()
 	task_defer(debug_tools, NULL);
 	event_attach(on_escape, quit);
 
-	MATERIAL * mtl = mtl_from_folder("mtl_hardwood");
+	MATERIAL * mtl = mtl_from_folder("mtl_flagstone");
 
 	init(ent_create("unit-sphere.obj",   vector(-15,  15, -50), NULL), mtl, true);
 	init(ent_create("unit-cylinder.obj", vector(-15, -15, -50), NULL), mtl, true);
@@ -74,8 +74,34 @@ void gamemain()
 		}
 	}
 
+	LIGHT * light;
+
+	light = light_create(AMBIENTLIGHT);
+	light->color = (COLOR){0.2, 0.2, 0.2, 1};
+
+	light = light_create(SUNLIGHT);
+	light->direction = (VECTOR){0, -10, 0};
+	vec_normalize(&light->direction, 1.0);
+
+	/*
+	light = light_create(POINTLIGHT);
+	light->position = (VECTOR){-20, 10, -30};
+	light->intensity = 64;
+	light->color = *color_rgb(255, 0, 0);
+
+	light = light_create(POINTLIGHT);
+	light->position = (VECTOR){20, 10, -30};
+	light->intensity = 64;
+	light->color = *color_rgb(0, 255, 255);
+*/
+
 	while(true)
 	{
+		if(key_space) {
+			vec_lerp(&light->color, &light->color, &COLOR_WHITE, 0.15);
+		} else {
+			vec_lerp(&light->color, &light->color, &COLOR_BLACK, 0.15);
+		}
 		draw_point3d(vector(0, 10, -30), &COLOR_RED);
 		task_yield();
 	}
