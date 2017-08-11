@@ -25,6 +25,8 @@ extern struct engine engine;
 
 void engine_setsdlerror();
 
+void _print_stacktrace();
+
 #define ARG_NOTNULL(arg,val) if(arg == nullptr) { \
 	engine_seterror(ERR_INVALIDARGUMENT, #arg " must not be NULL!"); \
 	return val; \

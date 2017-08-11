@@ -23,6 +23,9 @@ void DebugDrawer::render(MATRIX const & matView, MATRIX const & matProj)
 		&matView,
 		&matProj);
 
+	glDepthFunc(GL_LEQUAL);
+	glDisable(GL_BLEND);
+
 	if(points.size() > 0)
 	{
 		buffer_set(

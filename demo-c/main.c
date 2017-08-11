@@ -61,11 +61,24 @@ void controlLight(LIGHT * light)
 		selectedLight->intensity += 16 * (key_kp_plus - key_kp_minus) * time_step;
 		selectedLight->intensity = maxv(selectedLight->intensity, 0.5);
 
-		selectedLight->position.x += 16 * (key_kp_4 - key_kp_6) * time_step;
+		selectedLight->position.x += 16 * (key_kp_6 - key_kp_4) * time_step;
 		selectedLight->position.y += 16 * (key_kp_9 - key_kp_3) * time_step;
 		selectedLight->position.z += 16 * (key_kp_2 - key_kp_8) * time_step;
 
 		draw_point3d(&selectedLight->position, &COLOR_WHITE);
+	}
+}
+
+void makeLight()
+{
+	for(int i = 1; i < 10; i++)
+	{
+		if(lights[i]) continue;
+		lights[i] = light_create(POINTLIGHT);
+		lights[i]->position = camera->position;
+		lights[i]->color = (COLOR){!!(i&1), !!(i&2), !!(i&4), 1 };
+		lights[i]->intensity = 16;
+		break;
 	}
 }
 
@@ -91,13 +104,6 @@ void gamemain()
 
 	event_attach(on_escape, quit);
 
-	for(int i = 1; i < 8; i++)
-	{
-		lights[i] = light_create(POINTLIGHT);
-		lights[i]->color = (COLOR){!!(i&1), !!(i&2), !!(i&4), 1 };
-		lights[i]->intensity = 16;
-	}
-
 	LIGHT * playerAura = light_create(POINTLIGHT);
 	playerAura->color = *color_hex(0xffde96);
 	playerAura->intensity = 8;
@@ -105,6 +111,7 @@ void gamemain()
 	lights[0] = playerAura;
 
 	event_attach(on_l, nextLight);
+	event_attach(on_k, makeLight);
 
 	task_defer(controlLight, NULL);
 

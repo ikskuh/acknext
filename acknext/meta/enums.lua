@@ -11,6 +11,7 @@ enum.BUFFERTYPE =
 	postfix = "BUFFER",
 	"VERTEX",
 	"INDEX",
+	"UNIFORM",
 };
 
 enum.SHADERTYPE = 
@@ -67,6 +68,7 @@ enum.SHADERVAR =
 	"texNormalmap",
 	
 	-- Light
+	"iLightCount",
 	"iLightType",
 	"fLightIntensity",
 	"fLightArc",

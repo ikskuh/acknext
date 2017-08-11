@@ -9,13 +9,13 @@
 
 static Buffer const * currentVertexBuffer;
 static Buffer const * currentIndexBuffer;
-static Shader const * currentShader;
+static Shader * currentShader;
 
 // graphics-core.cpp
 extern GLuint vao;
-extern Shader const * defaultShader;
-extern Bitmap const * defaultWhiteTexture;
-extern Bitmap const * defaultNormalMap;
+extern Shader * defaultShader;
+extern Bitmap * defaultWhiteTexture;
+extern Bitmap * defaultNormalMap;
 
 void opengl_setTexture(int slot, BITMAP const * _texture, Bitmap const * _fallback)
 {
@@ -74,6 +74,13 @@ ACKNEXT_API_BLOCK
 		MATRIX mat;
 		int pgm = currentShader->program;
 		int cnt = currentShader->uniforms.size();
+
+		currentShader->matWorld = *matWorld;
+		currentShader->matView = *matView;
+		currentShader->matProj = *matProj;
+
+		// TODO: Reimplement this!
+		/*
 		for(int i = 0; i < cnt; i++)
 		{
 			UNIFORM const & uni = currentShader->uniforms[i];
@@ -110,14 +117,12 @@ ACKNEXT_API_BLOCK
 					continue;
 			}
 
-			/*
-			engine_log("Matrix %d:\n%1.3f %1.3f %1.3f %1.3f\n%1.3f %1.3f %1.3f %1.3f\n%1.3f %1.3f %1.3f %1.3f\n%1.3f %1.3f %1.3f %1.3f",
-				uni->variable,
-				mat.v[0][0], mat.v[0][1], mat.v[0][2], mat.v[0][3],
-				mat.v[1][0], mat.v[1][1], mat.v[1][2], mat.v[1][3],
-				mat.v[2][0], mat.v[2][1], mat.v[2][2], mat.v[2][3],
-				mat.v[3][0], mat.v[3][1], mat.v[3][2], mat.v[3][3]);
-			//*/
+//			engine_log("Matrix %d:\n%1.3f %1.3f %1.3f %1.3f\n%1.3f %1.3f %1.3f %1.3f\n%1.3f %1.3f %1.3f %1.3f\n%1.3f %1.3f %1.3f %1.3f",
+//				uni->variable,
+//				mat.v[0][0], mat.v[0][1], mat.v[0][2], mat.v[0][3],
+//				mat.v[1][0], mat.v[1][1], mat.v[1][2], mat.v[1][3],
+//				mat.v[2][0], mat.v[2][1], mat.v[2][2], mat.v[2][3],
+//				mat.v[3][0], mat.v[3][1], mat.v[3][2], mat.v[3][3]);
 
 			glProgramUniformMatrix4fv(
 				pgm,
@@ -126,6 +131,7 @@ ACKNEXT_API_BLOCK
 				GL_FALSE,
 				&mat.fields[0][0]);
 		}
+		*/
 	}
 
 	void opengl_draw(
@@ -150,32 +156,11 @@ ACKNEXT_API_BLOCK
 
 	void opengl_setShader(SHADER const * shader)
 	{
-		currentShader = FALLBACK(promote<Shader>(shader), defaultShader);
+		currentShader = FALLBACK(const_cast<Shader*>(promote<Shader>(shader)), defaultShader);
 		glUseProgram(currentShader->program);
 
-		int pgm = currentShader->program;
-		int cnt = currentShader->uniforms.size();
-		for(int i = 0; i < cnt; i++)
-		{
-			switch(currentShader->uniforms[i].var)
-			{
-				case FGAMMA_VAR:
-					glProgramUniform1f(
-						pgm,
-						currentShader->uniforms[i].location,
-						screen_gamma);
-					break;
-				case VECTIME_VAR:
-					glProgramUniform2f(
-						pgm,
-						currentShader->uniforms[i].location,
-						total_time,
-						time_step);
-					break;
-				default:
-					break;
-			}
-		}
+		currentShader->fGamma = screen_gamma;
+		currentShader->vecTime = (VECTOR2){ total_time, time_step };
 	}
 
 	void opengl_setTexture(int slot, BITMAP const * _texture)
@@ -204,39 +189,9 @@ ACKNEXT_API_BLOCK
 		// this fallbacks to the defaultShader if none is set.
 		opengl_setShader(material->shader);
 
-		int pgm = currentShader->program;
-		int cnt = int(currentShader->uniforms.size());
-		for(int i = 0; i < cnt; i++)
-		{
-			UNIFORM const * uni = &currentShader->uniforms[i];
-			switch(uni->var) {
-				case VECCOLOR_VAR:
-					glProgramUniform3f(
-						pgm,
-						uni->location,
-						material->color.red,
-						material->color.green,
-						material->color.blue);
-					break;
-				case VECATTRIBUTES_VAR:
-					glProgramUniform3f(
-						pgm,
-						uni->location,
-						material->roughness,
-						material->metallic,
-						material->fresnell);
-					break;
-				case VECEMISSION_VAR:
-					glProgramUniform3f(
-						pgm,
-						uni->location,
-						material->emission.red,
-						material->emission.green,
-						material->emission.blue);
-					break;
-				default: break;
-			}
-		}
+		currentShader->vecColor = material->color;
+		currentShader->vecAttributes = (VECTOR){material->roughness,material->metallic,material->fresnell};
+		currentShader->vecEmission = material->emission;
 
 		opengl_setTexture(0, material->colorTexture);
 		opengl_setTexture(1, material->attributeTexture);

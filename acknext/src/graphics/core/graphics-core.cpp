@@ -1,6 +1,6 @@
 #include "graphics/core.hpp"
 #include "view.hpp"
-#include "engine.hpp"
+#include <engine.hpp>
 #include <algorithm>
 
 #include "../opengl/shader.hpp"
@@ -181,5 +181,6 @@ static void (APIENTRY render_log)(GLenum source,GLenum type,GLuint id,GLenum sev
 	(void)userParam;
 	if(severity == GL_DEBUG_SEVERITY_HIGH || severity == GL_DEBUG_SEVERITY_MEDIUM) {
 		engine_log("[OpenGL] %s", message);
+		_print_stacktrace();
 	}
 }

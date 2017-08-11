@@ -5,6 +5,7 @@ static GLenum getBufferType(BUFFERTYPE type)
 	switch(type) {
 		case VERTEXBUFFER: return GL_ARRAY_BUFFER;
 		case INDEXBUFFER: return GL_ELEMENT_ARRAY_BUFFER;
+		case UNIFORMBUFFER: return GL_UNIFORM_BUFFER;
 		default:
 			engine_seterror(ERR_INVALIDARGUMENT, "Invalid buffer type!");
 			return GL_INVALID_ENUM;
@@ -47,7 +48,7 @@ ACKNEXT_API_BLOCK
 			buf->id,
 			size,
 		    data,
-			GL_STATIC_DRAW);
+			GL_DYNAMIC_DRAW); // TODO: Fix this later
 		buffer->size = size;
 	}
 

@@ -107,7 +107,8 @@ HEADERS += \
     src/audio/audiomanager.hpp \
     src/audio/sound.hpp \
     include/acknext/acksound.h \
-    src/virtfs/resourcemanager.hpp
+    src/virtfs/resourcemanager.hpp \
+    src/graphics/opengl/uniformconfig.h
 
 SOURCES += \
     src/graphics/opengl/buffer.cpp \
@@ -152,7 +153,8 @@ SOURCES += \
     src/audio/audiomanager.cpp \
     src/audio/sound.cpp \
     src/virtfs/resourcemanager.cpp \
-    src/math/color.cpp
+    src/math/color.cpp \
+    src/graphics/opengl/programuniform.cpp
 
 DISTFILES += \
     $$PWD/../resource/shaders/object.frag \

@@ -2,6 +2,8 @@
 
 #define PI 3.141592653589793
 
+#define LIGHT_LIMIT 16
+
 in vec3 position;
 in vec3 tangent;
 in vec3 cotangent;
@@ -14,8 +16,8 @@ uniform sampler2D texEmission;
 uniform sampler2D texAttributes;
 uniform sampler2D texNormalMap;
 
-uniform vec3 vecEmission;
-uniform vec3 vecColor;
+uniform vec4 vecEmission;
+uniform vec4 vecColor;
 uniform vec3 vecAttributes;
 
 uniform float fGamma;
@@ -24,12 +26,14 @@ uniform vec2 vecTime;
 uniform vec3 vecViewPos;
 uniform vec3 vecViewDir;
 
+/*
 uniform int iLightType; // 0=ambient, 1=point, 2=directional, 3=spot,
 uniform vec3 vecLightPos;
 uniform vec3 vecLightDir;
 uniform vec3 vecLightColor;
 uniform float fLightIntensity;
 uniform float fLightArc;
+*/
 
 out vec4 fragment;
 
@@ -126,6 +130,32 @@ float cookTorranceSpecular(
 	return  G * F * D / max(PI * VdotN * LdotN, 0.000001);
 }
 
+/*
+uniform int iLightType; // 0=ambient, 1=point, 2=directional, 3=spot,
+uniform vec3 vecLightPos;
+uniform vec3 vecLightDir;
+uniform vec3 vecLightColor;
+uniform float fLightIntensity;
+uniform float fLightArc;
+*/
+struct LightSource
+{
+	/*0*/ int type;
+	/*1*/ float intensity;
+	/*2*/ float arc;
+	/*4*/ vec3 position;
+	/*8*/ vec3 direction;
+	/*C*/ vec3 color;
+};
+
+// std140 is necessary for alignment!
+layout(std140) uniform LightBlock
+{
+	LightSource lights[LIGHT_LIMIT];
+};
+
+uniform int iLightCount;
+
 void main() {
 
 	mat3 mApplyNormal;
@@ -138,8 +168,8 @@ void main() {
 		mApplyNormal = mat3(-tangent,-cotangent,-normal);
 	}
 
-	vec4 cDiffuse = vec4(vecColor, 1) * vec4(degamma(color),1) * degamma(texture(texColor, uv0));
-	vec4 cEmissive = vec4(vecEmission, 1) * degamma(texture(texEmission, uv0));
+	vec4 cDiffuse = vecColor * vec4(degamma(color),1) * degamma(texture(texColor, uv0));
+	vec4 cEmissive = vecEmission * degamma(texture(texEmission, uv0));
 	vec4 cAttribute = vec4(vecAttributes, 1) * texture(texAttributes, uv0);
 	vec4 cNormalMap = texture(texNormalMap, uv0);
 	// cAttribute = [ roughness, metallic, fresnell ]
@@ -163,54 +193,61 @@ void main() {
 	float occlusion = cAttribute.a;
 
 	vec3 toView = normalize(vecViewPos - position);
-	vec3 toLight = vecLightDir;
-	float atten = 1.0;
 
-	switch(iLightType)
+	vec3 sDiffuse = vec3(0);
+	vec3 sSpecular = vec3(0);
+
+	int limit = min(LIGHT_LIMIT, iLightCount);
+	for(int i = 0; i < limit; i++)
 	{
-		case 0: // ambient
+		vec3 toLight = lights[i].direction;
+		float atten = 1.0;
 
-			break;
-		case 1: // point
-			atten = attenuate(
-				position,
-				vecLightPos,
-				fLightIntensity,
-				1.0 / 512.0);
-			toLight = normalize(vecLightPos - position);
-			break;
-		case 2: // directional
+		switch(lights[i].type)
+		{
+			case 0: // ambient
 
+				break;
+			case 1: // point
+				atten = attenuate(
+					position,
+					lights[i].position,
+					lights[i].intensity,
+					1.0 / 512.0);
+				toLight = normalize(lights[i].position - position);
+				break;
+			case 2: // directional
+
+				break;
+			case 3: // spot
+				atten = attenuate(
+					position,
+					lights[i].position,
+					lights[i].intensity,
+					1.0 / 512.0);
+				toLight = normalize(lights[i].position - position);
+				break;
 			break;
-		case 3: // spot
-			atten = attenuate(
-				position,
-				vecLightPos,
-				fLightIntensity,
-				1.0 / 512.0);
-			toLight = normalize(vecLightPos - position);
-			break;
-		break;
-		default: discard;
+			default: discard;
+		}
+
+		float ond = orenNayarDiffuse(
+			toLight,
+			toView,
+			realNormal,
+			roughness,
+			albedo);
+
+		float cts = cookTorranceSpecular(
+			toLight,
+			toView,
+			realNormal,
+			roughness,
+			fresnell);
+
+		sDiffuse += occlusion * atten * lights[i].color * ond * mix(cDiffuse.rgb, vec3(0), metallic);
+		sSpecular += occlusion * atten * lights[i].color * cts * mix(vec3(1), cDiffuse.rgb, metallic);
 	}
-
-	float ond = orenNayarDiffuse(
-		toLight,
-		toView,
-		realNormal,
-		roughness,
-		albedo);
-
-	float cts = cookTorranceSpecular(
-		toLight,
-		toView,
-		realNormal,
-		roughness,
-		fresnell);
-
-	vec3 sDiffuse = occlusion * atten * vecLightColor * ond * mix(cDiffuse.rgb, vec3(0), metallic);
-	vec3 sSpecular = occlusion * atten * vecLightColor * cts * mix(vec3(1), cDiffuse.rgb, metallic);
-
 	fragment.rgb = withgamma(sDiffuse + sSpecular + cEmissive.rgb);
 	fragment.a = 1.0;
 }

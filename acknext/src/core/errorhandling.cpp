@@ -7,7 +7,7 @@
 #include <execinfo.h>
 // int backtrace(void **buffer, int size);
 // char **backtrace_symbols(void *const *buffer, int size);
-static void print_stacktrace()
+void _print_stacktrace()
 {
 	void * stack[64];
 	int cnt = backtrace(stack, 64);
@@ -52,7 +52,7 @@ ACKNEXT_API_BLOCK
 
 		engine_log("Error: %s", buffer);
 
-		print_stacktrace();
+		_print_stacktrace();
 
 		engine_lasterror_text = buffer;
 	}

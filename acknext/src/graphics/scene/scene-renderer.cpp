@@ -9,6 +9,8 @@
 
 #include "../debug/debugdrawer.hpp"
 
+#define LIGHT_LIMIT 16
+
 extern Shader * defaultShader;
 
 Shader * FB(Shader * sh)
@@ -16,6 +18,18 @@ Shader * FB(Shader * sh)
 	if(sh) return sh;
 	return defaultShader;
 }
+
+struct LIGHTDATA
+{
+	__attribute__((aligned(4))) int type;
+	__attribute__((aligned(4))) float intensity;
+	__attribute__((aligned(4))) float arc;
+	__attribute__((aligned(16))) VECTOR position;
+	__attribute__((aligned(16))) VECTOR direction;
+	__attribute__((aligned(16))) COLOR color;
+};
+
+static BUFFER * ubo = nullptr;
 
 ACKNEXT_API_BLOCK
 {
@@ -27,6 +41,12 @@ ACKNEXT_API_BLOCK
 	{
 		if(perspective == nullptr) {
 			return;
+		}
+
+		if(!ubo)
+		{
+			ubo = buffer_create(UNIFORMBUFFER);
+			buffer_set(ubo, sizeof(LIGHTDATA) * LIGHT_LIMIT, nullptr);
 		}
 
 		glEnable(GL_DEPTH_TEST);
@@ -71,24 +91,44 @@ ACKNEXT_API_BLOCK
 					&matView,
 					&matProj);
 
-				for(UNIFORM & u : defaultShader->uniforms)
+				int lcount = 0;
+				LIGHTDATA * lights = (LIGHTDATA*)glMapNamedBuffer(
+				            buffer_getObject(ubo),
+							GL_WRITE_ONLY);
+				for(LIGHT * l = light_next(nullptr); l != nullptr; l = light_next(l))
 				{
-					switch(u.var) {
-						case VECVIEWPOS_VAR:
-							glProgramUniform3f(
-								defaultShader->program,
-								u.location,
-								perspective->position.x,
-								perspective->position.y,
-								perspective->position.z);
-							break;
-						default: break;
+					lights[lcount].type = l->type;
+					lights[lcount].intensity = l->intensity;
+					lights[lcount].arc = DEG_TO_RAD * l->arc;
+					lights[lcount].position = l->position;
+					lights[lcount].direction = l->direction;
+					lights[lcount].color = l->color;
+
+					vec_normalize(&lights[lcount].direction, 1.0);
+					lcount += 1;
+					if(lcount >= LIGHT_LIMIT) {
+						break;
 					}
 				}
+				glUnmapNamedBuffer(buffer_getObject(ubo));
 
-				// rince and repeat for every light with additive blending
+				GLuint binding_point_index = 2;
+				GLint block_index = glGetUniformBlockIndex(
+					defaultShader->program,
+					"LightBlock");
+				glBindBufferBase(
+					GL_UNIFORM_BUFFER,
+					binding_point_index,
+					buffer_getObject(ubo));
+				glUniformBlockBinding(
+					defaultShader->program,
+					block_index,
+					binding_point_index);
+
+				defaultShader->iLightCount = lcount;
+				defaultShader->vecViewPos = perspective->position;
+
 				opengl_setLight(light_next(nullptr));
-
 				opengl_draw(GL_TRIANGLES, 0, mesh.indexBuffer->size / sizeof(INDEX));
 			}
 		}

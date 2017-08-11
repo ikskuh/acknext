@@ -1,6 +1,5 @@
 #include "shader.hpp"
 
-
 static GLenum getShaderType(SHADERTYPE type)
 {
 	switch(type) {
@@ -19,9 +18,14 @@ Shader::Shader() :
     EngineObject<SHADER>(),
     program(glCreateProgram()),
     uniforms(), shaders(),
+#define _UNIFORM(xname, xtype, value, _rtype) xname(),
+#include "uniformconfig.h"
+#undef _UNIFORM
     isLinked(false)
 {
-
+#define _UNIFORM(xname, xtype, value, _rtype) this->xname.shader = this;
+#include "uniformconfig.h"
+#undef _UNIFORM
 }
 
 Shader::~Shader()
@@ -30,6 +34,17 @@ Shader::~Shader()
 		glDeleteShader(sh);
 	}
 	glDeleteProgram(this->program);
+}
+
+void Shader::setUniform(SHADERVAR var, std::function<void(int,int)> const & func)
+{
+	for(UNIFORM & u : this->uniforms)
+	{
+		if(u.var != var) {
+			continue;
+		}
+		func(this->program, u.location);
+	}
 }
 
 ACKNEXT_API_BLOCK
@@ -129,47 +144,20 @@ ACKNEXT_API_BLOCK
 
 			// TODO: Add all shader variables
 
-	#define SETTYPE(xname, xtype, value) \
+#define _UNIFORM(xname, xtype, value, _rtype) \
 			do { \
-				if(strcmp(uni->name, xname) == 0) { \
+				if(strcmp(uni->name, #xname) == 0) { \
 					if(uni->type != xtype) { \
-						engine_seterror(ERR_INVALIDOPERATION, "The uniform " xname " is not of the type " #xtype "!"); \
+						engine_seterror(ERR_INVALIDOPERATION, "The uniform " #xname " is not of the type " #xtype "!"); \
 						return false; \
 					} \
 					uni->var = value; \
+					shader->xname.location = uni->location; \
 					engine_log("uniform %d: %d %d %s", uni->location, uni->type, uni->var, uni->name); \
 				} \
-			} while(false)
-
-			SETTYPE("matWorld", GL_FLOAT_MAT4, MATWORLD_VAR);
-			SETTYPE("matWorldView", GL_FLOAT_MAT4, MATWORLDVIEW_VAR);
-			SETTYPE("matWorldViewProj", GL_FLOAT_MAT4, MATWORLDVIEWPROJ_VAR);
-			SETTYPE("matView", GL_FLOAT_MAT4, MATVIEW_VAR);
-			SETTYPE("matViewProj", GL_FLOAT_MAT4, MATVIEWPROJ_VAR);
-			SETTYPE("matProj", GL_FLOAT_MAT4, MATPROJ_VAR);
-
-			SETTYPE("vecViewPos", GL_FLOAT_VEC3, VECVIEWPOS_VAR);
-			SETTYPE("vecViewDir", GL_FLOAT_VEC3, VECVIEWDIR_VAR);
-			SETTYPE("vecViewPort", GL_FLOAT_VEC4, VECVIEWPORT_VAR);
-
-			SETTYPE("vecColor", GL_FLOAT_VEC3, VECCOLOR_VAR);
-			SETTYPE("vecEmission", GL_FLOAT_VEC3, VECEMISSION_VAR);
-			SETTYPE("vecAttributes", GL_FLOAT_VEC3, VECATTRIBUTES_VAR);
-
-			SETTYPE("texColor", GL_SAMPLER_2D, TEXCOLOR_VAR);
-			SETTYPE("texAttributes", GL_SAMPLER_2D, TEXATTRIBUTES_VAR);
-			SETTYPE("texEmission", GL_SAMPLER_2D, TEXEMISSION_VAR);
-			SETTYPE("texNormalMap", GL_SAMPLER_2D, TEXNORMALMAP_VAR);
-
-			SETTYPE("fGamma", GL_FLOAT, FGAMMA_VAR);
-			SETTYPE("vecTime", GL_FLOAT_VEC2, VECTIME_VAR);
-
-			SETTYPE("iLightType", GL_INT, ILIGHTTYPE_VAR);
-			SETTYPE("fLightIntensity", GL_FLOAT, FLIGHTINTENSITY_VAR);
-			SETTYPE("fLightArc", GL_FLOAT, FLIGHTARC_VAR);
-			SETTYPE("vecLightPos", GL_FLOAT_VEC3, VECLIGHTPOS_VAR);
-			SETTYPE("vecLightDir", GL_FLOAT_VEC3, VECLIGHTDIR_VAR);
-			SETTYPE("vecLightColor", GL_FLOAT_VEC3, VECLIGHTCOLOR_VAR);
+			} while(false);
+#include "uniformconfig.h"
+#undef _UNIFORM
 
 			switch(uni->var) {
 				case TEXCOLOR_VAR:
