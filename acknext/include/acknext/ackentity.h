@@ -24,6 +24,6 @@ ACKFUN ENTITY * ent_create(
 
 ACKFUN void ent_remove(ENTITY * ent);
 
-ACKFUN ENTITY * ent_next(ENTITY * ent);
+ACKFUN ENTITY * ent_next(ENTITY const * ent);
 
 #endif // _ACKNEXT_ACKENTITY_H_

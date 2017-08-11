@@ -117,3 +117,12 @@ enum.HULLTYPE =
 	"Polygon",
 	"Convex",
 }
+
+enum.LIGHTTYPE = 
+{
+	postfix = "LIGHT",
+	"Point",
+	"Directional",
+	"Spot",
+	"Ambient"
+}

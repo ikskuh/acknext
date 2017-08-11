@@ -11,7 +11,7 @@ extern dummy _binary_resource_zip_end;
 void ResourceManager::initialize()
 {
 	void * start = &_binary_resource_zip_start;
-	size_t length = length = (uintptr_t)&_binary_resource_zip_end - (uintptr_t)&_binary_resource_zip_start;
+	size_t length = (uintptr_t)&_binary_resource_zip_end - (uintptr_t)&_binary_resource_zip_start;
 	PHYSFS_mountMemory(
 		start,
 		length,

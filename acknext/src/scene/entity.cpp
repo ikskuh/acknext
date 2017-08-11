@@ -5,6 +5,7 @@ Entity * Entity::first = nullptr;
 Entity * Entity::last = nullptr;
 
 Entity::Entity() :
+    EngineObject<ENTITY>(),
     previous(last),
     next(nullptr)
 {
@@ -68,9 +69,9 @@ ACKNEXT_API_BLOCK
 		}
 	}
 
-	ENTITY * ent_next(ENTITY * _ent)
+	ENTITY * ent_next(ENTITY const * _ent)
 	{
-		Entity * ent = promote<Entity>(_ent);
+		Entity const * ent = promote<Entity>(_ent);
 		if(ent != nullptr) {
 			return demote(ent->next);
 		} else {

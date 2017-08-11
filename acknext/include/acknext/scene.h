@@ -56,6 +56,16 @@ typedef struct
 	CAMERATYPE type;
 } CAMERA;
 
+typedef struct
+{
+	LIGHTTYPE ACKCONST type;
+	VECTOR position;
+	VECTOR direction;
+	COLOR color;
+	var intensity; // kinda range, but not completly
+	var arc;
+} LIGHT;
+
 /**
  * @ingroup rendering
  * @brief An index of a @ref MESH.
@@ -90,5 +100,12 @@ ACKFUN void render_scene_with_camera(CAMERA * camera);
 
 ACKFUN MATERIAL * mtl_create();
 ACKFUN void mtl_remove(MATERIAL * mtl);
+
+// light api:
+ACKFUN LIGHT * light_create(LIGHTTYPE type);
+
+ACKFUN void light_remove(LIGHT * light);
+
+ACKFUN LIGHT * light_next(LIGHT const * light);
 
 #endif // _ACKNEXT_SCENE_H_
