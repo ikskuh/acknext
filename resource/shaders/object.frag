@@ -24,6 +24,13 @@ uniform vec2 vecTime;
 uniform vec3 vecViewPos;
 uniform vec3 vecViewDir;
 
+uniform int iLightType; // 0=ambient, 1=point, 2=directional, 3=spot,
+uniform vec3 vecLightPos;
+uniform vec3 vecLightDir;
+uniform vec3 vecLightColor;
+uniform float fLightIntensity;
+uniform float fLightArc;
+
 out vec4 fragment;
 
 vec3 degamma(vec3 v) { return pow(v, vec3(fGamma)); }
@@ -148,18 +155,6 @@ void main() {
 	// Alpha testing
 	if(cDiffuse.a <= 0.5) discard;
 
-	vec3 lightPosition = vec3(0, 10, -30);
-	vec3 lightColor = vec3(1,1,1);
-	vec3 toView = normalize(vecViewPos - position);
-	vec3 toLight = normalize(lightPosition - position);
-
-//	fragment = vec4(
-//		0.5 + 0.5 * mix(
-//			realNormal,
-//	        polyNormal,
-//			0.5 + 0.5 * sin(3 * vecTime.x)),
-//		1.0);
-//	return;
 
 	float roughness = cAttribute.r; // 0[smooth]     → 1[matte]
 	float metallic = cAttribute.g;  // 0[dielectric] → 1[metal]
@@ -167,11 +162,37 @@ void main() {
 	float albedo = 0.96;
 	float occlusion = cAttribute.a;
 
-	float atten = attenuate(
-		position,
-		lightPosition,
-		64,
-		1.0 / 512.0);
+	vec3 toView = normalize(vecViewPos - position);
+	vec3 toLight = vecLightDir;
+	float atten = 1.0;
+
+	switch(iLightType)
+	{
+		case 0: // ambient
+
+			break;
+		case 1: // point
+			atten = attenuate(
+				position,
+				vecLightPos,
+				fLightIntensity,
+				1.0 / 512.0);
+			toLight = normalize(vecLightPos - position);
+			break;
+		case 2: // directional
+
+			break;
+		case 3: // spot
+			atten = attenuate(
+				position,
+				vecLightPos,
+				fLightIntensity,
+				1.0 / 512.0);
+			toLight = normalize(vecLightPos - position);
+			break;
+		break;
+		default: discard;
+	}
 
 	float ond = orenNayarDiffuse(
 		toLight,
@@ -187,10 +208,8 @@ void main() {
 		roughness,
 		fresnell);
 
-	// cts /= max(dot(realNormal, toLight), 0); // ??
-
-	vec3 sDiffuse = occlusion * atten * lightColor * ond * mix(cDiffuse.rgb, vec3(0), metallic);
-	vec3 sSpecular = occlusion * atten * lightColor * cts * mix(vec3(1), cDiffuse.rgb, metallic);
+	vec3 sDiffuse = occlusion * atten * vecLightColor * ond * mix(cDiffuse.rgb, vec3(0), metallic);
+	vec3 sSpecular = occlusion * atten * vecLightColor * cts * mix(vec3(1), cDiffuse.rgb, metallic);
 
 	fragment.rgb = withgamma(sDiffuse + sSpecular + cEmissive.rgb);
 	fragment.a = 1.0;

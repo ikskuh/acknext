@@ -39,6 +39,36 @@ void quit()
 	engine_shutdown();
 }
 
+LIGHT * selectedLight = NULL;
+int lindex = 0;
+LIGHT * lights[10] = { NULL };
+
+void nextLight()
+{
+	do
+	{
+		lindex = (++lindex % 10);
+	} while(!lights[lindex]);
+	selectedLight = lights[lindex];
+	engine_log("Current light: %d", lindex);
+}
+
+void controlLight(LIGHT * light)
+{
+	for(;;task_yield())
+	{
+		if(!selectedLight) continue;
+		selectedLight->intensity += 16 * (key_kp_plus - key_kp_minus) * time_step;
+		selectedLight->intensity = maxv(selectedLight->intensity, 0.5);
+
+		selectedLight->position.x += 16 * (key_kp_4 - key_kp_6) * time_step;
+		selectedLight->position.y += 16 * (key_kp_9 - key_kp_3) * time_step;
+		selectedLight->position.z += 16 * (key_kp_2 - key_kp_8) * time_step;
+
+		draw_point3d(&selectedLight->position, &COLOR_WHITE);
+	}
+}
+
 void gamemain()
 {
 	view_create((void*)render_scene_with_camera, camera);
@@ -56,13 +86,31 @@ void gamemain()
 
 	task_yield();
 
-	// run debug tools :)
-	task_defer(debug_tools, NULL);
+	// run debug tools, first in the frame
+	task_defer(debug_tools, NULL)->priority = -10;
 
 	event_attach(on_escape, quit);
 
+	for(int i = 1; i < 8; i++)
+	{
+		lights[i] = light_create(POINTLIGHT);
+		lights[i]->color = (COLOR){!!(i&1), !!(i&2), !!(i&4), 1 };
+		lights[i]->intensity = 16;
+	}
+
+	LIGHT * playerAura = light_create(POINTLIGHT);
+	playerAura->color = *color_hex(0xffde96);
+	playerAura->intensity = 8;
+
+	lights[0] = playerAura;
+
+	event_attach(on_l, nextLight);
+
+	task_defer(controlLight, NULL);
+
 	while(true)
 	{
+		playerAura->position = camera->position;
 		task_yield();
 	}
 }

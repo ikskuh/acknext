@@ -60,18 +60,22 @@ ACKNEXT_API_BLOCK
 
 		GLint status;
 		glGetShaderiv(sh, GL_COMPILE_STATUS, &status);
+
+		GLint len;
+		glGetShaderiv(sh, GL_INFO_LOG_LENGTH, &len);
+
+		std::vector<GLchar> log(len + 1);
+		glGetShaderInfoLog(sh, log.size(), &len, log.data());
+		log[len] = 0;
+
 		if(status != GL_TRUE) {
-			GLint len;
-			glGetShaderiv(sh, GL_INFO_LOG_LENGTH, &len);
-
-			std::vector<GLchar> log(len + 1);
-			glGetShaderInfoLog(sh, log.size(), &len, log.data());
-			log[len] = 0;
-
 			engine_log("Failed to compile shader: %s", log.data());
-
 			glDeleteShader(sh);
 			return false;
+		}
+
+		if(len > 0) {
+			engine_log("shader log: %s", log.data());
 		}
 
 		shader->shaders.push_back(sh);
@@ -121,6 +125,7 @@ ACKNEXT_API_BLOCK
 				&uni->size,
 				&uni->type,
 				uni->name);
+			engine_log("%s %d", uni->name, glGetUniformLocation(shader->program, uni->name));
 
 			// TODO: Add all shader variables
 
@@ -132,6 +137,7 @@ ACKNEXT_API_BLOCK
 						return false; \
 					} \
 					uni->var = value; \
+					engine_log("uniform %d: %d %d %s", uni->location, uni->type, uni->var, uni->name); \
 				} \
 			} while(false)
 
@@ -157,6 +163,13 @@ ACKNEXT_API_BLOCK
 
 			SETTYPE("fGamma", GL_FLOAT, FGAMMA_VAR);
 			SETTYPE("vecTime", GL_FLOAT_VEC2, VECTIME_VAR);
+
+			SETTYPE("iLightType", GL_INT, ILIGHTTYPE_VAR);
+			SETTYPE("fLightIntensity", GL_FLOAT, FLIGHTINTENSITY_VAR);
+			SETTYPE("fLightArc", GL_FLOAT, FLIGHTARC_VAR);
+			SETTYPE("vecLightPos", GL_FLOAT_VEC3, VECLIGHTPOS_VAR);
+			SETTYPE("vecLightDir", GL_FLOAT_VEC3, VECLIGHTDIR_VAR);
+			SETTYPE("vecLightColor", GL_FLOAT_VEC3, VECLIGHTCOLOR_VAR);
 
 			switch(uni->var) {
 				case TEXCOLOR_VAR:

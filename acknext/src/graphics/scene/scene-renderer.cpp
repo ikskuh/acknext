@@ -86,6 +86,9 @@ ACKNEXT_API_BLOCK
 					}
 				}
 
+				// rince and repeat for every light with additive blending
+				opengl_setLight(light_next(nullptr));
+
 				opengl_draw(GL_TRIANGLES, 0, mesh.indexBuffer->size / sizeof(INDEX));
 			}
 		}

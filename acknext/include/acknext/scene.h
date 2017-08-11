@@ -56,6 +56,14 @@ typedef struct
 	CAMERATYPE type;
 } CAMERA;
 
+typedef enum LIGHTTYPE
+{
+	AMBIENTLIGHT = 0,
+	POINTLIGHT = 1,
+	SUNLIGHT = 2, // directional
+	SPOTLIGHT = 3,
+} LIGHTTYPE;
+
 typedef struct
 {
 	LIGHTTYPE ACKCONST type;

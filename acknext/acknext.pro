@@ -151,7 +151,8 @@ SOURCES += \
     src/collision/collisionsystem.cpp \
     src/audio/audiomanager.cpp \
     src/audio/sound.cpp \
-    src/virtfs/resourcemanager.cpp
+    src/virtfs/resourcemanager.cpp \
+    src/math/color.cpp
 
 DISTFILES += \
     $$PWD/../resource/shaders/object.frag \

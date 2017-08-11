@@ -28,6 +28,7 @@
 #define ACKNEXT_TEMP_MATRICES    16
 #define ACKNEXT_TEMP_QUATERNIONS 64
 #define ACKNEXT_TEMP_COLLISIONS  16
+#define ACKNEXT_TEMP_COLORS      32
 
 // The higher the more precision there is
 // also, it can get jittery and slow... :P

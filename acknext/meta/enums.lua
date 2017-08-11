@@ -6,15 +6,6 @@ enum.STAGETYPE =
 	"Custom",
 }
 
-enum.LIGHTTYPE = 
-{
-	postfix = "_LIGHT",
-	"Ambient",
-	"Directional",
-	"Point",
-	"Spot",
-}
-
 enum.BUFFERTYPE = 
 {
 	postfix = "BUFFER",
@@ -66,6 +57,7 @@ enum.SHADERVAR =
 	"vecViewPos",
 	"vecViewPort",
 
+	-- Material
 	"vecColor",
 	"vecEmission",
 	"vecAttributes",
@@ -73,6 +65,14 @@ enum.SHADERVAR =
 	"texAttributes",
 	"texEmission",
 	"texNormalmap",
+	
+	-- Light
+	"iLightType",
+	"fLightIntensity",
+	"fLightArc",
+	"vecLightPos",
+	"vecLightDir",
+	"vecLightColor",
 	
 	"fGamma",
 	"vecTime",
@@ -116,13 +116,4 @@ enum.HULLTYPE =
 	"Capsule",
 	"Polygon",
 	"Convex",
-}
-
-enum.LIGHTTYPE = 
-{
-	postfix = "LIGHT",
-	"Point",
-	"Directional",
-	"Spot",
-	"Ambient"
 }

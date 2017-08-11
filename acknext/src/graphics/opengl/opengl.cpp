@@ -7,28 +7,28 @@
 #define FALLBACK(a, b) ((a) ? (a) : (b))
 
 
-static Buffer * currentVertexBuffer;
-static Buffer * currentIndexBuffer;
-static Shader * currentShader;
+static Buffer const * currentVertexBuffer;
+static Buffer const * currentIndexBuffer;
+static Shader const * currentShader;
 
 // graphics-core.cpp
 extern GLuint vao;
-extern Shader * defaultShader;
-extern Bitmap * defaultWhiteTexture;
-extern Bitmap * defaultNormalMap;
+extern Shader const * defaultShader;
+extern Bitmap const * defaultWhiteTexture;
+extern Bitmap const * defaultNormalMap;
 
-void opengl_setTexture(int slot, BITMAP * _texture, Bitmap * _fallback)
+void opengl_setTexture(int slot, BITMAP const * _texture, Bitmap const * _fallback)
 {
-	Bitmap *texture = FALLBACK(promote<Bitmap>(_texture), FALLBACK(_fallback, defaultWhiteTexture));
+	Bitmap const * texture = FALLBACK(promote<Bitmap>(_texture), FALLBACK(_fallback, defaultWhiteTexture));
 	glBindTextureUnit(slot, texture->id);
 }
 
 ACKNEXT_API_BLOCK
 {
-	void opengl_setVertexBuffer(BUFFER * _buffer)
+	void opengl_setVertexBuffer(BUFFER const * _buffer)
 	{
 		GLuint id = 0;
-		Buffer * buffer = promote<Buffer>(_buffer);
+		Buffer const * buffer = promote<Buffer>(_buffer);
 		if(buffer != nullptr) {
 			if(buffer->type != GL_ARRAY_BUFFER) {
 				engine_seterror(ERR_INVALIDARGUMENT, "Buffer is not a vertex buffer.");
@@ -48,10 +48,10 @@ ACKNEXT_API_BLOCK
 		currentVertexBuffer = buffer;
 	}
 
-	void opengl_setIndexBuffer(BUFFER * _buffer)
+	void opengl_setIndexBuffer(BUFFER const * _buffer)
 	{
 		GLuint id = 0;
-		Buffer * buffer = promote<Buffer>(_buffer);
+		Buffer const * buffer = promote<Buffer>(_buffer);
 		if(buffer != nullptr) {
 			if(buffer->type != GL_ELEMENT_ARRAY_BUFFER) {
 				engine_seterror(ERR_INVALIDARGUMENT, "Buffer is not an index buffer.");
@@ -148,7 +148,7 @@ ACKNEXT_API_BLOCK
 			(const void *)(sizeof(INDEX) * offset));
 	}
 
-	void opengl_setShader(SHADER * shader)
+	void opengl_setShader(SHADER const * shader)
 	{
 		currentShader = FALLBACK(promote<Shader>(shader), defaultShader);
 		glUseProgram(currentShader->program);
@@ -178,13 +178,13 @@ ACKNEXT_API_BLOCK
 		}
 	}
 
-	void opengl_setTexture(int slot, BITMAP * _texture)
+	void opengl_setTexture(int slot, BITMAP const * _texture)
 	{
-		Bitmap *texture = FALLBACK(promote<Bitmap>(_texture), defaultWhiteTexture);
+		Bitmap const * texture = FALLBACK(promote<Bitmap>(_texture), defaultWhiteTexture);
 		glBindTextureUnit(slot, texture->id);
 	}
 
-	void opengl_setMesh(MESH * mesh)
+	void opengl_setMesh(MESH const * mesh)
 	{
 		if(mesh == nullptr) {
 			engine_seterror(ERR_INVALIDARGUMENT, "mesh must not be NULL!");
@@ -194,7 +194,7 @@ ACKNEXT_API_BLOCK
 		opengl_setMaterial(mesh->material);
 	}
 
-	void opengl_setMaterial(MATERIAL * material)
+	void opengl_setMaterial(MATERIAL const * material)
 	{
 		if(material == nullptr) {
 			engine_seterror(ERR_INVALIDARGUMENT, "material must not be NULL!");
@@ -205,7 +205,6 @@ ACKNEXT_API_BLOCK
 		opengl_setShader(material->shader);
 
 		int pgm = currentShader->program;
-
 		int cnt = int(currentShader->uniforms.size());
 		for(int i = 0; i < cnt; i++)
 		{
@@ -243,5 +242,64 @@ ACKNEXT_API_BLOCK
 		opengl_setTexture(1, material->attributeTexture);
 		opengl_setTexture(2, material->emissionTexture);
 		opengl_setTexture(3, material->normalTexture, defaultNormalMap);
+	}
+
+	void opengl_setLight(LIGHT const * light)
+	{
+		if(light == nullptr) {
+			return;
+		}
+
+		int pgm = currentShader->program;
+		int cnt = int(currentShader->uniforms.size());
+		for(int i = 0; i < cnt; i++)
+		{
+			UNIFORM const * uni = &currentShader->uniforms[i];
+			switch(uni->var) {
+				case ILIGHTTYPE_VAR:
+					glProgramUniform1i(
+						pgm,
+						uni->location,
+						light->type);
+					break;
+				case FLIGHTARC_VAR:
+					glProgramUniform1f(
+						pgm,
+						uni->location,
+						light->arc);
+					break;
+				case FLIGHTINTENSITY_VAR:
+					glProgramUniform1f(
+						pgm,
+						uni->location,
+						light->intensity);
+					break;
+				case VECLIGHTCOLOR_VAR:
+					glProgramUniform3f(
+						pgm,
+						uni->location,
+						light->color.red,
+						light->color.green,
+						light->color.blue);
+					break;
+				case VECLIGHTPOS_VAR:
+					glProgramUniform3f(
+						pgm,
+						uni->location,
+						light->position.x,
+						light->position.y,
+						light->position.z);
+					break;
+				case VECLIGHTDIR_VAR:
+					glProgramUniform3f(
+						pgm,
+						uni->location,
+						light->direction.x,
+						light->direction.y,
+						light->direction.z);
+					break;
+				default: break;
+			}
+		}
 	}
 }
