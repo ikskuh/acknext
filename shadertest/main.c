@@ -95,6 +95,8 @@ void gamemain()
 	light->color = *color_rgb(0, 255, 255);
 */
 
+	screen_gamma = 1.0;
+
 	while(true)
 	{
 		if(key_space) {

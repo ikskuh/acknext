@@ -9,6 +9,8 @@ ACKFUN int engine_main(void (*main)(), int argc, char ** argv);
 
 ACKFUN bool engine_open(int argc, char ** argv);
 
+ACKFUN void engine_resize(int width, int height);
+
 ACKFUN bool engine_frame();
 
 ACKFUN void engine_close();

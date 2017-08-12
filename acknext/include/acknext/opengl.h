@@ -28,4 +28,6 @@ ACKFUN void opengl_draw(
 
 ACKVAR int opengl_debugMode;
 
+ACKVAR bool opengl_wireFrame;
+
 #endif // _ACKNEXT_OPENGL_H_

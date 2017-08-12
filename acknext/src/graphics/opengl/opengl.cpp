@@ -27,6 +27,8 @@ ACKNEXT_API_BLOCK
 {
 	int opengl_debugMode = 0;
 
+	bool opengl_wireFrame = false;
+
 	void opengl_setVertexBuffer(BUFFER const * _buffer)
 	{
 		GLuint id = 0;

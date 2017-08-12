@@ -212,6 +212,8 @@ ACKNEXT_API_BLOCK
 					engine_setsdlerror();
 					return false;
 				}
+
+				SDL_GetWindowSize(engine.window, &screen_size.width, &screen_size.height);
 			}
 		}
 
@@ -263,8 +265,6 @@ ACKNEXT_API_BLOCK
 
 		if(options.no_sdl == 0)
 		{
-			SDL_GetWindowSize(engine.window, &screen_size.width, &screen_size.height);
-
 			InputManager::beginFrame();
 
 			// Update Frame
@@ -276,6 +276,14 @@ ACKNEXT_API_BLOCK
 					case SDL_QUIT:
 						// TODO: Replace with event-call here
 						return false;
+					case SDL_WINDOWEVENT:
+						switch(event.window.event)
+						{
+							case SDL_WINDOWEVENT_RESIZED:
+								engine_resize(event.window.data1, event.window.data2);
+								break;
+						}
+						break;
 					case SDL_KEYDOWN:
 						InputManager::keyDown(event.key);
 						break;
@@ -309,6 +317,14 @@ ACKNEXT_API_BLOCK
 	    lastFrameTime = nextFrameTime;
 	    total_frames++;
 	    return !engine_shutdown_requested;
+	}
+
+	void engine_resize(int width, int height)
+	{
+		screen_size.width = width;
+		screen_size.height = height;
+		// trigger resize event here
+		engine_log("resize to %d×%d", width, height);
 	}
 
 	void engine_shutdown()

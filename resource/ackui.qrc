@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/content-save.png</file>
+        <file>icons/folder-open.png</file>
+        <file>icons/settings.png</file>
+    </qresource>
+</RCC>

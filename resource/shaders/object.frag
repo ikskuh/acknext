@@ -170,7 +170,7 @@ void main() {
 		mApplyNormal = mat3(-tangent,-cotangent,-normal);
 	}
 
-	vec4 cDiffuse = vecColor * vec4(degamma(color),1) * degamma(texture(texColor, uv0));
+	vec4 cAlbedo = vecColor * vec4(degamma(color),1) * degamma(texture(texColor, uv0));
 	vec4 cEmissive = vecEmission * degamma(texture(texEmission, uv0));
 	vec4 cAttribute = vec4(vecAttributes, 1) * texture(texAttributes, uv0);
 	vec4 cNormalMap = texture(texNormalMap, uv0);
@@ -187,10 +187,12 @@ void main() {
 	vec3 realNormal = mApplyNormal * cNormalMap.rgb;
 
 	// Alpha testing
-	if(cDiffuse.a <= 0.5) discard;
+	if(cAlbedo.a <= 0.5) {
+		discard;
+	}
 
 	if(iDebugMode == 1) {
-		cDiffuse = vec4(1);
+		cAlbedo = vec4(1);
 	} else if(iDebugMode == 2) {
 		fragment.rgb = 0.5 + 0.5 * realNormal;
 		fragment.a = 1.0;
@@ -200,7 +202,6 @@ void main() {
 		fragment.a = 1.0;
 		return;
 	}
-
 
 	float roughness = cAttribute.r; // 0[smooth]     → 1[matte]
 	float metallic = cAttribute.g;  // 0[dielectric] → 1[metal]
@@ -222,7 +223,7 @@ void main() {
 		switch(lights[i].type)
 		{
 			case 0: // ambient
-				sDiffuse += lights[i].color * mix(cDiffuse.rgb, vec3(0), metallic);
+				sDiffuse += lights[i].color * mix(cAlbedo.rgb, vec3(0), metallic);
 				continue;
 			case 1: // point
 				atten = attenuate(
@@ -262,11 +263,10 @@ void main() {
 			roughness,
 			fresnell);
 
-		// cts = clamp(dot(toLight, realNormal), 0, 1);
-
-		sDiffuse += atten * lights[i].color * ond * mix(cDiffuse.rgb, vec3(0), metallic);
-		sSpecular += atten * lights[i].color * cts * mix(vec3(1), cDiffuse.rgb, metallic);
+		sDiffuse += atten * lights[i].color * ond * mix(cAlbedo.rgb, vec3(0), metallic);
+		sSpecular += atten * lights[i].color * cts * mix(vec3(1), cAlbedo.rgb, metallic);
 	}
+
 	fragment.rgb = withgamma(
 		occlusion * sDiffuse +
 		occlusion * sSpecular +

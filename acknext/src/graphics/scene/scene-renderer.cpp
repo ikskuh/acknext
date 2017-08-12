@@ -52,6 +52,12 @@ ACKNEXT_API_BLOCK
 		// glEnable(GL_CULL_FACE);
 		// glCullFace(GL_BACK);
 
+		if(opengl_wireFrame) {
+			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+		} else {
+			glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+		}
+
 		glEnable(GL_DEPTH_TEST);
 		glClearColor(sky_color.red, sky_color.green, sky_color.blue, sky_color.alpha);
 		glClearDepth(1.0);

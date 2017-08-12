@@ -179,7 +179,7 @@ static void (APIENTRY render_log)(GLenum source,GLenum type,GLuint id,GLenum sev
 	(void)id;
 	(void)length;
 	(void)userParam;
-	if(severity == GL_DEBUG_SEVERITY_HIGH || severity == GL_DEBUG_SEVERITY_MEDIUM) {
+	if(severity == GL_DEBUG_SEVERITY_HIGH) {
 		engine_log("[OpenGL] %s", message);
 		_print_stacktrace();
 	}

@@ -6,7 +6,8 @@ SUBDIRS += \
     acknext \
 	demo-c \
 	shadertest \
-    mtlconv
+    mtlconv \
+    MIEP
 
 HEADERS += \
     documentation/src/groups.h \
