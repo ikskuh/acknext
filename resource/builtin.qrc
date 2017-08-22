@@ -3,5 +3,8 @@
         <file>shaders/object.vert</file>
         <file>shaders/object.frag</file>
         <file>beep.wav</file>
+        <file>shaders/lighting.glsl</file>
+        <file>shaders/gamma.glsl</file>
+        <file>shaders/ackpbr.glsl</file>
     </qresource>
 </RCC>

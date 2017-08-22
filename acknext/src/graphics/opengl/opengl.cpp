@@ -75,13 +75,11 @@ ACKNEXT_API_BLOCK
 
 	void opengl_setTransform(MATRIX const * matWorld, MATRIX const * matView, MATRIX const * matProj)
 	{
-		MATRIX mat;
-		int pgm = currentShader->program;
-		int cnt = currentShader->uniforms.size();
-
 		currentShader->matWorld = *matWorld;
 		currentShader->matView = *matView;
 		currentShader->matProj = *matProj;
+
+		MATRIX mat;
 
 		// TODO: Reimplement this!
 		/*

@@ -109,21 +109,24 @@ void render_init()
 
 	SHADER * defaultShader = shader_create();
 
-	BLOB * blobVertexShader = blob_load("/builtin/shaders/object.vert");
-	BLOB * blobFragmentShader = blob_load("/builtin/shaders/object.frag");
-
-	if(shader_addSource(defaultShader, VERTEXSHADER, (char*)blobVertexShader->data) == false) {
+	if(shader_addFileSource(defaultShader, VERTEXSHADER, "/builtin/shaders/object.vert") == false) {
 		abort();
 	}
-	if(shader_addSource(defaultShader, FRAGMENTSHADER, (char*)blobFragmentShader->data) == false) {
+	if(shader_addFileSource(defaultShader, FRAGMENTSHADER, "/builtin/shaders/object.frag") == false) {
+		abort();
+	}
+	if(shader_addFileSource(defaultShader, FRAGMENTSHADER, "/builtin/shaders/lighting.glsl") == false) {
+		abort();
+	}
+	if(shader_addFileSource(defaultShader, FRAGMENTSHADER, "/builtin/shaders/gamma.glsl") == false) {
+		abort();
+	}
+	if(shader_addFileSource(defaultShader, FRAGMENTSHADER, "/builtin/shaders/ackpbr.glsl") == false) {
 		abort();
 	}
 	if(shader_link(defaultShader) == false) {
 		abort();
 	}
-
-	blob_remove(blobVertexShader);
-	blob_remove(blobFragmentShader);
 
 	opengl_setShader(defaultShader);
 

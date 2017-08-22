@@ -29,11 +29,9 @@ void init(ENTITY * ent, MATERIAL * mtl, bool rot)
 	}
 }
 
-MATERIAL * mtl_from_folder(char const * folder)
+MATERIAL * mtl_from_folder(MATERIAL * mtl, char const * folder)
 {
 	char buffer[256];
-
-	MATERIAL * mtl = mtl_create();
 
 	sprintf(buffer, "%s/albedo.tif", folder);
 	mtl->colorTexture = bmap_to_mipmap(bmap_load(buffer));
@@ -44,11 +42,42 @@ MATERIAL * mtl_from_folder(char const * folder)
 	sprintf(buffer, "%s/attributes.tif", folder);
 	mtl->attributeTexture = bmap_to_mipmap(bmap_load(buffer));
 
+
+	return mtl;
+}
+
+MATERIAL * mtl;
+
+void mtl_1()
+{
+	mtl_from_folder(mtl, "mtl_flagstone");
 	mtl->roughness = 1.0;
 	mtl->fresnell = 9999.0;
 	mtl->metallic = 1.0;
+}
 
-	return mtl;
+void mtl_2()
+{
+	mtl_from_folder(mtl, "mtl_hardwood");
+	mtl->roughness = 0.4;
+	mtl->fresnell = 1.0;
+	mtl->metallic = 1.0;
+}
+
+void mtl_3()
+{
+	mtl_from_folder(mtl, "mtl_marbletile");
+	mtl->roughness = 1.0;
+	mtl->fresnell = 3.5;
+	mtl->metallic = 1.0;
+}
+
+void mtl_4()
+{
+	mtl_from_folder(mtl, "mtl_metal");
+	mtl->roughness = 0.6;
+	mtl->fresnell = 0.0;
+	mtl->metallic = 1.0;
 }
 
 void gamemain()
@@ -59,7 +88,14 @@ void gamemain()
 	task_defer(debug_tools, NULL);
 	event_attach(on_escape, quit);
 
-	MATERIAL * mtl = mtl_from_folder("mtl_flagstone");
+	mtl = mtl_create();
+
+	mtl_1();
+
+	event_attach(on_1, mtl_1);
+	event_attach(on_2, mtl_2);
+	event_attach(on_3, mtl_3);
+	event_attach(on_4, mtl_4);
 
 	init(ent_create("unit-sphere.obj",   vector(-15,  15, -50), NULL), mtl, true);
 	init(ent_create("unit-cylinder.obj", vector(-15, -15, -50), NULL), mtl, true);
@@ -83,7 +119,6 @@ void gamemain()
 	light->direction = (VECTOR){0, -10, 0};
 	vec_normalize(&light->direction, 1.0);
 
-	/*
 	light = light_create(POINTLIGHT);
 	light->position = (VECTOR){-20, 10, -30};
 	light->intensity = 64;
@@ -93,17 +128,16 @@ void gamemain()
 	light->position = (VECTOR){20, 10, -30};
 	light->intensity = 64;
 	light->color = *color_rgb(0, 255, 255);
-*/
 
 	screen_gamma = 1.0;
 
 	while(true)
 	{
-		if(key_space) {
-			vec_lerp(&light->color, &light->color, &COLOR_WHITE, 0.15);
-		} else {
-			vec_lerp(&light->color, &light->color, &COLOR_BLACK, 0.15);
-		}
+		// if(key_space) {
+//			vec_lerp(&light->color, &light->color, &COLOR_WHITE, 0.15);
+//		} else {
+//			vec_lerp(&light->color, &light->color, &COLOR_BLACK, 0.15);
+//		}
 		draw_point3d(vector(0, 10, -30), &COLOR_RED);
 		task_yield();
 	}

@@ -156,11 +156,6 @@ SOURCES += \
     src/math/color.cpp \
     src/graphics/opengl/programuniform.cpp
 
-DISTFILES += \
-    $$PWD/../resource/shaders/object.frag \
-    $$PWD/../resource/shaders/object.vert
-
-
 RESOURCES += \
     $$PWD/../resource/builtin.qrc
 

@@ -99,6 +99,17 @@ ACKNEXT_API_BLOCK
 		return true;
 	}
 
+	bool shader_addFileSource(SHADER * shader, SHADERTYPE type, const char * fileName)
+	{
+		BLOB * blob = blob_load(fileName);
+		if(!blob) {
+			return false;
+		}
+		bool result = shader_addSource(shader, type, (char*)blob->data);
+		blob_remove(blob);
+		return result;
+	}
+
 	bool shader_link(SHADER * _shader)
 	{
 		Shader * shader = promote<Shader>(_shader);
@@ -140,9 +151,6 @@ ACKNEXT_API_BLOCK
 				&uni->size,
 				&uni->type,
 				uni->name);
-			engine_log("%s %d", uni->name, glGetUniformLocation(shader->program, uni->name));
-
-			// TODO: Add all shader variables
 
 #define _UNIFORM(xname, xtype, value, _rtype) \
 			do { \
@@ -153,7 +161,6 @@ ACKNEXT_API_BLOCK
 					} \
 					uni->var = value; \
 					shader->xname.location = uni->location; \
-					engine_log("uniform %d: %d %d %s", uni->location, uni->type, uni->var, uni->name); \
 				} \
 			} while(false);
 #include "uniformconfig.h"

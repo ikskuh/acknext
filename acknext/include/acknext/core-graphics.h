@@ -66,6 +66,8 @@ ACKFUN SHADER * shader_create();
 
 ACKFUN bool shader_addSource(SHADER * shader, SHADERTYPE type, const char * source);
 
+ACKFUN bool shader_addFileSource(SHADER * shader, SHADERTYPE type, const char * fileName);
+
 ACKFUN bool shader_link(SHADER * shader);
 
 ACKFUN UNIFORM const * shader_getUniform(SHADER * shader, int index);
