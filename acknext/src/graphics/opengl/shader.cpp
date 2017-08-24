@@ -125,6 +125,13 @@ ACKNEXT_API_BLOCK
 		GLint status;
 		glGetProgramiv(shader->program, GL_LINK_STATUS, &status);
 
+		GLint len;
+		glGetProgramiv(shader->program, GL_INFO_LOG_LENGTH, &len);
+
+		std::vector<GLchar> log(len + 1);
+		glGetProgramInfoLog(shader->program, log.size(), &len, log.data());
+		log[len] = 0;
+
 		for(GLuint sh : shader->shaders) {
 			glDetachShader(shader->program, sh);
 			glDeleteShader(sh);
@@ -132,8 +139,12 @@ ACKNEXT_API_BLOCK
 		shader->shaders.clear();
 
 		if(status != GL_TRUE) {
+			engine_log("Failed to link shader: %s", log.data());
 			engine_seterror(ERR_INVALIDOPERATION, "Failed to link shader!");
 			return false;
+		}
+		if(len > 0) {
+			engine_log("link log: %s", log.data());
 		}
 
 		GLint count;
