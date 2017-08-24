@@ -57,6 +57,12 @@ typedef struct
 	var red, green, blue, alpha;
 } COLOR;
 
+typedef union UBYTE4
+{
+	uint8_t values[4];
+	struct { uint8_t x, y, z, w; };
+} UBYTE4;
+
 ACKVAR VECTOR ACKCONST nullvector;
 
 // var Api:
@@ -139,6 +145,8 @@ ACKFUN QUATERNION * quat_axis_angle(QUATERNION * quat, VECTOR const * axis, var 
 ACKFUN QUATERNION * quat_set(QUATERNION * lhs, QUATERNION const * rhs);
 
 ACKFUN QUATERNION * quat_mult(QUATERNION * lhs, QUATERNION const * rhs);
+
+ACKFUN MATRIX * quat_to_mat(MATRIX * dst, QUATERNION const * src);
 
 // COLOR Api:
 ACKFUN COLOR * color_rgb(int r, int g, int b);

@@ -55,4 +55,11 @@ ACKNEXT_API_BLOCK
 		glm_to_ack(mat, glm::inverse(ack_to_glm(*mat)));
 		return mat;
 	}
+
+	MATRIX * quat_to_mat(MATRIX * dst, QUATERNION const * src)
+	{
+		dst = mat_wrap(dst);
+		glm_to_ack(dst, glm::mat4_cast(ack_to_glm(*src)));
+		return dst;
+	}
 }

@@ -47,6 +47,7 @@ enum.TEXTURETYPE =
 enum.SHADERVAR = 
 {
 	postfix = "_VAR",
+	noDefault = true,
 	"matWorld",
 	"matView",
 	"matProj",
@@ -69,12 +70,6 @@ enum.SHADERVAR =
 	
 	-- Light
 	"iLightCount",
-	"iLightType",
-	"fLightIntensity",
-	"fLightArc",
-	"vecLightPos",
-	"vecLightDir",
-	"vecLightColor",
 	
 	"fGamma",
 	"vecTime",
@@ -120,4 +115,11 @@ enum.HULLTYPE =
 	"Capsule",
 	"Polygon",
 	"Convex",
+}
+
+enum.ACCESSMODE = 
+{
+	"ReadOnly",
+	"WriteOnly",
+	"ReadWrite",
 }

@@ -147,6 +147,9 @@ for name,list in orderedPairs(enum) do
 		if list.postfix then
 			f:write(list.postfix)
 		end
+		if list.noDefault then
+			f:write(" = ", i)
+		end
 		f:write(",\n")
 	end
 	f:write("} ", name, ";\n");

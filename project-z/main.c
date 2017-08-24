@@ -5,86 +5,6 @@
 
 void debug_tools();
 
-#define BLOCKSIZE 16384
-
-struct block
-{
-	size_t length;
-	uint8_t buffer[BLOCKSIZE];
-	struct block * next;
-};
-
-static struct block * block_alloc()
-{
-	struct block * b = malloc(sizeof(struct block));
-	b->next = NULL;
-	b->length = 0;
-	return b;
-}
-
-BLOB * blob_inflate(BLOB const * src)
-{
-    z_stream strm  = {0};
-	strm.total_out = 0;
-	strm.total_in = 0;
-
-    strm.avail_in  = src->size;
-	strm.next_in   = (Bytef *) src->data;
-
-    strm.zalloc = Z_NULL;
-    strm.zfree  = Z_NULL;
-    strm.opaque = Z_NULL;
-
-    int err = -1;
-
-	struct block * first = block_alloc();
-
-	struct block * current = first;
-	strm.avail_out = BLOCKSIZE;
-    strm.next_out  = (Bytef *) current->buffer;
-
-    err = inflateInit2(&strm, (15 + 32)); //15 window bits, and the +32 tells zlib to to detect if using gzip or zlib
-    if (err == Z_OK)
-	{
-		do
-		{
-			err = inflate(&strm, Z_SYNC_FLUSH);
-			if(err == Z_OK || err == Z_STREAM_END) {
-				current->length = BLOCKSIZE - strm.avail_out;
-				if(current->length > 0) {
-					current->next = block_alloc();
-					current = current->next;
-				}
-				strm.avail_out = BLOCKSIZE;
-			    strm.next_out  = (Bytef *) current->buffer;
-			}
-		} while(err == Z_OK);
-    }
-    inflateEnd(&strm);
-
-	BLOB * blob = NULL;
-
-	if(err == Z_STREAM_END)
-	{
-		blob = blob_create(strm.total_out);
-		uint8_t * output = blob->data;
-		for(struct block * it = first; it != NULL; it = it->next)
-		{
-			memcpy(output, it->buffer, it->length);
-			output += it->length;
-		}
-	}
-
-	for(struct block * it = first; it != NULL;)
-	{
-		struct block * obj = it;
-		it = it->next;
-		free(obj);
-	}
-
-	return blob;
-}
-
 typedef struct Hf2Header
 {
 // 	File ID	0	4	string	Should be “HF2” (null terminated)
@@ -169,8 +89,10 @@ void gamemain()
 		numBytes -= ehdr->length;
 	}
 
-	float * superarray = malloc(sizeof(float) * header->width * header->height);
-	memset(superarray, 0, sizeof(float) * header->width * header->height);
+	BUFFER * vbuffer = buffer_create(VERTEXBUFFER);
+	buffer_set(vbuffer, sizeof(VERTEX) * header->width * header->height, NULL);
+
+	VERTEX * superarray = buffer_map(vbuffer, WRITEONLY);
 
 	int tileCountW = (header->width + header->tileSize - 1) / header->tileSize;
 	int tileCountH = (header->height + header->tileSize - 1) / header->tileSize;
@@ -221,13 +143,47 @@ void gamemain()
 					int y = header->tileSize * ty + l;
 					if(x >= header->width || y >= header->height) abort();
 
-					superarray[y * header->width + x] = h;
+					superarray[y * header->width + x] = (VERTEX) {
+						.position = (VECTOR){ x, h, y },
+					};
 
 					lastValue = currentValue;
 				}
 			}
 		}
 	}
+	buffer_unmap(vbuffer);
+
+	BUFFER * ibuffer = buffer_create(INDEXBUFFER);
+	buffer_set(ibuffer, 6 * sizeof(INDEX) * 255 * 255, NULL);
+	INDEX * indices = buffer_map(ibuffer, WRITEONLY);
+
+	int stride = 256;
+	for(int y = 0; y < 255; y++)
+	{
+		for(int x = 0; x < 255; x++)
+		{
+			int * face = &indices[6 * (y * 255 + x)];
+			int base = stride * y + x;
+			face[0] = base + 0;
+			face[1] = base + 1;
+			face[2] = base + stride;
+			face[3] = base + 1;
+			face[4] = base + stride;
+			face[5] = base + stride + 1;
+
+		}
+	}
+
+	buffer_unmap(ibuffer);
+
+	MESH mesh;
+	mesh.indexBuffer = ibuffer;
+	mesh.vertexBuffer = vbuffer;
+	mesh.material = NULL;
+
+	MODEL model;
+
 	/*
 	SHADER * shdTerrain = shader_create();
 	shader_addFileSource(shdTerrain, VERTEXSHADER, "shaders/terrain.vert");

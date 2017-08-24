@@ -5,7 +5,8 @@ layout(location = 2) in vec3 vTangent;
 layout(location = 3) in vec3 vColor;
 layout(location = 4) in vec2 vUV0;
 layout(location = 5) in vec2 vUV1;
-layout(location = 6) in vec4 vBoneWeight;
+layout(location = 6) in vec4 vBones;
+layout(location = 7) in vec4 vBoneWeight;
 
 uniform mat4 matWorld;
 uniform mat4 matView;

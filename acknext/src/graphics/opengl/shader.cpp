@@ -147,52 +147,92 @@ ACKNEXT_API_BLOCK
 			engine_log("link log: %s", log.data());
 		}
 
-		GLint count;
-		glGetProgramiv(shader->program, GL_ACTIVE_UNIFORMS, &count);
+		{
+			GLint count;
+			glGetProgramiv(shader->program, GL_ACTIVE_UNIFORMS, &count);
 
-		shader->uniforms.resize(count);
-		for(int i = 0; i < count; i++) {
-			UNIFORM * uni = &shader->uniforms[i];
-			uni->location = i;
-			glGetActiveUniform(
-				shader->program,
-				i,
-				sizeof(uni->name),
-				nullptr,
-				&uni->size,
-				&uni->type,
-				uni->name);
+			shader->uniforms.resize(count);
+			for(int i = 0; i < count; i++) {
+				UNIFORM * uni = &shader->uniforms[i];
+				glGetActiveUniform(
+					shader->program,
+					i,
+					sizeof(uni->name),
+					nullptr,
+					&uni->size,
+					&uni->type,
+					uni->name);
+				uni->index = i;
+				uni->block = -1; // No block by default
+				uni->location = glGetUniformLocation(shader->program, uni->name);
 
-#define _UNIFORM(xname, xtype, value, _rtype) \
-			do { \
-				if(strcmp(uni->name, #xname) == 0) { \
-					if(uni->type != xtype) { \
-						engine_seterror(ERR_INVALIDOPERATION, "The uniform " #xname " is not of the type " #xtype "!"); \
-						return false; \
+	#define _UNIFORM(xname, xtype, value, _rtype) \
+				do { \
+					if(strcmp(uni->name, #xname) == 0) { \
+						if(uni->type != xtype) { \
+							engine_seterror(ERR_INVALIDOPERATION, "The uniform " #xname " is not of the type " #xtype "!"); \
+							return false; \
+						} \
+						uni->var = value; \
+						shader->xname.location = uni->location; \
 					} \
-					uni->var = value; \
-					shader->xname.location = uni->location; \
-				} \
-			} while(false);
+				} while(false);
+	#include "uniformconfig.h"
+	#undef _UNIFORM
+
+				switch(uni->var) {
+					case TEXCOLOR_VAR:
+						glProgramUniform1i(shader->program, uni->location, 0);
+						break;
+					case TEXATTRIBUTES_VAR:
+						glProgramUniform1i(shader->program, uni->location, 1);
+						break;
+					case TEXEMISSION_VAR:
+						glProgramUniform1i(shader->program, uni->location, 2);
+						break;
+					case TEXNORMALMAP_VAR:
+						glProgramUniform1i(shader->program, uni->location, 3);
+						break;
+					default:
+						break;
+				}
+			}
+		}
+
+		{
+			int count;
+			glGetProgramiv(shader->program, GL_ACTIVE_UNIFORM_BLOCKS, &count);
+			for(int i = 0; i < count; i++)
+			{
+				int len;
+				glGetActiveUniformBlockiv(shader->program, i, GL_UNIFORM_BLOCK_NAME_LENGTH, &len);
+
+				char name[len + 1];
+				glGetActiveUniformBlockName(shader->program, i, len + 1, NULL, name);
+
+				engine_log("Uniform Buffer Block %d: %s", i, name);
+
+				glGetActiveUniformBlockiv(shader->program, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &len);
+				int locations[len];
+				glGetActiveUniformBlockiv(shader->program, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, locations);
+				for(int j = 0; j < len; j++) {
+					// Now associate each uniform with its uniform block
+					shader->uniforms[locations[j]].block = i;
+				}
+			}
+		}
+
+		for(UNIFORM const & uni : shader->uniforms)
+		{
+			char const * variable = "Unknown";
+			switch(uni.var) {
+#define _UNIFORM(xname, xtype, value, _rtype) \
+				case value: variable = #value; break;
 #include "uniformconfig.h"
 #undef _UNIFORM
-
-			switch(uni->var) {
-				case TEXCOLOR_VAR:
-					glProgramUniform1i(shader->program, uni->location, 0);
-					break;
-				case TEXATTRIBUTES_VAR:
-					glProgramUniform1i(shader->program, uni->location, 1);
-					break;
-				case TEXEMISSION_VAR:
-					glProgramUniform1i(shader->program, uni->location, 2);
-					break;
-				case TEXNORMALMAP_VAR:
-					glProgramUniform1i(shader->program, uni->location, 3);
-					break;
-				default:
-					break;
 			}
+
+			engine_log("Uniform: [%d:%2d] %s \t→ %s, %d", uni.block, uni.location, uni.name, variable, uni.size); \
 		}
 
 		shader->isLinked = true;

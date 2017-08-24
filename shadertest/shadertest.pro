@@ -20,3 +20,7 @@ INCLUDEPATH += $$PWD/../acknext/include
 
 # LIBS += -L$$PWD/../../tcc-0.9.26/ -ldl -ltcc
 # DEPENDPATH += $$PWD/../../tcc-0.9.26
+
+DISTFILES += \
+    ../scripts/bones.frag \
+    ../scripts/bones.vert

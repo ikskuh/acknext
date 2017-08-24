@@ -1,7 +1,7 @@
 
 RESOURCES=$(shell rcc --list builtin.qrc)
 
-all: resource.o
+all: shaders resource.o
 	
 depends:
 	echo $(addprefix /home/felix/projects/acknext/resource/,$(RESOURCES))
@@ -18,6 +18,15 @@ resource.zip: $(RESOURCES)
 	7z -tzip -mx=0 -bd a $@ $^
 	wc -c $@
 
+shaders: fragmentshaders vertexshaders
+
+fragmentshaders: shaders/ackpbr.glsl shaders/gamma.glsl \
+								 shaders/lighting.glsl shaders/object.frag
+	glslangValidator -S frag $^
+
+vertexshaders: shaders/object.vert
+	glslangValidator -S vert $^
+	
 clean:
 	rm resource.zip
 

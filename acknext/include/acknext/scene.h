@@ -30,7 +30,8 @@ typedef struct
 	COLOR color;
 	UVCOORD texcoord0;
 	UVCOORD texcoord1;
-	VECTOR4 weights;
+	UBYTE4 bones;
+	UBYTE4 boneWeights;
 } VERTEX;
 
 typedef struct

@@ -3,144 +3,131 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <GL/gl3w.h>
+#include <math.h>
 
 void debug_tools();
 
-void quit()
+MESH mesh;
+BUFFER * bonesBuf;
+
+void myview(void * context)
 {
-	engine_shutdown();
-}
+	glClearColor(0.3, 0.3, 1.0, 1.0);
+	glClearDepth(1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-var randf(var min, var max)
-{
-	return (rand() / (var)RAND_MAX) * (max - min) + min;
-}
+	opengl_setMesh(&mesh);
 
-void init(ENTITY * ent, MATERIAL * mtl, bool rot)
-{
-	vec_fill(&ent->scale, 10);
-	ent->material = mtl;
+	GLuint program = shader_getObject(mesh.material->shader);
 
-	if(rot) {
-		ent->rotation = *euler(
-			randf(0, 360),
-			randf(0, 360),
-			randf(0, 360));
-	}
-}
+	GLuint binding_point_index = 4;
+	GLint block_index = glGetUniformBlockIndex(
+		program,
+		"BoneBlock");
+	glBindBufferBase(
+		GL_UNIFORM_BUFFER,
+		binding_point_index,
+		buffer_getObject(bonesBuf));
+	glUniformBlockBinding(
+		program,
+		block_index,
+		binding_point_index);
 
-MATERIAL * mtl_from_folder(MATERIAL * mtl, char const * folder)
-{
-	char buffer[256];
+	MATRIX matWorld;
+	mat_id(&matWorld);
+	matWorld.fields[0][0] = 0.5;
+	matWorld.fields[1][1] = 0.5;
+	matWorld.fields[2][2] = 0.5;
 
-	sprintf(buffer, "%s/albedo.tif", folder);
-	mtl->colorTexture = bmap_to_mipmap(bmap_load(buffer));
+	MATRIX matProj;
+	mat_id(&matProj);
+	matProj.fields[0][0] = (var)screen_size.height / (var)screen_size.width;
 
-	sprintf(buffer, "%s/normal.tif", folder);
-	mtl->normalTexture = bmap_to_mipmap(bmap_load(buffer));
+	opengl_setTransform(&matWorld, mat_id(NULL), &matProj);
 
-	sprintf(buffer, "%s/attributes.tif", folder);
-	mtl->attributeTexture = bmap_to_mipmap(bmap_load(buffer));
+	MATRIX * bones = buffer_map(bonesBuf, READWRITE);
 
+	mat_id(&bones[0]);
+	mat_id(&bones[1]);
+	mat_id(&bones[2]);
+	mat_id(&bones[3]);
 
-	return mtl;
-}
+	bones[1].fields[3][1] = 0.25 * sin(total_time);
 
-MATERIAL * mtl;
+	quat_to_mat(bones+2, quat_axis_angle(NULL, vector(0, 0, 1), 30 * cos(total_time)));
 
-void mtl_1()
-{
-	mtl_from_folder(mtl, "mtl_flagstone");
-	mtl->roughness = 1.0;
-	mtl->fresnell = 9999.0;
-	mtl->metallic = 1.0;
-}
+	buffer_unmap(bonesBuf);
 
-void mtl_2()
-{
-	mtl_from_folder(mtl, "mtl_hardwood");
-	mtl->roughness = 0.4;
-	mtl->fresnell = 1.0;
-	mtl->metallic = 1.0;
-}
-
-void mtl_3()
-{
-	mtl_from_folder(mtl, "mtl_marbletile");
-	mtl->roughness = 1.0;
-	mtl->fresnell = 3.5;
-	mtl->metallic = 1.0;
-}
-
-void mtl_4()
-{
-	mtl_from_folder(mtl, "mtl_metal");
-	mtl->roughness = 0.6;
-	mtl->fresnell = 0.0;
-	mtl->metallic = 1.0;
+	opengl_draw(GL_TRIANGLES, 0, 12);
 }
 
 void gamemain()
 {
 	filesys_addResource("/home/felix/projects/acknext/scripts/", "/");
 
-	view_create((void*)render_scene_with_camera, camera);
+	view_create((RENDERCALL)myview, camera);
 	task_defer(debug_tools, NULL);
-	event_attach(on_escape, quit);
+	event_attach(on_escape, engine_shutdown);
 
-	mtl = mtl_create();
+	mesh.vertexBuffer = buffer_create(VERTEXBUFFER);
+	mesh.indexBuffer = buffer_create(INDEXBUFFER);
+	mesh.material = mtl_create();
 
-	mtl_1();
+	mesh.material->shader = shader_create();
+	if(!shader_addFileSource(mesh.material->shader, VERTEXSHADER, "bones.vert")) abort();
+	if(!shader_addFileSource(mesh.material->shader, FRAGMENTSHADER, "bones.frag")) abort();
+	if(!shader_link(mesh.material->shader)) abort();
 
-	event_attach(on_1, mtl_1);
-	event_attach(on_2, mtl_2);
-	event_attach(on_3, mtl_3);
-	event_attach(on_4, mtl_4);
+	buffer_set(mesh.vertexBuffer, sizeof(VERTEX) * 6, NULL);
+	buffer_set(mesh.indexBuffer,  sizeof(INDEX) * 12, NULL);
 
-	init(ent_create("unit-sphere.obj",   vector(-15,  15, -50), NULL), mtl, true);
-	init(ent_create("unit-cylinder.obj", vector(-15, -15, -50), NULL), mtl, true);
-	init(ent_create("unit-sphere.obj",   vector( 15,  15, -50), NULL), mtl, true);
-	init(ent_create("unit-cylinder.obj", vector( 15, -15, -50), NULL), mtl, true);
+	VERTEX * vertices = buffer_map(mesh.vertexBuffer, WRITEONLY);
+	INDEX  * indices = buffer_map(mesh.indexBuffer, WRITEONLY);
 
-	for(int z = 0; z < 6; z++)
+	COLOR car[] = {
+		*color_hex(0xFF0000),
+	    *color_hex(0x00FF00),
+	    *color_hex(0x0000FF),
+	    *color_hex(0xFFFF00),
+	    *color_hex(0x00FFFF),
+	    *color_hex(0xFF00FF),
+	};
+	for(int i = 0; i < 6; i++)
 	{
-		for(int x = -6; x <= 6; x++)
-		{
-			init(ent_create("unit-cube.obj", vector(10 * x, -25, -10 * z), NULL), mtl, false);
-		}
+		vertices[i] = (VERTEX) {
+			.position = (VECTOR) {-1 + i%3, -1 + 2*(i/3), 0},
+			.color = car[i],
+			.bones = { 0, 1, 2, 3 },
+			.boneWeights = (UBYTE4) { 255, 0, 0, 0 },
+		};
 	}
 
-	LIGHT * light;
+	vertices[3].boneWeights = (UBYTE4){ 0, 255,   0, 0 };
+	vertices[4].boneWeights = (UBYTE4){ 0,   0, 255, 0 };
+	vertices[5].boneWeights = (UBYTE4){ 0,   0, 255, 0 };
 
-	light = light_create(AMBIENTLIGHT);
-	light->color = (COLOR){0.2, 0.2, 0.2, 1};
+	indices[0] = 0;
+	indices[1] = 3;
+	indices[2] = 4;
 
-	light = light_create(SUNLIGHT);
-	light->direction = (VECTOR){0, -10, 0};
-	vec_normalize(&light->direction, 1.0);
+	indices[3] = 0;
+	indices[4] = 4;
+	indices[5] = 1;
 
-	light = light_create(POINTLIGHT);
-	light->position = (VECTOR){-20, 10, -30};
-	light->intensity = 64;
-	light->color = *color_rgb(255, 0, 0);
+	indices[6] = 1;
+	indices[7] = 4;
+	indices[8] = 5;
 
-	light = light_create(POINTLIGHT);
-	light->position = (VECTOR){20, 10, -30};
-	light->intensity = 64;
-	light->color = *color_rgb(0, 255, 255);
+	indices[9]  = 1;
+	indices[10] = 5;
+	indices[11] = 2;
 
-	screen_gamma = 1.0;
+	buffer_unmap(mesh.indexBuffer);
+	buffer_unmap(mesh.vertexBuffer);
 
-	while(true)
-	{
-		// if(key_space) {
-//			vec_lerp(&light->color, &light->color, &COLOR_WHITE, 0.15);
-//		} else {
-//			vec_lerp(&light->color, &light->color, &COLOR_BLACK, 0.15);
-//		}
-		draw_point3d(vector(0, 10, -30), &COLOR_RED);
-		task_yield();
-	}
+	bonesBuf = buffer_create(UNIFORMBUFFER);
+	buffer_set(bonesBuf, sizeof(MATRIX) * 10, NULL);
 }
 
 int main(int argc, char *argv[])

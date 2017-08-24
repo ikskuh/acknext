@@ -74,7 +74,8 @@ void DebugDrawer::drawLine(VECTOR const & from, VECTOR const & to, COLOR const &
 	vertex.tangent = (VECTOR){0,0,0};
 	vertex.texcoord0 = (UVCOORD){0.5,0.5};
 	vertex.texcoord1 = (UVCOORD){0.5,0.5};
-	vertex.weights = (VECTOR4){1,0,0,0};
+	vertex.bones = (UBYTE4){0,0,0,0};
+	vertex.boneWeights = (UBYTE4){255,0,0,0};
 
 	vertex.position = from;
 	lines.emplace_back(vertex);
@@ -91,7 +92,8 @@ void DebugDrawer::drawPoint(VECTOR const & pt, COLOR const & color)
 	vertex.tangent = (VECTOR){0,0,0};
 	vertex.texcoord0 = (UVCOORD){0.5,0.5};
 	vertex.texcoord1 = (UVCOORD){0.5,0.5};
-	vertex.weights = (VECTOR4){1,0,0,0};
+	vertex.bones = (UBYTE4){0,0,0,0};
+	vertex.boneWeights = (UBYTE4){255,0,0,0};
 
 	vertex.position = pt;
 	points.emplace_back(vertex);

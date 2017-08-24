@@ -29,7 +29,9 @@ typedef struct
 
 typedef struct
 {
-	int ACKCONST location;
+	int ACKCONST block;    // block index, if -1, the uniform is free
+	int ACKCONST index;    // index in terms of active uniform
+	int ACKCONST location; // location in terms of glUniform*()
 	char ACKCONST name[128];
 	GLDATA ACKCONST type;
 	int ACKCONST size;
@@ -56,6 +58,10 @@ ACKFUN BUFFER * buffer_create(BUFFERTYPE type);
 ACKFUN void buffer_set(BUFFER * buffer, size_t size, void * data);
 
 ACKFUN void buffer_update(BUFFER * buffer, size_t offset, size_t size, void * data);
+
+ACKFUN void * buffer_map(BUFFER * buffer, ACCESSMODE mode);
+
+ACKFUN void buffer_unmap(BUFFER * buffer);
 
 ACKFUN GLDATA buffer_getObject(BUFFER * buffer);
 

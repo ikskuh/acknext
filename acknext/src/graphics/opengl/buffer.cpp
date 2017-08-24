@@ -74,6 +74,35 @@ ACKNEXT_API_BLOCK
 		    data);
 	}
 
+	ACKFUN void * buffer_map(BUFFER * buffer, ACCESSMODE mode)
+	{
+		Buffer * buf = promote<Buffer>(buffer);
+		if(buf == nullptr) {
+			engine_seterror(ERR_INVALIDARGUMENT, "buffer must not be null!");
+			return nullptr;
+		}
+		GLenum glmode;
+		switch(mode) {
+			case READONLY: glmode = GL_READ_ONLY; break;
+			case WRITEONLY: glmode = GL_READ_WRITE; break;
+			case READWRITE: glmode = GL_WRITE_ONLY; break;
+			default:
+				engine_seterror(ERR_INVALIDARGUMENT, "Invalid access mode!");
+				return nullptr;
+		}
+		return glMapNamedBuffer(buf->id, glmode);
+	}
+
+	ACKFUN void buffer_unmap(BUFFER * buffer)
+	{
+		Buffer * buf = promote<Buffer>(buffer);
+		if(buf == nullptr) {
+			engine_seterror(ERR_INVALIDARGUMENT, "buffer must not be null!");
+			return;
+		}
+		glUnmapNamedBuffer(buf->id);
+	}
+
 	GLDATA buffer_getObject(BUFFER * buffer)
 	{
 		Buffer * buf = promote<Buffer>(buffer);

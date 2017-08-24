@@ -281,7 +281,8 @@ ACKNEXT_API_BLOCK
 
 					dst.texcoord0 = (UVCOORD){0,0};
 					dst.texcoord1 = (UVCOORD){0,0};
-					dst.weights = (VECTOR4){1,0,0,0};
+					dst.bones = (UBYTE4){ 0, 0, 0, 0 };
+					dst.boneWeights = (UBYTE4){1,0,0,0};
 				}
 
 				if(src->HasTextureCoords(0))

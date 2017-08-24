@@ -49,7 +49,7 @@ template<typename T>
 inline void UniformProxy<T>::operator =(T const & value)
 {
 	if(location < 0)
-			return;
+		return;
 	glProgramUniform(shader->program, location, value);
 }
 

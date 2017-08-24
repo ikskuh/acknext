@@ -3,7 +3,7 @@ CONFIG += c++11
 CONFIG -= app_bundle
 CONFIG -= qt
 unix: CONFIG += link_pkgconfig
-unix: PKGCONFIG += ode dotconf sdl2 SDL2_image SDL2_mixer
+unix: PKGCONFIG += ode dotconf sdl2 SDL2_image SDL2_mixer zlib
 
 CONFIG += ackGraphics ackScheduler
 
@@ -154,13 +154,17 @@ SOURCES += \
     src/audio/sound.cpp \
     src/virtfs/resourcemanager.cpp \
     src/math/color.cpp \
-    src/graphics/opengl/programuniform.cpp
+    src/graphics/opengl/programuniform.cpp \
+    src/core/blob_compression.c
 
 RESOURCES += \
     $$PWD/../resource/builtin.qrc
 
+SHADERS += \
+	$$PWD/../resource/shaders/ackpbr.glsl
+
 custom_rcc.output  = resource.o
-custom_rcc.commands = make -C $$PWD/../resource/ qmake OUTFILE=`pwd`/${QMAKE_FILE_OUT}
+custom_rcc.commands = make -C $$PWD/../resource/ qmake OUTFILE=`pwd`/${QMAKE_FILE_OUT} shaders
 custom_rcc.depend_command = make -C $$PWD/../resource/ depends
 custom_rcc.input = RESOURCES
 QMAKE_EXTRA_COMPILERS += custom_rcc

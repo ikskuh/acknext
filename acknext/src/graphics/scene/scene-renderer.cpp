@@ -100,6 +100,7 @@ ACKNEXT_API_BLOCK
 					&matView,
 					&matProj);
 
+				// opengl_setLights() {
 				int lcount = 0;
 				LIGHTDATA * lights = (LIGHTDATA*)glMapNamedBuffer(
 				            buffer_getObject(ubo),
@@ -133,11 +134,13 @@ ACKNEXT_API_BLOCK
 					defaultShader->program,
 					block_index,
 					binding_point_index);
-
 				defaultShader->iLightCount = lcount;
+
 				defaultShader->vecViewPos = perspective->position;
 
-				opengl_setLight(light_next(nullptr));
+				// }
+				// void opengl_setLights();
+
 				opengl_draw(GL_TRIANGLES, 0, mesh.indexBuffer->size / sizeof(INDEX));
 			}
 		}

@@ -52,6 +52,8 @@ void render_init()
 	glEnableVertexArrayAttrib(vao, 4);
 	glEnableVertexArrayAttrib(vao, 5);
 	glEnableVertexArrayAttrib(vao, 6);
+	glEnableVertexArrayAttrib(vao, 7);
+
 	glVertexArrayAttribFormat(vao,
 		0, // position
 		3,
@@ -89,11 +91,17 @@ void render_init()
 		GL_FALSE,
 		offsetof(VERTEX, texcoord1));
 	glVertexArrayAttribFormat(vao,
-		6, // weights
+		6, // ids
 		4,
-		GL_FLOAT,
+		GL_UNSIGNED_BYTE,
 		GL_FALSE,
-		offsetof(VERTEX, weights));
+		offsetof(VERTEX, bones));
+	glVertexArrayAttribFormat(vao,
+		7, // weights
+		4,
+		GL_UNSIGNED_BYTE,
+		GL_TRUE,
+		offsetof(VERTEX, boneWeights));
 
 	glVertexArrayAttribBinding(vao, 0, 10);
 	glVertexArrayAttribBinding(vao, 1, 10);
@@ -102,6 +110,7 @@ void render_init()
 	glVertexArrayAttribBinding(vao, 4, 10);
 	glVertexArrayAttribBinding(vao, 5, 10);
 	glVertexArrayAttribBinding(vao, 6, 10);
+	glVertexArrayAttribBinding(vao, 7, 10);
 
 	glBindVertexArray(vao);
 

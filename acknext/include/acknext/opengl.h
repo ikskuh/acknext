@@ -17,7 +17,7 @@ ACKFUN void opengl_setTexture(int slot, BITMAP const * texture);
 
 ACKFUN void opengl_setMesh(MESH const * mesh);
 
-ACKFUN void opengl_setLight(LIGHT const * mesh);
+ACKFUN void opengl_setLights();
 
 ACKFUN void opengl_setTransform(MATRIX const * matWorld, MATRIX const * matView, MATRIX const * matProj);
 
