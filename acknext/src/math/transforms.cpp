@@ -96,7 +96,7 @@ ACKNEXT_API_BLOCK
 		return vec;
 	}
 
-	VECTOR * vec_transform(VECTOR *vec, const MATRIX *mat)
+	VECTOR * vec_transform(VECTOR *vec, MATRIX const * mat)
 	{
 		VECTOR4 value = { vec->x, vec->y, vec->z, 1.0 };
 		vec4_transform(&value, mat);
@@ -107,7 +107,7 @@ ACKNEXT_API_BLOCK
 	}
 
 
-	VECTOR4 * vec4_transform(VECTOR4 * vec, const MATRIX *mat)
+	VECTOR4 * vec4_transform(VECTOR4 * vec, MATRIX const * mat)
 	{
 		VECTOR4 result;
 		result.x = mat->fields[0][0] * vec->x

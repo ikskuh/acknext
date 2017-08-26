@@ -8,6 +8,7 @@
 #include "core-graphics.h"
 #include "view.h"
 
+// Plain type, has no backend
 typedef struct
 {
 	SHADER * shader;
@@ -22,6 +23,7 @@ typedef struct
 	var fresnell;
 } MATERIAL;
 
+// Plain type, has no backend
 typedef struct
 {
 	VECTOR position;
@@ -34,6 +36,7 @@ typedef struct
 	UBYTE4 boneWeights;
 } VERTEX;
 
+// Plain type, has no backend
 typedef struct
 {
 	BUFFER   * vertexBuffer;
@@ -41,9 +44,36 @@ typedef struct
 	MATERIAL * material;
 } MESH;
 
+// Plain type, has no backend
 typedef struct
 {
-	// TODO: Implement something useful here
+	uint8_t parent;
+	char name[16];
+	// VECTOR offset;
+	// QUATERNION rotation;
+	MATRIX transform;
+	MATRIX bindToBoneTransform;
+} BONE;
+
+// requires backend
+typedef struct
+{
+	char name[256];
+	// TODO: Implement animation parameters
+} ANIMATION;
+
+typedef struct
+{
+	// counts have a minimum of 1
+	int ACKCONST meshCount;
+	int ACKCONST materialCount;
+	int ACKCONST animationCount;
+	int ACKCONST boneCount;
+
+	MESH      * /*ACKCONST*/ * ACKCONST meshes;     // assigned by model_create or model_reshape
+	MATERIAL  * /*ACKCONST*/ * ACKCONST materials;  // assigned by model_create or model_reshape
+	ANIMATION * /*ACKCONST*/ * ACKCONST animations; // assigned by model_create or model_reshape
+	BONE bones[ACKNEXT_MAX_BONES];    // 0 is root/default bone
 } MODEL;
 
 typedef struct
@@ -87,6 +117,10 @@ ACKFUN MODEL * model_load(char const * fileName);
 ACKFUN MODEL * model_get(char const * fileName); // uses caching
 
 ACKFUN void model_remove(MODEL * model); // only created or loaded ones
+
+ACKFUN MODEL * model_create(int numMeshes, int numMaterials, int numBones, int numAnimations);
+
+ACKFUN void model_reshape(MODEL * model, int meshC, int matC, int boneC, int animC);
 
 // render api:
 ACKVAR CAMERA * ACKCONST camera;

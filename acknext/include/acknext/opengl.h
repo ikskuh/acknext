@@ -26,6 +26,8 @@ ACKFUN void opengl_draw(
 	unsigned int offset,
 	unsigned int count);
 
+ACKFUN void opengl_drawDebug(MATRIX * const matView, MATRIX * const matProj);
+
 ACKVAR int opengl_debugMode;
 
 ACKVAR bool opengl_wireFrame;

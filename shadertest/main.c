@@ -16,6 +16,7 @@ void myview(void * context)
 	glClearColor(0.3, 0.3, 1.0, 1.0);
 	glClearDepth(1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
 
 	opengl_setMesh(&mesh);
 
@@ -40,11 +41,10 @@ void myview(void * context)
 	matWorld.fields[1][1] = 0.5;
 	matWorld.fields[2][2] = 0.5;
 
-	MATRIX matProj;
-	mat_id(&matProj);
-	matProj.fields[0][0] = (var)screen_size.height / (var)screen_size.width;
+	MATRIX matView, matProj;
+	camera_to_matrix(context, &matView, &matProj, NULL);
 
-	opengl_setTransform(&matWorld, mat_id(NULL), &matProj);
+	opengl_setTransform(&matWorld, &matView, &matProj);
 
 	MATRIX * bones = buffer_map(bonesBuf, READWRITE);
 
@@ -60,6 +60,33 @@ void myview(void * context)
 	buffer_unmap(bonesBuf);
 
 	opengl_draw(GL_TRIANGLES, 0, 12);
+
+	opengl_drawDebug(&matView, &matProj);
+}
+
+MODEL * load_bonestructure(char const * file);
+
+void drawlines(MODEL * model)
+{
+	MATRIX mat;
+	mat_id(&mat);
+
+	MATRIX transforms[ACKNEXT_MAX_BONES];
+	VECTOR positions[ACKNEXT_MAX_BONES];
+	transforms[0] = model->bones[0].transform;
+	vec_transform(&positions[0], &transforms[0]);
+
+	for(int i = 1; i < model->boneCount; i++)
+	{
+		BONE * bone = &model->bones[i];
+		mat_mul(&transforms[i], &bone->transform, &transforms[bone->parent]);
+
+		positions[i] = nullvector;
+		vec_transform(&positions[i], &transforms[i]);
+
+		draw_line3d(&positions[i], &positions[bone->parent], &COLOR_GREEN);
+		draw_point3d(&positions[i], &COLOR_RED);
+	}
 }
 
 void gamemain()
@@ -127,7 +154,16 @@ void gamemain()
 	buffer_unmap(mesh.vertexBuffer);
 
 	bonesBuf = buffer_create(UNIFORMBUFFER);
-	buffer_set(bonesBuf, sizeof(MATRIX) * 10, NULL);
+	buffer_set(bonesBuf, sizeof(MATRIX) * ACKNEXT_MAX_BONES, NULL);
+
+
+	MODEL * wuson = load_bonestructure("/home/felix/projects/acknext/scripts/wuson.x");
+
+	while(wuson)
+	{
+		drawlines(wuson);
+		task_yield();
+	}
 }
 
 int main(int argc, char *argv[])

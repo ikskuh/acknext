@@ -120,6 +120,23 @@ Model::~Model()
 
 ACKNEXT_API_BLOCK
 {
+	MODEL * model_create(int numMeshes, int numMaterials, int numBones, int numAnimations)
+	{
+		Model * model = new Model();
+		MODEL & api = model->api();
+
+		api.meshCount = maxv(numMeshes, 1);
+		api.materialCount = maxv(numMaterials, 1);
+		api.boneCount = maxv(numBones, 1);
+		api.animationCount = maxv(numAnimations, 1);
+
+		api.meshes = (MESH**)malloc(sizeof(MESH*)*api.meshCount);
+		api.animations = (ANIMATION**)malloc(sizeof(ANIMATION*)*api.animationCount);
+		api.materials = (MATERIAL**)malloc(sizeof(MATERIAL*)*api.materialCount);
+
+		return demote(model);
+	}
+
 	MODEL * model_load(const char *fileName)
 	{
 		using namespace Assimp;

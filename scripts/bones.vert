@@ -1,5 +1,5 @@
 #version 330
-#define BONES_LIMIT 10
+#define BONES_LIMIT 256
 
 layout(location = 0) in vec3 vPosition;
 layout(location = 1) in vec3 vNormal;

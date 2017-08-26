@@ -3,8 +3,12 @@ CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt
 
+unix: CONFIG += link_pkgconfig
+unix: PKGCONFIG += assimp
+
 SOURCES += main.c \
-    default.c
+    default.c \
+    loadmodel.cpp
 
 include(../../gl3w/gl3w.pri)
 

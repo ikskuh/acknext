@@ -33,5 +33,6 @@
 // The higher the more precision there is
 // also, it can get jittery and slow... :P
 #define ACKNEXT_MAX_CONTACTS     32
+#define ACKNEXT_MAX_BONES        256
 
 #endif // _ACKNEXT_CONFIG_H_

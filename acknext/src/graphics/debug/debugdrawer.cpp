@@ -102,6 +102,11 @@ void DebugDrawer::drawPoint(VECTOR const & pt, COLOR const & color)
 
 ACKNEXT_API_BLOCK
 {
+	void opengl_drawDebug(MATRIX * const matView, MATRIX * const matProj)
+	{
+		DebugDrawer::render(*matView, *matProj);
+	}
+
 	void draw_line3d(VECTOR const * p1, VECTOR const * p2, COLOR const * color)
 	{
 		DebugDrawer::drawLine(
