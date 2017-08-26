@@ -76,7 +76,7 @@ void translateNodes(MODEL * target, aiNode const * node, uint8_t parent, uint8_t
 	bone.parent = parent;
 	ai_to_ack(&bone.transform, node->mTransformation);
 	strcpy(bone.name, node->mName.C_Str());
-	// TODO: Copy bone.bindToBoneTransform from bone def
+	mat_id(&bone.bindToBoneTransform);
 	for(int i = 0; i < node->mNumChildren; i++) {
 		translateNodes(target, node->mChildren[i], id, index);
 	}
@@ -150,7 +150,6 @@ extern "C" MODEL * load_bonestructure(char const * file)
 				vertices[j].boneWeights = { 255, 0, 0, 0 };
 				vertices[j].color = COLOR_WHITE;
 
-
 				vertices[j].position = ai_to_ack(mesh->mVertices[j]);
 			}
 
@@ -172,7 +171,7 @@ extern "C" MODEL * load_bonestructure(char const * file)
 				};
 
 				std::vector<bonevert> buckets(mesh->mNumVertices);
-				memset(buckets.data(), 0, sizeof(int) * buckets.size());
+
 				for(uint j = 0; j < mesh->mNumBones; j++)
 				{
 					auto bone = mesh->mBones[j];
@@ -196,6 +195,23 @@ extern "C" MODEL * load_bonestructure(char const * file)
 							index,
 							bone->mWeights[k].mWeight);
 					}
+				}
+
+				for(uint j = 0; j < mesh->mNumVertices; j++)
+				{
+					auto & buck = buckets[j];
+					vertices[j].bones = {
+					    buck.nodes[0],
+					    buck.nodes[1],
+					    buck.nodes[2],
+					    buck.nodes[3],
+					};
+					vertices[j].boneWeights = {
+						(uint8_t)clamp(255 * buck.weights[0], 0, 255),
+					    (uint8_t)clamp(255 * buck.weights[1], 0, 255),
+					    (uint8_t)clamp(255 * buck.weights[2], 0, 255),
+					    (uint8_t)clamp(255 * buck.weights[3], 0, 255),
+					};
 				}
 			}
 

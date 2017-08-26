@@ -24,10 +24,11 @@ out vec2 uv0, uv1;
 
 vec4 applyBoneTransform(vec4 inval)
 {
-	return vBoneWeight.x * bones[int(vBones.x)] * inval
-		+ vBoneWeight.y * bones[int(vBones.y)] * inval
-		+ vBoneWeight.z * bones[int(vBones.z)] * inval
-		+ vBoneWeight.w * bones[int(vBones.w)] * inval;
+	vec4 weights = vBoneWeight;
+	return weights.x * bones[int(vBones.x)] * inval
+		 + weights.y * bones[int(vBones.y)] * inval
+		 + weights.z * bones[int(vBones.z)] * inval
+		 + weights.w * bones[int(vBones.w)] * inval;
 }
 
 void main() {
@@ -40,7 +41,7 @@ void main() {
 	gl_Position = matProj * matView * vec4(position, 1);
 	normal = normalize((matWorld * vec4(mNormal, 0.0) ).xyz);
 	tangent = normalize(( matWorld * vec4(mTangent, 0.0) ).xyz);
-	color = vColor;
+	color = vBoneWeight.rgb;
 	uv0 = vUV0;
 	uv1 = vUV1;
 	cotangent = cross(tangent, normal);

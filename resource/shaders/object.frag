@@ -104,10 +104,15 @@ void main() {
 	float fresnell = cAttribute.b;  // 0[none]       → ∞[rim]
 	float occlusion = cAttribute.a;
 
-	vec3 lightedSurface = applyLighting(
-		position, realNormal,
-		roughness, metallic, fresnell,
-		cAlbedo.rgb);
+	vec3 lightedSurface;
+	if(length(realNormal) > 0.1) {
+		lightedSurface = applyLighting(
+			position, realNormal,
+			roughness, metallic, fresnell,
+			cAlbedo.rgb);
+	} else {
+		lightedSurface = cAlbedo.rgb;
+	}
 
 	fragment.rgb = toGamma(
 		occlusion * lightedSurface +

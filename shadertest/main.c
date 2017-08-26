@@ -8,8 +8,19 @@
 
 void debug_tools();
 
-MESH mesh;
 BUFFER * bonesBuf;
+MODEL * model;
+MATERIAL * material;
+
+void putmat(char const * title, MATRIX const * mat)
+{
+	engine_log("%s\n\t%f %f %f %f\n\t%f %f %f %f\n\t%f %f %f %f\n\t%f %f %f %f",
+		title,
+		mat->fields[0][0], mat->fields[0][1], mat->fields[0][2], mat->fields[0][3],
+		mat->fields[1][0], mat->fields[1][1], mat->fields[1][2], mat->fields[1][3],
+		mat->fields[2][0], mat->fields[2][1], mat->fields[2][2], mat->fields[2][3],
+		mat->fields[3][0], mat->fields[3][1], mat->fields[3][2], mat->fields[3][3]);
+}
 
 void myview(void * context)
 {
@@ -18,9 +29,13 @@ void myview(void * context)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 
-	opengl_setMesh(&mesh);
+	if(key_space) {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	} else {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
 
-	GLuint program = shader_getObject(mesh.material->shader);
+	GLuint program = shader_getObject(material->shader);
 
 	GLuint binding_point_index = 4;
 	GLint block_index = glGetUniformBlockIndex(
@@ -37,34 +52,50 @@ void myview(void * context)
 
 	MATRIX matWorld;
 	mat_id(&matWorld);
-	matWorld.fields[0][0] = 0.5;
-	matWorld.fields[1][1] = 0.5;
-	matWorld.fields[2][2] = 0.5;
+	// matWorld.fields[0][0] = 0.5;
+	// matWorld.fields[1][1] = 0.5;
+	// matWorld.fields[2][2] = 0.5;
 
 	MATRIX matView, matProj;
 	camera_to_matrix(context, &matView, &matProj, NULL);
 
-	opengl_setTransform(&matWorld, &matView, &matProj);
+	MATRIX transforms[ACKNEXT_MAX_BONES];
+	transforms[0] = model->bones[0].transform;
+	for(int i = 1; i < model->boneCount; i++)
+	{
+		BONE * bone = &model->bones[i];
+		mat_mul(&transforms[i], &bone->transform, &transforms[bone->parent]);
+	}
 
-	MATRIX * bones = buffer_map(bonesBuf, READWRITE);
-
-	mat_id(&bones[0]);
-	mat_id(&bones[1]);
-	mat_id(&bones[2]);
-	mat_id(&bones[3]);
-
-	bones[1].fields[3][1] = 0.25 * sin(total_time);
-
-	quat_to_mat(bones+2, quat_axis_angle(NULL, vector(0, 0, 1), 30 * cos(total_time)));
-
+	MATRIX * boneTrafos = buffer_map(bonesBuf, READWRITE);
+	for(int i = 0; i < model->boneCount; i++)
+	{
+		BONE * bone = &model->bones[i];
+		mat_mul(&boneTrafos[i], &bone->bindToBoneTransform, &transforms[i]);
+		// mat_id(boneTrafos + i);
+	}
 	buffer_unmap(bonesBuf);
 
-	opengl_draw(GL_TRIANGLES, 0, 12);
+	opengl_setMaterial(material);
+
+	for(int i = 0; i < model->meshCount; i++)
+	{
+		MESH * mesh = model->meshes[i];
+
+		opengl_setIndexBuffer(mesh->indexBuffer);
+		opengl_setVertexBuffer(mesh->vertexBuffer);
+
+		opengl_setTransform(&matWorld, &matView, &matProj);
+
+		opengl_draw(GL_TRIANGLES, 0, mesh->indexBuffer->size / sizeof(INDEX));
+	}
 
 	opengl_drawDebug(&matView, &matProj);
 }
 
 MODEL * load_bonestructure(char const * file);
+
+int selection = 0;
 
 void drawlines(MODEL * model)
 {
@@ -74,6 +105,8 @@ void drawlines(MODEL * model)
 	MATRIX transforms[ACKNEXT_MAX_BONES];
 	VECTOR positions[ACKNEXT_MAX_BONES];
 	transforms[0] = model->bones[0].transform;
+
+	positions[0] = nullvector;
 	vec_transform(&positions[0], &transforms[0]);
 
 	for(int i = 1; i < model->boneCount; i++)
@@ -85,9 +118,17 @@ void drawlines(MODEL * model)
 		vec_transform(&positions[i], &transforms[i]);
 
 		draw_line3d(&positions[i], &positions[bone->parent], &COLOR_GREEN);
-		draw_point3d(&positions[i], &COLOR_RED);
+
+		if(i == selection) {
+			draw_point3d(&positions[i], &COLOR_RED);
+		} else {
+			draw_point3d(&positions[i], &COLOR_BLUE);
+		}
 	}
 }
+
+void up() { ++selection; }
+void down() { --selection; }
 
 void gamemain()
 {
@@ -97,71 +138,28 @@ void gamemain()
 	task_defer(debug_tools, NULL);
 	event_attach(on_escape, engine_shutdown);
 
-	mesh.vertexBuffer = buffer_create(VERTEXBUFFER);
-	mesh.indexBuffer = buffer_create(INDEXBUFFER);
-	mesh.material = mtl_create();
-
-	mesh.material->shader = shader_create();
-	if(!shader_addFileSource(mesh.material->shader, VERTEXSHADER, "bones.vert")) abort();
-	if(!shader_addFileSource(mesh.material->shader, FRAGMENTSHADER, "bones.frag")) abort();
-	if(!shader_link(mesh.material->shader)) abort();
-
-	buffer_set(mesh.vertexBuffer, sizeof(VERTEX) * 6, NULL);
-	buffer_set(mesh.indexBuffer,  sizeof(INDEX) * 12, NULL);
-
-	VERTEX * vertices = buffer_map(mesh.vertexBuffer, WRITEONLY);
-	INDEX  * indices = buffer_map(mesh.indexBuffer, WRITEONLY);
-
-	COLOR car[] = {
-		*color_hex(0xFF0000),
-	    *color_hex(0x00FF00),
-	    *color_hex(0x0000FF),
-	    *color_hex(0xFFFF00),
-	    *color_hex(0x00FFFF),
-	    *color_hex(0xFF00FF),
-	};
-	for(int i = 0; i < 6; i++)
-	{
-		vertices[i] = (VERTEX) {
-			.position = (VECTOR) {-1 + i%3, -1 + 2*(i/3), 0},
-			.color = car[i],
-			.bones = { 0, 1, 2, 3 },
-			.boneWeights = (UBYTE4) { 255, 0, 0, 0 },
-		};
-	}
-
-	vertices[3].boneWeights = (UBYTE4){ 0, 255,   0, 0 };
-	vertices[4].boneWeights = (UBYTE4){ 0,   0, 255, 0 };
-	vertices[5].boneWeights = (UBYTE4){ 0,   0, 255, 0 };
-
-	indices[0] = 0;
-	indices[1] = 3;
-	indices[2] = 4;
-
-	indices[3] = 0;
-	indices[4] = 4;
-	indices[5] = 1;
-
-	indices[6] = 1;
-	indices[7] = 4;
-	indices[8] = 5;
-
-	indices[9]  = 1;
-	indices[10] = 5;
-	indices[11] = 2;
-
-	buffer_unmap(mesh.indexBuffer);
-	buffer_unmap(mesh.vertexBuffer);
+	event_attach(on_kp_plus, up);
+	event_attach(on_kp_minus, down);
 
 	bonesBuf = buffer_create(UNIFORMBUFFER);
 	buffer_set(bonesBuf, sizeof(MATRIX) * ACKNEXT_MAX_BONES, NULL);
 
+	model = load_bonestructure("/home/felix/projects/acknext/scripts/wuson.x");
 
-	MODEL * wuson = load_bonestructure("/home/felix/projects/acknext/scripts/wuson.x");
+	material = mtl_create();
+	material->shader = shader_create();
+	if(!shader_addFileSource(material->shader, VERTEXSHADER, "bones.vert")) abort();
+	if(!shader_addFileSource(material->shader, FRAGMENTSHADER, "bones.frag")) abort();
+	if(!shader_link(material->shader)) abort();
 
-	while(wuson)
+	while(model)
 	{
-		drawlines(wuson);
+		if(selection > 0 && selection < model->boneCount)
+		{
+			model->bones[selection].transform.fields[3][1] +=
+				(key_kp_9 - key_kp_3) * time_step;
+		}
+		drawlines(model);
 		task_yield();
 	}
 }
