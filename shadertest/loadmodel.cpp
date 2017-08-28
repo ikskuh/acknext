@@ -6,10 +6,16 @@
 #include <assimp/matrix4x4.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 #include <stack>
 #include <vector>
+#include <map>
+#include <unordered_map>
+#include <assert.h>
 
 char buf[256];
+
+extern "C"  void putmat(char const * title, MATRIX const * mat);
 
 void ai_to_ack(MATRIX * dst, aiMatrix4x4 const & src)
 {
@@ -24,6 +30,10 @@ void ai_to_ack(MATRIX * dst, aiMatrix4x4 const & src)
 
 VECTOR ai_to_ack(aiVector3D const & src) {
 	return (VECTOR) { src.x, src.y, src.z };
+}
+
+QUATERNION ai_to_ack(aiQuaternion const & src) {
+	return (QUATERNION) { src.x, src.y, src.z, src.w };
 }
 
 void printNodes(aiNode const * node, char const * indent = "")
@@ -41,10 +51,15 @@ void printNodes(aiNode const * node, char const * indent = "")
 		strcat(buffer, ")");
 	}
 
-	engine_log("%s%s%s", indent, node->mName.C_Str(), buffer);
-
 	MATRIX nodeTransform;
 	ai_to_ack(&nodeTransform, node->mTransformation);
+
+	engine_log("%s%s%s", indent, node->mName.C_Str(), buffer);
+
+	if(node->mNumMeshes > 0)
+	{
+		putmat("Trafo:", &nodeTransform	);
+	}
 
 	/*
 	engine_log("trafo:\t%f %f %f %f\n\t%f %f %f %f\n\t%f %f %f %f\n\t%f %f %f %f",
@@ -56,7 +71,7 @@ void printNodes(aiNode const * node, char const * indent = "")
 	VECTOR4 vec = { 0, 0, 0, 1 };
 	vec4_transform(&vec, &nodeTransform);
 
-	engine_log("%s%f %f %f %f", indent, vec.x, vec.y, vec.z, vec.w);
+	// engine_log("%s%f %f %f %f", indent, vec.x, vec.y, vec.z, vec.w);
 
 	strcpy(buffer, indent);
 	strcat(buffer, "  ");
@@ -82,10 +97,96 @@ void translateNodes(MODEL * target, aiNode const * node, uint8_t parent, uint8_t
 	}
 }
 
+using namespace Assimp;
+Importer importer;
+
+aiScene const  * scene;
+
+extern "C" void animate(MODEL * model, char const * name, double frameTime)
+{
+	std::map<std::string, BONE&> bones;
+	for(int i = 0; i < model->boneCount; i++) {
+		bones.emplace(std::string(model->bones[i].name), model->bones[i]);
+	}
+	aiAnimation * anim = nullptr;
+	for(uint i = 0; i < scene->mNumAnimations; i++) {
+		if(scene->mAnimations[i]->mName == aiString(name)) {
+			anim = scene->mAnimations[i];
+			break;
+		}
+	}
+	assert(anim);
+
+	if(anim->mTicksPerSecond > 0) {
+		frameTime *= anim->mTicksPerSecond;
+	} else {
+		frameTime *= 25.0;
+	}
+
+	if(anim->mDuration > 0) {
+		frameTime = fmod(frameTime, anim->mDuration);
+	}
+
+	for(uint i = 0; i < anim->mNumChannels; i++)
+	{
+		aiNodeAnim * chan = anim->mChannels[i];
+		try {
+			BONE & bone = bones.at(std::string(chan->mNodeName.C_Str()));
+
+			assert(aiString(bone.name) == chan->mNodeName);
+
+			VECTOR pos = nullvector;
+			QUATERNION rot = *quat_id(NULL);
+			VECTOR scale = { 1, 1, 1 };
+
+			if(chan->mNumPositionKeys > 0)
+			{
+				pos = ai_to_ack(chan->mPositionKeys[0].mValue);
+				for(uint j = 1; j < chan->mNumPositionKeys; j++) {
+					if(chan->mPositionKeys[j].mTime > frameTime) break;
+					pos = ai_to_ack(chan->mPositionKeys[j].mValue);
+				}
+			}
+
+			if(chan->mNumScalingKeys > 0)
+			{
+				scale = ai_to_ack(chan->mScalingKeys[0].mValue);
+				for(uint j = 1; j < chan->mNumScalingKeys; j++) {
+					if(chan->mScalingKeys[j].mTime > frameTime) break;
+					scale = ai_to_ack(chan->mScalingKeys[j].mValue);
+				}
+			}
+
+			if(chan->mNumRotationKeys > 0)
+			{
+				rot = ai_to_ack(chan->mRotationKeys[0].mValue);
+				for(uint j = 1; j < chan->mNumRotationKeys; j++) {
+					if(chan->mRotationKeys[j].mTime > frameTime) break;
+					rot = ai_to_ack(chan->mRotationKeys[j].mValue);
+				}
+			}
+
+			if(std::strchr(bone.name, 'R')) {
+				pos.z *= -1;
+			}
+
+			MATRIX transform;
+			mat_id(&transform);
+			mat_scale(&transform, &scale);
+			mat_rotate(&transform, &rot);
+			mat_translate(&transform, &pos);
+
+			bone.transform = transform;
+		} catch(std::exception & ex) {
+			engine_log("Bone %s not found!", chan->mNodeName.C_Str());
+		}
+	}
+
+	engine_log("Animate %s @ %f / %f", name, frameTime, anim->mDuration);
+}
+
 extern "C" MODEL * load_bonestructure(char const * file)
 {
-	using namespace Assimp;
-	Importer importer;
 
 	auto fags = aiProcess_CalcTangentSpace
 	        | aiProcess_JoinIdenticalVertices
@@ -97,12 +198,25 @@ extern "C" MODEL * load_bonestructure(char const * file)
 	        | aiProcess_FindInstances
 	        | aiProcess_OptimizeGraph
 	        | aiProcess_OptimizeMeshes
+	        | aiProcess_FlipUVs
 			;
 
-	aiScene const * scene = importer.ReadFile(file,fags);
+	scene = importer.ReadFile(file,fags);
 	if(!scene) {
 		engine_log("Failed to load: %s", importer.GetErrorString());
 		return nullptr;
+	}
+
+	for(uint i = 0; i < scene->mNumAnimations; i++)
+	{
+		auto anim = scene->mAnimations[i];
+		engine_log("Animation %d: %s", i, anim->mName.C_Str());
+		engine_log("\tDuration: %f ÷ %f", anim->mDuration, anim->mTicksPerSecond);
+		for(uint j = 0; j < anim->mNumChannels; j++)
+		{
+			auto chan = anim->mChannels[j];
+			// engine_log("\tChannel[%d]: %s", j, chan->mNodeName.C_Str());
+		}
 	}
 
 	int boneCount = 0;
@@ -151,6 +265,11 @@ extern "C" MODEL * load_bonestructure(char const * file)
 				vertices[j].color = COLOR_WHITE;
 
 				vertices[j].position = ai_to_ack(mesh->mVertices[j]);
+
+				vertices[j].texcoord0 = (UVCOORD) {
+					mesh->mTextureCoords[0][j].x,
+					mesh->mTextureCoords[0][j].y,
+				};
 			}
 
 			if(mesh->HasBones())
@@ -235,7 +354,7 @@ extern "C" MODEL * load_bonestructure(char const * file)
 		}
 	}
 
-	// printNodes(scene->mRootNode);
+	printNodes(scene->mRootNode);
 
 	return model;
 }

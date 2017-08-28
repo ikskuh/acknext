@@ -134,6 +134,10 @@ ACKFUN MATRIX * mat_mul(MATRIX * dst, MATRIX const * lhs, MATRIX const * rhs);
 
 ACKFUN MATRIX * mat_invert(MATRIX * mat);
 
+ACKFUN MATRIX * mat_scale(MATRIX * mat, VECTOR const * scale);
+ACKFUN MATRIX * mat_translate(MATRIX * mat, VECTOR const * offset);
+ACKFUN MATRIX * mat_rotate(MATRIX * mat, QUATERNION const * rotation);
+
 // QUATERNION Api:
 
 ACKFUN QUATERNION * euler(var pan, var tilt, var roll);

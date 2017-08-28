@@ -62,4 +62,26 @@ ACKNEXT_API_BLOCK
 		glm_to_ack(dst, glm::mat4_cast(ack_to_glm(*src)));
 		return dst;
 	}
+
+
+	MATRIX * mat_scale(MATRIX * mat, VECTOR const * scale)
+	{
+		if(!mat) mat = mat_id(NULL);
+		glm_to_ack(mat, glm::scale(ack_to_glm(*mat), ack_to_glm(*scale)));
+		return mat;
+	}
+
+	MATRIX * mat_translate(MATRIX * mat, VECTOR const * offset)
+	{
+		if(!mat) mat = mat_id(NULL);
+		glm_to_ack(mat, glm::translate(ack_to_glm(*mat), ack_to_glm(*offset)));
+		return mat;
+	}
+
+	MATRIX * mat_rotate(MATRIX * mat, QUATERNION const * rotation)
+	{
+		if(!mat) mat = mat_id(NULL);
+		glm_to_ack(mat, glm::mat4_cast(ack_to_glm(*rotation)) * ack_to_glm(*mat));
+		return mat;
+	}
 }

@@ -72,7 +72,6 @@ void myview(void * context)
 	{
 		BONE * bone = &model->bones[i];
 		mat_mul(&boneTrafos[i], &bone->bindToBoneTransform, &transforms[i]);
-		// mat_id(boneTrafos + i);
 	}
 	buffer_unmap(bonesBuf);
 
@@ -130,6 +129,8 @@ void drawlines(MODEL * model)
 void up() { ++selection; }
 void down() { --selection; }
 
+void animate(MODEL * model, char const * name, double frameTime);
+
 void gamemain()
 {
 	filesys_addResource("/home/felix/projects/acknext/scripts/", "/");
@@ -156,9 +157,26 @@ void gamemain()
 	{
 		if(selection > 0 && selection < model->boneCount)
 		{
-			model->bones[selection].transform.fields[3][1] +=
-				(key_kp_9 - key_kp_3) * time_step;
+			MATRIX mat;
+			quat_to_mat(
+				&mat,
+				quat_axis_angle(
+					NULL,
+					vector(0,1,0),
+					30.0 * (key_kp_9 - key_kp_3) * time_step));
+
+			mat_mul(
+				&model->bones[selection].transform,
+				&model->bones[selection].transform,
+				&mat);
 		}
+
+		if(key_n)
+		{
+			//animate(model, "AnimationSet0", total_time);
+			animate(model, "Wuson_Run", total_time);
+		}
+
 		drawlines(model);
 		task_yield();
 	}
