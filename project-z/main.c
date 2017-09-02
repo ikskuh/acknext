@@ -2,6 +2,7 @@
 #include <zlib.h>
 #include <stdlib.h>
 #include <string.h>
+#include <GL/gl3w.h>
 
 void debug_tools();
 
@@ -45,12 +46,66 @@ typedef struct Hf2LineHeader
 	int32_t first; // The starting value of the line, encoded as described below.
 } __attribute__((packed)) Hf2LineHeader;
 
+MESH * mesh;
+MATERIAL * material;
+
+bool showWframe = false;
+
+int meshCountX, meshCountY;
+MESH ** meshes;
+
+
+extern var debug_movement;
+extern var debug_speedup;
+
+void render(void*context)
+{
+	glClearColor(0.3, 0.3, 1.0, 1.0);
+	glClearDepth(1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+
+	if(key_space || showWframe) {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	} else {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
+
+	GLuint program = shader_getObject(material->shader);
+
+	MATRIX matWorld;
+	mat_id(&matWorld);
+	// matWorld.fields[0][0] = 0.5;
+	// matWorld.fields[1][1] = 0.5;
+	// matWorld.fields[2][2] = 0.5;
+
+	MATRIX matView, matProj;
+	camera_to_matrix(context, &matView, &matProj, NULL);
+
+	opengl_setMaterial(material);
+
+	opengl_setIndexBuffer(mesh->indexBuffer);
+	opengl_setVertexBuffer(NULL);
+
+	opengl_setTransform(&matWorld, &matView, &matProj);
+
+	opengl_draw(GL_TRIANGLES, 0, mesh->indexBuffer->size / sizeof(INDEX));
+
+	opengl_drawDebug(&matView, &matProj);
+}
+
+void twframe()
+{
+	showWframe = !showWframe;
+}
+
 void gamemain()
 {
-	view_create((RENDERCALL)render_scene_with_camera, camera);
+	view_create((RENDERCALL)render, camera);
 	task_defer((ENTRYPOINT)debug_tools, NULL);
 	event_attach(on_escape, (EVENTHANDLER)engine_shutdown);
 	filesys_addResource("/home/felix/projects/acknext/project-z/resources/", "/");
+	event_attach(on_comma, twframe);
 
 	BLOB * packed = blob_load("/terrain/GrassyMountains_HF.hfz");
 	engine_log("Packed size: %lu", packed->size);
@@ -89,10 +144,7 @@ void gamemain()
 		numBytes -= ehdr->length;
 	}
 
-	BUFFER * vbuffer = buffer_create(VERTEXBUFFER);
-	buffer_set(vbuffer, sizeof(VERTEX) * header->width * header->height, NULL);
-
-	VERTEX * superarray = buffer_map(vbuffer, WRITEONLY);
+	float * heightmap = malloc(sizeof(float) * header->width * header->height);
 
 	int tileCountW = (header->width + header->tileSize - 1) / header->tileSize;
 	int tileCountH = (header->height + header->tileSize - 1) / header->tileSize;
@@ -143,48 +195,56 @@ void gamemain()
 					int y = header->tileSize * ty + l;
 					if(x >= header->width || y >= header->height) abort();
 
-					superarray[y * header->width + x] = (VERTEX) {
-						.position = (VECTOR){ x, h, y },
-					};
+					heightmap[(header->height - y - 1) * header->width + x] = h;
 
 					lastValue = currentValue;
 				}
 			}
 		}
 	}
-	buffer_unmap(vbuffer);
+
+	BITMAP * heightmapTexture = bmap_create(TEX_2D);
+
+	bmap_set(heightmapTexture, header->width, header->height, FORMAT_FLOAT, heightmap);
+
+	bmap_to_mipmap(heightmapTexture);
+
+	GLuint hmp = bmap_getObject(heightmapTexture);
+	glTextureParameteri(hmp, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTextureParameteri(hmp, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTextureParameteri(hmp, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	const int sizeX = header->width - 1;
+	const int sizeY = header->height - 1;
 
 	BUFFER * ibuffer = buffer_create(INDEXBUFFER);
-	buffer_set(ibuffer, 6 * sizeof(INDEX) * 255 * 255, NULL);
+	buffer_set(ibuffer, 6 * sizeof(INDEX) * sizeX * sizeY, NULL);
 	INDEX * indices = buffer_map(ibuffer, WRITEONLY);
 
-	int stride = 256;
-	for(int y = 0; y < 255; y++)
+	const int stride = header->width;
+	const int delta = 1;
+	for(int y = 0; y < sizeY; y++)
 	{
-		for(int x = 0; x < 255; x++)
+		for(int x = 0; x < sizeX; x++)
 		{
-			int * face = &indices[6 * (y * 255 + x)];
-			int base = stride * y + x;
+			int * face = &indices[6 * (y * sizeX + x)];
+			int base = stride * y + delta * x;
 			face[0] = base + 0;
-			face[1] = base + 1;
+			face[1] = base + delta;
 			face[2] = base + stride;
-			face[3] = base + 1;
+			face[3] = base + delta;
 			face[4] = base + stride;
-			face[5] = base + stride + 1;
-
+			face[5] = base + stride + delta;
 		}
 	}
 
 	buffer_unmap(ibuffer);
 
-	MESH mesh;
-	mesh.indexBuffer = ibuffer;
-	mesh.vertexBuffer = vbuffer;
-	mesh.material = NULL;
+	mesh = malloc(sizeof(MESH));
+	mesh->indexBuffer = ibuffer;
+	mesh->vertexBuffer = NULL;
+	mesh->material = NULL;
 
-	MODEL model;
-
-	/*
 	SHADER * shdTerrain = shader_create();
 	shader_addFileSource(shdTerrain, VERTEXSHADER, "shaders/terrain.vert");
 	shader_addFileSource(shdTerrain, FRAGMENTSHADER, "shaders/terrain.frag");
@@ -192,8 +252,26 @@ void gamemain()
 	shader_addFileSource(shdTerrain, FRAGMENTSHADER, "/builtin/shaders/gamma.glsl");
 	shader_addFileSource(shdTerrain, FRAGMENTSHADER, "/builtin/shaders/ackpbr.glsl");
 	shader_link(shdTerrain);
-	*/
 
+	{
+		GLuint program = shader_getObject(shdTerrain);
+		glProgramUniform2i(
+			program,
+			glGetUniformLocation(program, "vecTerrainSize"),
+			header->width,
+			header->height);
+		glProgramUniform2i(
+			program,
+			glGetUniformLocation(program, "vecTileSize"),
+			sizeX,
+			sizeY);
+	}
+
+	material = mtl_create();
+	material->shader = shdTerrain;
+	// material->colorTexture = bmap_to_mipmap(bmap_load("/terrain/GrassyMountains_TX.jpg"));
+	material->colorTexture = bmap_load("/terrain/GrassyMountains_INFO.jpg");
+	material->emissionTexture = heightmapTexture;
 }
 
 int main(int argc, char *argv[])

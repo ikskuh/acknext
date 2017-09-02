@@ -52,6 +52,8 @@ ACKFUN void bmap_remove(BITMAP * bitmap);
 
 ACKFUN BITMAP * bmap_to_mipmap(BITMAP * bitmap);
 
+ACKFUN GLDATA bmap_getObject(BITMAP * bitmap);
+
 // BUFFER api:
 ACKFUN BUFFER * buffer_create(BUFFERTYPE type);
 

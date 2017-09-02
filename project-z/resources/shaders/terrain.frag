@@ -39,63 +39,20 @@ vec3 applyLighting(
 
 uniform int iLightCount;
 
-void main() {
+void main()
+{
+	float h = texture(texEmission, uv0).r;
 
-	mat3 mApplyNormal;
-	vec3 polyNormal;
-	if(gl_FrontFacing) {
-		polyNormal = normal;
-		mApplyNormal = mat3(tangent,cotangent,normal);
-	} else {
-		polyNormal = -normal;
-		mApplyNormal = mat3(-tangent,-cotangent,-normal);
-	}
+	fragment.rgb = texture(texColor, uv0).rgb;
 
-	vec4 cAlbedo = vecColor * vec4(toLinear(color),1) * toLinear(texture(texColor, uv0));
-	vec4 cEmissive = vecEmission * toLinear(texture(texEmission, uv0));
-	vec4 cAttribute = vec4(vecAttributes, 1) * texture(texAttributes, uv0);
-	vec4 cNormalMap = texture(texNormalMap, uv0);
-	// cAttribute = [ roughness, metallic, fresnell ]
+	float ringA = mod(position.y, 10.0) - 5.0;
+	ringA = pow(1.0 - clamp(abs(ringA), 0, 1), 10);
 
-	cNormalMap.rg = 2.0 * cNormalMap.rg - vec2(1.0);
-	cNormalMap.rgb = normalize(cNormalMap.rgb);
+	float ringB = mod(h, 10.0) - 5.0;
+	ringB = pow(1.0 - clamp(abs(ringB), 0, 1), 10);
 
+	fragment.rgb = mix(fragment.rgb, vec3(1,0,0), ringA);
+	fragment.rgb = mix(fragment.rgb, vec3(0,1,0), ringB);
 
-	if(!gl_FrontFacing) {
-		cNormalMap.rg = -cNormalMap.rg;
-	}
-
-	vec3 realNormal = mApplyNormal * cNormalMap.rgb;
-
-	// Alpha testing
-	if(cAlbedo.a <= 0.5) {
-		discard;
-	}
-
-	if(iDebugMode == 1) {
-		cAlbedo = vec4(1);
-	} else if(iDebugMode == 2) {
-		fragment.rgb = 0.5 + 0.5 * realNormal;
-		fragment.a = 1.0;
-		return;
-	} else if(iDebugMode == 3) {
-		fragment.rgb = vec3(float(iLightCount) / (LIGHT_LIMIT - 1));
-		fragment.a = 1.0;
-		return;
-	}
-
-	float roughness = cAttribute.r; // 0[smooth]     → 1[matte]
-	float metallic = cAttribute.g;  // 0[dielectric] → 1[metal]
-	float fresnell = cAttribute.b;  // 0[none]       → ∞[rim]
-	float occlusion = cAttribute.a;
-
-	vec3 lightedSurface = applyLighting(
-		position, realNormal,
-		roughness, metallic, fresnell,
-		cAlbedo.rgb);
-
-	fragment.rgb = toGamma(
-		occlusion * lightedSurface +
-		cEmissive.rgb);
 	fragment.a = 1.0;
 }

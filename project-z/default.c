@@ -1,5 +1,8 @@
 #include <acknext.h>
 
+var debug_movement = 10;
+var debug_speedup = 250;
+
 static bool camera_movement_enabled = false;
 
 static void toggleMovement(void *x)
@@ -43,7 +46,7 @@ void debug_tools()
 				key_e - key_q,
 				key_s - key_w,
 			};
-			vec_normalize(&mov, (10 + 20 * key_lshift) * time_step);
+			vec_normalize(&mov, (debug_movement + debug_speedup * key_lshift) * time_step);
 			vec_rotate(&mov, &camera->rotation);
 			vec_add(&camera->position, &mov);
 		}

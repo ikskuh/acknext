@@ -166,10 +166,6 @@ extern "C" void animate(MODEL * model, char const * name, double frameTime)
 				}
 			}
 
-			if(std::strchr(bone.name, 'R')) {
-				pos.z *= -1;
-			}
-
 			MATRIX transform;
 			mat_id(&transform);
 			mat_scale(&transform, &scale);

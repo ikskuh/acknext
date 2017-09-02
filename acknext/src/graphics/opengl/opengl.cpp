@@ -141,8 +141,8 @@ ACKNEXT_API_BLOCK
 		unsigned int offset,
 		unsigned int count)
 	{
-		if(currentIndexBuffer == nullptr || currentVertexBuffer == nullptr) {
-			engine_seterror(ERR_INVALIDOPERATION, "Either index, vertex or both buffers are not set.");
+		if(currentIndexBuffer == nullptr) {
+			engine_seterror(ERR_INVALIDOPERATION, "There is no current index buffer to be drawn.");
 			return;
 		}
 		if((offset + count) > (currentIndexBuffer->api().size / sizeof(INDEX))) {

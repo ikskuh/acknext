@@ -19,6 +19,7 @@ static GLenum getTextureTarget(TEXTURETYPE type)
 static GLenum getTextureFormat(PIXELFORMAT format)
 {
 	switch(format) {
+		case FORMAT_FLOAT: return GL_R32F;
 		case FORMAT_RGB8: return GL_RGB8;
 		case FORMAT_RGBA8: return GL_RGBA8;
 		case FORMAT_BGRA8: return GL_RGBA8;
@@ -115,6 +116,10 @@ ACKNEXT_API_BLOCK
 		GLenum dfmt = GL_INVALID_ENUM;
 		GLenum pfmt = GL_INVALID_ENUM;
 		switch(format) {
+			case FORMAT_FLOAT:
+				dfmt = GL_FLOAT;
+				pfmt = GL_RED;
+				break;
 			case FORMAT_RGB8:
 			case FORMAT_RGBA8:
 				dfmt = GL_UNSIGNED_BYTE;
@@ -162,6 +167,7 @@ ACKNEXT_API_BLOCK
 		bitmap->depth = 1;
 	}
 
+
 	BITMAP * bmap_to_mipmap(BITMAP * _bmp)
 	{
 		Bitmap * bmp = promote<Bitmap>(_bmp);
@@ -180,5 +186,15 @@ ACKNEXT_API_BLOCK
 		if(bmp) {
 			delete bmp;
 		}
+	}
+
+	GLDATA bmap_getObject(BITMAP * bitmap)
+	{
+		Bitmap * bmp = promote<Bitmap>(bitmap);
+		if(bmp == nullptr) {
+			engine_seterror(ERR_INVALIDARGUMENT, "bitmap is NULL.");
+			return 0;
+		}
+		return bmp->id;
 	}
 }

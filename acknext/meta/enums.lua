@@ -27,6 +27,7 @@ enum.SHADERTYPE =
 enum.PIXELFORMAT = 
 {
 	prefix = "FORMAT_",
+	"Float",
 	"Rgb8",
 	"Rgba8",
 	"Bgra8",
