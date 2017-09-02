@@ -10,12 +10,13 @@ out vec2 uv0, uv1;
 uniform sampler2D texEmission;
 
 uniform ivec2 vecTerrainSize;
+uniform ivec2 vecTileSize;
 
 void main() {
 
 	vec3 pos;
-	pos.x = float(gl_VertexID % vecTerrainSize.x);
-	pos.z = float(gl_VertexID / vecTerrainSize.x);
+	pos.x = vecTileSize.x * float(gl_VertexID % vecTerrainSize.x);
+	pos.z = vecTileSize.y * float(gl_VertexID / vecTerrainSize.x);
 
 	vec2 uv = (pos.xz + 0.5) / vec2(vecTerrainSize.x, vecTerrainSize.y);
 	uv.y = 1.0 - uv.y;

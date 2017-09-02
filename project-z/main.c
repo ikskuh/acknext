@@ -144,6 +144,13 @@ void gamemain()
 		numBytes -= ehdr->length;
 	}
 
+	if((header->width & (header->width - 1)) || (header->height & (header->height - 1)))
+	{
+		engine_log("Map size must be power of two!");
+		engine_shutdown();
+		return;
+	}
+
 	float * heightmap = malloc(sizeof(float) * header->width * header->height);
 
 	int tileCountW = (header->width + header->tileSize - 1) / header->tileSize;
@@ -214,20 +221,25 @@ void gamemain()
 	glTextureParameteri(hmp, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTextureParameteri(hmp, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	const int sizeX = header->width - 1;
-	const int sizeY = header->height - 1;
+	const int subdiv = 4;
+	const int tilesX = (1<<subdiv);
+	const int tilesY = (1<<subdiv);
+	const int sizeX = header->width / tilesX;
+	const int sizeY = header->height / tilesY;
+
+	engine_log("(%d,%d) → (%d, %d)", tilesX, tilesY, sizeX, sizeY);
 
 	BUFFER * ibuffer = buffer_create(INDEXBUFFER);
-	buffer_set(ibuffer, 6 * sizeof(INDEX) * sizeX * sizeY, NULL);
+	buffer_set(ibuffer, 6 * sizeof(INDEX) * tilesX * tilesY, NULL);
 	INDEX * indices = buffer_map(ibuffer, WRITEONLY);
 
 	const int stride = header->width;
 	const int delta = 1;
-	for(int y = 0; y < sizeY; y++)
+	for(int y = 0; y < tilesY; y++)
 	{
-		for(int x = 0; x < sizeX; x++)
+		for(int x = 0; x < tilesX; x++)
 		{
-			int * face = &indices[6 * (y * sizeX + x)];
+			int * face = &indices[6 * (y * tilesX + x)];
 			int base = stride * y + delta * x;
 			face[0] = base + 0;
 			face[1] = base + delta;
