@@ -54,11 +54,12 @@ bool showWframe = false;
 int meshCountX, meshCountY;
 MESH ** meshes;
 
+int iSubdivision = 1;
 
 extern var debug_movement;
 extern var debug_speedup;
 
-void render(void*context)
+void render(CAMERA * context)
 {
 	glClearColor(0.3, 0.3, 1.0, 1.0);
 	glClearDepth(1.0);
@@ -89,7 +90,19 @@ void render(void*context)
 
 	opengl_setTransform(&matWorld, &matView, &matProj);
 
-	opengl_draw(GL_TRIANGLES, 0, mesh->indexBuffer->size / sizeof(INDEX));
+	glProgramUniform1i(
+		program,
+		glGetUniformLocation(program, "iSubdivision"),
+		iSubdivision);
+	glProgramUniform3f(
+		program,
+		glGetUniformLocation(program, "vecViewPos"),
+		context->position.x,
+		context->position.y,
+		context->position.z);
+
+	glPatchParameteri(GL_PATCH_VERTICES, 4);
+	opengl_draw(GL_PATCHES, 0, mesh->indexBuffer->size / sizeof(INDEX));
 
 	opengl_drawDebug(&matView, &matProj);
 }
@@ -99,13 +112,27 @@ void twframe()
 	showWframe = !showWframe;
 }
 
+void more() {
+	int max;
+	glGetIntegerv(GL_MAX_TESS_GEN_LEVEL, &max);
+	if(iSubdivision < max)
+		iSubdivision ++;
+}
+
+void less() { if(iSubdivision > 0) iSubdivision --; }
+
 void gamemain()
 {
+	debug_speedup = 500;
+
 	view_create((RENDERCALL)render, camera);
 	task_defer((ENTRYPOINT)debug_tools, NULL);
 	event_attach(on_escape, (EVENTHANDLER)engine_shutdown);
 	filesys_addResource("/home/felix/projects/acknext/project-z/resources/", "/");
+
 	event_attach(on_comma, twframe);
+	event_attach(on_kp_plus, more);
+	event_attach(on_kp_minus, less);
 
 	BLOB * packed = blob_load("/terrain/GrassyMountains_HF.hfz");
 	engine_log("Packed size: %lu", packed->size);
@@ -221,7 +248,7 @@ void gamemain()
 	glTextureParameteri(hmp, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTextureParameteri(hmp, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	const int subdiv = 4;
+	const int subdiv = 6;
 	const int tilesX = (1<<subdiv);
 	const int tilesY = (1<<subdiv);
 	const int sizeX = header->width / tilesX;
@@ -230,7 +257,7 @@ void gamemain()
 	engine_log("(%d,%d) → (%d, %d)", tilesX, tilesY, sizeX, sizeY);
 
 	BUFFER * ibuffer = buffer_create(INDEXBUFFER);
-	buffer_set(ibuffer, 6 * sizeof(INDEX) * tilesX * tilesY, NULL);
+	buffer_set(ibuffer, 4 * sizeof(INDEX) * tilesX * tilesY, NULL);
 	INDEX * indices = buffer_map(ibuffer, WRITEONLY);
 
 	const int stride = header->width;
@@ -239,14 +266,12 @@ void gamemain()
 	{
 		for(int x = 0; x < tilesX; x++)
 		{
-			int * face = &indices[6 * (y * tilesX + x)];
+			INDEX * face = &indices[4 * (y * tilesX + x)];
 			int base = stride * y + delta * x;
 			face[0] = base + 0;
 			face[1] = base + delta;
-			face[2] = base + stride;
-			face[3] = base + delta;
-			face[4] = base + stride;
-			face[5] = base + stride + delta;
+			face[2] = base + stride + delta;
+			face[3] = base + stride;
 		}
 	}
 
@@ -259,6 +284,8 @@ void gamemain()
 
 	SHADER * shdTerrain = shader_create();
 	shader_addFileSource(shdTerrain, VERTEXSHADER, "shaders/terrain.vert");
+	shader_addFileSource(shdTerrain, TESSCTRLSHADER, "shaders/terrain.tesc");
+	shader_addFileSource(shdTerrain, TESSEVALSHADER, "shaders/terrain.tese");
 	shader_addFileSource(shdTerrain, FRAGMENTSHADER, "shaders/terrain.frag");
 	shader_addFileSource(shdTerrain, FRAGMENTSHADER, "/builtin/shaders/lighting.glsl");
 	shader_addFileSource(shdTerrain, FRAGMENTSHADER, "/builtin/shaders/gamma.glsl");
@@ -277,13 +304,23 @@ void gamemain()
 			glGetUniformLocation(program, "vecTileSize"),
 			sizeX,
 			sizeY);
+		glProgramUniform1f(
+			program,
+			glGetUniformLocation(program, "fTerrainScale"),
+			header->horizontalScale);
 	}
 
 	material = mtl_create();
 	material->shader = shdTerrain;
-	// material->colorTexture = bmap_to_mipmap(bmap_load("/terrain/GrassyMountains_TX.jpg"));
-	material->colorTexture = bmap_load("/terrain/GrassyMountains_INFO.jpg");
+	material->colorTexture = bmap_to_mipmap(bmap_load("/terrain/GrassyMountains_TX.jpg"));
+	material->normalTexture = bmap_to_mipmap(bmap_load("/terrain/GrassyMountains_TN.png"));
+	material->attributeTexture = bmap_to_mipmap(bmap_load("/textures/grass-01.jpg"));
 	material->emissionTexture = heightmapTexture;
+
+	{
+		glGetIntegerv(GL_MAX_TESS_GEN_LEVEL, &iSubdivision);
+		engine_log("Maximum subdivision: %d", iSubdivision);
+	}
 }
 
 int main(int argc, char *argv[])

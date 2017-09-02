@@ -141,7 +141,6 @@ SOURCES += \
     src/core/blob.cpp \
     src/graphics/opengl/opengl.cpp \
     src/math/matrix.cpp \
-    src/graphics/graphics-resource.cpp \
     src/virtfs/physfs-integration.cpp \
     src/scheduler/scheduler.cpp \
     src/virtfs/physfsrwops.c \

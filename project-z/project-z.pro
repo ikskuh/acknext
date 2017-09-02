@@ -21,6 +21,8 @@ SOURCES += default.c \
     main.c
 
 DISTFILES += \
-    resources/shaders/terrain.frag \
-    resources/shaders/terrain.vert
+    resources/shaders/terrain.vert \
+    resources/shaders/terrain.tesc \
+    resources/shaders/terrain.tese \
+    resources/shaders/terrain.frag
 
