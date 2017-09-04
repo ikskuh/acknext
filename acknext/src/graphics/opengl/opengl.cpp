@@ -9,7 +9,7 @@
 
 static Buffer const * currentVertexBuffer;
 static Buffer const * currentIndexBuffer;
-static Shader * currentShader;
+Shader * currentShader;
 
 // graphics-core.cpp
 extern GLuint vao;
@@ -256,6 +256,10 @@ ACKNEXT_API_BLOCK
 		currentShader->vecAttributes = (VECTOR){material->roughness,material->metallic,material->fresnell};
 		currentShader->vecEmission = material->emission;
 
+		shader_setUniforms(&currentShader->api(), &currentShader->api());
+		shader_setUniforms(&currentShader->api(), material);
+
+		// TODO: Reimplement
 		// opengl_setTexture(0, material->colorTexture);
 		// opengl_setTexture(1, material->attributeTexture);
 		// opengl_setTexture(2, material->emissionTexture);

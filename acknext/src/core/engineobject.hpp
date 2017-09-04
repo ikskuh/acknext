@@ -62,7 +62,7 @@ public:
 	explicit EngineObject() : cdata(nullptr)
 	{
 		uintptr_t ptr = reinterpret_cast<uintptr_t>(malloc(cdataOffset + sizeof(T)));
-		auto ** ref = reinterpret_cast<EngineObject<T>**>(ptr);
+		EngineObject<T> ** ref = reinterpret_cast<EngineObject<T>**>(ptr);
 		*ref = this;
 		this->cdata = reinterpret_cast<T*>(ptr + cdataOffset);
 		// Initialize with explicit zeroes :)
@@ -92,7 +92,7 @@ static inline T * promote(typename T::cdataType * value)
 		ptr	-= T::cdataOffset;
 		EngineObject<typename T::cdataType> ** obj = reinterpret_cast<EngineObject<typename T::cdataType>**>(ptr);
 		T * result = static_cast<T *>(*obj);
-		if(result->magic != 0xBADC0DED) {
+		if(result->magic != 0xBADC0DED) { // when this crashes or fails, an invalid object was passed
 			engine_log("promote<T> received a non-engine object (%08X)!", result->magic);
 			abort();
 		}
@@ -105,19 +105,7 @@ static inline T * promote(typename T::cdataType * value)
 template<typename T>
 static inline T const * promote(typename T::cdataType const * value)
 {
-	if(value != nullptr) {
-		uintptr_t ptr = reinterpret_cast<uintptr_t>(value);
-		ptr	-= T::cdataOffset;
-		EngineObject<typename T::cdataType> * const * obj = reinterpret_cast<EngineObject<typename T::cdataType>*const *>(ptr);
-		T const * result = static_cast<T const *>(*obj);
-		if(result->magic != 0xBADC0DED) {
-			engine_log("promote<T> received a non-engine object (%08X)!", result->magic);
-			abort();
-		}
-		return result;
-	} else {
-		return nullptr;
-	}
+	return const_cast<T const*>(promote<T>(const_cast<typename T::cdataType *>(value)));
 }
 
 template<typename T>

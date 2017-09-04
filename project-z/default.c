@@ -25,10 +25,17 @@ static void switchDebugMode(void*x)
 	opengl_debugMode = (opengl_debugMode + 1) % 4;
 }
 
+static void toggleWFrame(void*x)
+{
+	(void)x;
+	opengl_wireFrame = !opengl_wireFrame;
+}
+
 void debug_tools()
 {
 	var pan = 0;
 	var tilt = 0;
+	event_attach(on_f8, toggleWFrame);
 	event_attach(on_f9, switchDebugMode);
 	event_attach(on_f10, toggleColliderDebug);
 	event_attach(on_0, toggleMovement);

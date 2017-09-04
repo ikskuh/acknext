@@ -9,7 +9,6 @@
 void debug_tools();
 
 MESH * mesh;
-BUFFER * indexBuffer;
 SHADER * shdTerrain;
 
 bool showWframe = false;
@@ -19,6 +18,7 @@ int iSubdivision = 1;
 extern var debug_movement;
 extern var debug_speedup;
 
+/*
 void render(CAMERA * context)
 {
 	glClearColor(0.3, 0.3, 1.0, 1.0);
@@ -58,6 +58,7 @@ void render(CAMERA * context)
 
 	opengl_drawDebug(&matView, &matProj);
 }
+*/
 
 void twframe()
 {
@@ -94,7 +95,7 @@ void gamemain()
 {
 	debug_speedup = 500;
 
-	view_create((RENDERCALL)render, camera);
+	view_create((RENDERCALL)render_scene_with_camera, camera);
 	task_defer((ENTRYPOINT)debug_tools, NULL);
 	event_attach(on_escape, (EVENTHANDLER)engine_shutdown);
 	filesys_addResource("/home/felix/projects/acknext/project-z/resources/", "/");
@@ -141,7 +142,7 @@ void gamemain()
 
 	engine_log("(%d,%d) → (%d, %d)", tilesX, tilesY, sizeX, sizeY);
 
-	indexBuffer = buffer_create(INDEXBUFFER);
+	BUFFER * indexBuffer = buffer_create(INDEXBUFFER);
 	buffer_set(indexBuffer, 4 * sizeof(INDEX) * tilesX * tilesY, NULL);
 	INDEX * indices = buffer_map(indexBuffer, WRITEONLY);
 

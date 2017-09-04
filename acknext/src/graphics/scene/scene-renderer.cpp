@@ -31,6 +31,8 @@ struct LIGHTDATA
 
 static BUFFER * ubo = nullptr;
 
+extern Shader * currentShader;
+
 ACKNEXT_API_BLOCK
 {
 	CAMERA * camera;
@@ -82,17 +84,18 @@ ACKNEXT_API_BLOCK
 				glm::scale(glm::mat4(), ack_to_glm(ent->scale)));
 
 			if(ent->material != nullptr) {
+				// sets shader&material vars
 				opengl_setMaterial(ent->material);
 			}
 
 			Model * model = promote<Model>(ent->model);
-
-			for(uint i = 0; i < model->api().meshCount; i++)
+			for(int i = 0; i < model->api().meshCount; i++)
 			{
 				MESH const * mesh = model->api().meshes[i];
 				MATERIAL const * mtl = model->api().materials[i];
 
 				if(ent->material == nullptr) {
+					// sets shader&material vars
 					opengl_setMaterial(mtl);
 				}
 
@@ -101,6 +104,7 @@ ACKNEXT_API_BLOCK
 					&matView,
 					&matProj);
 
+				/*
 				// opengl_setLights() {
 				int lcount = 0;
 				LIGHTDATA * lights = (LIGHTDATA*)glMapNamedBuffer(
@@ -125,22 +129,28 @@ ACKNEXT_API_BLOCK
 
 				GLuint binding_point_index = 2;
 				GLint block_index = glGetUniformBlockIndex(
-					defaultShader->api().object,
+					currentShader->api().object,
 					"LightBlock");
 				glBindBufferBase(
 					GL_UNIFORM_BUFFER,
 					binding_point_index,
 					ubo->object);
 				glUniformBlockBinding(
-					defaultShader->api().object,
+					currentShader->api().object,
 					block_index,
 					binding_point_index);
-				defaultShader->iLightCount = lcount;
-
-				defaultShader->vecViewPos = perspective->position;
+				currentShader->iLightCount = lcount;
+				*/
 
 				// }
 				// void opengl_setLights();
+
+				currentShader->vecViewPos = perspective->position;
+
+				// shader < mtl < model < mesh < ent
+				shader_setUniforms(&currentShader->api(), demote(model));
+				shader_setUniforms(&currentShader->api(), mesh);
+				shader_setUniforms(&currentShader->api(), ent);
 
 				opengl_drawMesh(mesh);
 			}
