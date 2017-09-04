@@ -129,11 +129,22 @@ ACKNEXT_API_BLOCK
 
 		api.meshCount = maxv(numMeshes, 1);
 		api.boneCount = maxv(numBones, 1);
-		api.animationCount = maxv(numAnimations, 1);
+		api.animationCount = maxv(numAnimations, 0);
 
 		api.meshes = (MESH**)malloc(sizeof(MESH*)*api.meshCount);
 		api.materials = (MATERIAL**)malloc(sizeof(MATERIAL*)*api.meshCount);
 		api.animations = (ANIMATION**)malloc(sizeof(ANIMATION*)*api.animationCount);
+
+		memset(api.meshes, 0, sizeof(MESH*)*api.meshCount);
+		memset(api.materials, 0, sizeof(MESH*)*api.meshCount);
+		memset(api.animations, 0, sizeof(MESH*)*api.animationCount);
+
+		for(int i = 0; i < ACKNEXT_MAX_BONES; i++) {
+			api.bones[i].parent = 0;
+			strcpy(api.bones[i].name, "");
+			mat_id(&api.bones[i].transform);
+			mat_id(&api.bones[i].bindToBoneTransform);
+		}
 
 		return demote(model);
 	}

@@ -46,10 +46,6 @@ void render(CAMERA * context)
 	opengl_setTransform(&matWorld, &matView, &matProj);
 
 	GLuint program = shdTerrain->object;
-	glProgramUniform1i(
-		program,
-		glGetUniformLocation(program, "iSubdivision"),
-		iSubdivision);
 	glProgramUniform3f(
 		program,
 		glGetUniformLocation(program, "vecViewPos"),
@@ -57,6 +53,7 @@ void render(CAMERA * context)
 		context->position.y,
 		context->position.z);
 
+	shader_setUniforms(shdTerrain, mesh);
 	opengl_drawMesh(mesh);
 
 	opengl_drawDebug(&matView, &matProj);
@@ -67,14 +64,21 @@ void twframe()
 	showWframe = !showWframe;
 }
 
-void more() {
+void more()
+{
 	int max;
 	glGetIntegerv(GL_MAX_TESS_GEN_LEVEL, &max);
 	if(iSubdivision < max)
 		iSubdivision ++;
+	shader_setvar(shdTerrain, "iSubdivision", GL_INT, (int[]){iSubdivision});
 }
 
-void less() { if(iSubdivision > 0) iSubdivision --; }
+void less()
+{
+	if(iSubdivision > 0)
+		iSubdivision --;
+	shader_setvar(shdTerrain, "iSubdivision", GL_INT, (int[]){iSubdivision});
+}
 
 void storepos()
 {
@@ -159,69 +163,65 @@ void gamemain()
 	buffer_unmap(indexBuffer);
 
 	mesh = mesh_create(GL_QUADS, NULL, indexBuffer);
-
-	shdTerrain = shader_create();
-	shader_addFileSource(shdTerrain, VERTEXSHADER, "shaders/terrain.vert");
-	shader_addFileSource(shdTerrain, TESSCTRLSHADER, "shaders/terrain.tesc");
-	shader_addFileSource(shdTerrain, TESSEVALSHADER, "shaders/terrain.tese");
-	shader_addFileSource(shdTerrain, FRAGMENTSHADER, "shaders/terrain.frag");
-	shader_addFileSource(shdTerrain, FRAGMENTSHADER, "/builtin/shaders/lighting.glsl");
-	shader_addFileSource(shdTerrain, FRAGMENTSHADER, "/builtin/shaders/gamma.glsl");
-	shader_addFileSource(shdTerrain, FRAGMENTSHADER, "/builtin/shaders/ackpbr.glsl");
-	shader_link(shdTerrain);
-
 	{
-		GLuint program = shdTerrain->object;
-		glProgramUniform2i(
-			program,
-			glGetUniformLocation(program, "vecTerrainSize"),
-			hf->width,
-			hf->height);
-		glProgramUniform2i(
-			program,
-			glGetUniformLocation(program, "vecTileSize"),
-			sizeX,
-			sizeY);
-		glProgramUniform1f(
-			program,
-			glGetUniformLocation(program, "fTerrainScale"),
-			hf->horizontalScale);
+		mesh_setvar(mesh, "vecTerrainSize", GL_INT_VEC2, (int[]){ hf->width, hf->height });
+		mesh_setvar(mesh, "vecTileSize", GL_INT_VEC2, (int[]){ sizeX, sizeY });
+		mesh_setvar(mesh, "texHeightmap", GL_SAMPLER_2D, &heightmapTexture);
+		mesh_setvar(mesh, "fTerrainScale", GL_FLOAT, &hf->horizontalScale);
+
+		BITMAP * bmpNM    = bmap_to_mipmap(bmap_load("/terrain/GrassyMountains_TN.png"));
+		mesh_setvar(mesh, "texNormalMap", GL_SAMPLER_2D, &bmpNM);
 	}
 
-	shader_setvar(shdTerrain, "vecTerrainSize", GL_INT_VEC2, (int[]){hf->width,hf->height});
-	shader_setvar(shdTerrain, "vecTileSize", GL_INT_VEC2, (int[]){sizeX, sizeY});
-	shader_setvar(shdTerrain, "fTerrainScale", GL_FLOAT, &hf->horizontalScale);
+	shdTerrain = shader_create();
+	{
+		shader_addFileSource(shdTerrain, VERTEXSHADER, "shaders/terrain.vert");
+		shader_addFileSource(shdTerrain, TESSCTRLSHADER, "shaders/terrain.tesc");
+		shader_addFileSource(shdTerrain, TESSEVALSHADER, "shaders/terrain.tese");
+		shader_addFileSource(shdTerrain, FRAGMENTSHADER, "shaders/terrain.frag");
+		shader_addFileSource(shdTerrain, FRAGMENTSHADER, "/builtin/shaders/lighting.glsl");
+		shader_addFileSource(shdTerrain, FRAGMENTSHADER, "/builtin/shaders/gamma.glsl");
+		shader_addFileSource(shdTerrain, FRAGMENTSHADER, "/builtin/shaders/ackpbr.glsl");
+		shader_link(shdTerrain);
 
-	BITMAP * bmpLSC   = bmap_to_mipmap(bmap_load("/terrain/GrassyMountains_TX.jpg"));
-	BITMAP * bmpNM    = bmap_to_mipmap(bmap_load("/terrain/GrassyMountains_TN.png"));
-	BITMAP * bmpDetail = bmap_to_mipmap(bmap_load("/textures/grass-01.jpg"));
+		glGetIntegerv(GL_MAX_TESS_GEN_LEVEL, &iSubdivision);
+		engine_log("Maximum subdivision: %d", iSubdivision);
+		shader_setvar(shdTerrain, "iSubdivision", GL_INT, (int[]){iSubdivision});
+	}
 
-	mtl_setvar(shdTerrain, "texLargeScaleColor", GL_SAMPLER_2D, &bmpLSC);
-	mtl_setvar(shdTerrain, "texNormalMap", GL_SAMPLER_2D, &bmpNM);
-	mtl_setvar(shdTerrain, "texDetail", GL_SAMPLER_2D, &bmpDetail);
-	mtl_setvar(shdTerrain, "texHeightmap", GL_SAMPLER_2D, &heightmapTexture);
+	MODEL * model = model_create(1, 0, 0);
+	{
+		model->meshes[0] = mesh;
+		model->materials[0] = mtl_create();
+
+		model->materials[0]->shader = shdTerrain;
+
+		BITMAP * bmpLSC   = bmap_to_mipmap(bmap_load("/terrain/GrassyMountains_TX.jpg"));
+		BITMAP * bmpDetail = bmap_to_mipmap(bmap_load("/textures/grass-01.jpg"));
 
 #define	GL_TEXTURE_MAX_ANISOTROPY_EXT          0x84FE
 #define	GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT      0x84FF
 
-	{
-		GLfloat fLargest;
-		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest);
+		{
+			GLfloat fLargest;
+			glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest);
 
-		engine_log("max anisotropy: %f", fLargest);
+			engine_log("max anisotropy: %f", fLargest);
 
-		glTextureParameterf(
-			bmpLSC->object,
-			GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
-		glTextureParameterf(
-			bmpDetail->object,
-			GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
+			glTextureParameterf(
+				bmpLSC->object,
+				GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
+			glTextureParameterf(
+				bmpDetail->object,
+				GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
+		}
+
+		shader_setvar(model->materials[0], "texLargeScaleColor", GL_SAMPLER_2D, &bmpLSC);
+		shader_setvar(model->materials[0], "texDetail", GL_SAMPLER_2D, &bmpDetail);
 	}
 
-	{
-		glGetIntegerv(GL_MAX_TESS_GEN_LEVEL, &iSubdivision);
-		engine_log("Maximum subdivision: %d", iSubdivision);
-	}
+	ENTITY * ent = ent_create(NULL, vector(0,0,0), NULL);
+	ent->model = model;
 
 	packed = blob_load("/terrain/GrassyMountains_AM.amf.gz");
 	BLOB * attributefield = blob_inflate(packed);
@@ -240,7 +240,7 @@ void gamemain()
 		GL_RED_INTEGER, GL_UNSIGNED_BYTE,
 		ids);
 
-	shader_setvar(shdTerrain, "texTerrainMaterial", GL_TEXTURE_2D, amtexture);
+	shader_setvar(model->materials[0], "texTerrainMaterial", GL_TEXTURE_2D, amtexture);
 
 	shader_logInfo(shdTerrain);
 
