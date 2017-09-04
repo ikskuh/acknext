@@ -104,44 +104,47 @@ ACKNEXT_API_BLOCK
 					&matView,
 					&matProj);
 
-				/*
 				// opengl_setLights() {
-				int lcount = 0;
-				LIGHTDATA * lights = (LIGHTDATA*)glMapNamedBuffer(
-				            ubo->object,
-							GL_WRITE_ONLY);
-				for(LIGHT * l = light_next(nullptr); l != nullptr; l = light_next(l))
-				{
-					lights[lcount].type = l->type;
-					lights[lcount].intensity = l->intensity;
-					lights[lcount].arc = DEG_TO_RAD * l->arc;
-					lights[lcount].position = l->position;
-					lights[lcount].direction = l->direction;
-					lights[lcount].color = l->color;
 
-					vec_normalize(&lights[lcount].direction, 1.0);
-					lcount += 1;
-					if(lcount >= LIGHT_LIMIT) {
-						break;
-					}
-				}
-				glUnmapNamedBuffer(ubo->object);
-
-				GLuint binding_point_index = 2;
 				GLint block_index = glGetUniformBlockIndex(
 					currentShader->api().object,
 					"LightBlock");
-				glBindBufferBase(
-					GL_UNIFORM_BUFFER,
-					binding_point_index,
-					ubo->object);
-				glUniformBlockBinding(
-					currentShader->api().object,
-					block_index,
-					binding_point_index);
-				currentShader->iLightCount = lcount;
-				*/
+				if(block_index > 0) // only when lights are required
+				{
+					int lcount = 0;
+					LIGHTDATA * lights = (LIGHTDATA*)glMapNamedBuffer(
+								ubo->object,
+								GL_WRITE_ONLY);
+					for(LIGHT * l = light_next(nullptr); l != nullptr; l = light_next(l))
+					{
+						lights[lcount].type = l->type;
+						lights[lcount].intensity = l->intensity;
+						lights[lcount].arc = DEG_TO_RAD * l->arc;
+						lights[lcount].position = l->position;
+						lights[lcount].direction = l->direction;
+						lights[lcount].color = l->color;
 
+						vec_normalize(&lights[lcount].direction, 1.0);
+						lcount += 1;
+						if(lcount >= LIGHT_LIMIT) {
+							break;
+						}
+					}
+					glUnmapNamedBuffer(ubo->object);
+
+					GLuint binding_point_index = 2;
+					glBindBufferBase(
+						GL_UNIFORM_BUFFER,
+						binding_point_index,
+						ubo->object);
+					glUniformBlockBinding(
+						currentShader->api().object,
+						block_index,
+						binding_point_index);
+					currentShader->iLightCount = lcount;
+				} else {
+					currentShader->iLightCount = 0;
+				}
 				// }
 				// void opengl_setLights();
 

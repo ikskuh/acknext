@@ -10,13 +10,13 @@ in vec3 normal;
 
 uniform int iDebugMode;
 
-uniform sampler2D texColor;
+uniform sampler2D texAlbedo;
 uniform sampler2D texEmission;
 uniform sampler2D texAttributes;
 uniform sampler2D texNormalMap;
 
 uniform vec4 vecEmission;
-uniform vec4 vecColor;
+uniform vec4 vecAlbedo;
 uniform vec3 vecAttributes;
 
 uniform vec3 vecViewPos;
@@ -66,7 +66,7 @@ void main() {
 		mApplyNormal = mat3(-tangent,-cotangent,-normal);
 	}
 
-	vec4 cAlbedo = vecColor * vec4(toLinear(color),1) * toLinear(texture(texColor, uv0));
+	vec4 cAlbedo = vecAlbedo * vec4(toLinear(color),1) * toLinear(texture(texAlbedo, uv0));
 	vec4 cEmissive = vecEmission * toLinear(texture(texEmission, uv0));
 	vec4 cAttribute = vec4(vecAttributes, 1) * texture(texAttributes, uv0);
 	vec4 cNormalMap = texture(texNormalMap, uv0);

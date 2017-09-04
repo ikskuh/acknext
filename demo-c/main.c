@@ -115,7 +115,7 @@ void gamemain()
 
 	ENTITY * ent = ent_create("mtltest/dungeon.obj", vector(0, 0, 0), NULL);
 	ent->material = mtl_create();
-	ent->material->colorTexture = bmap_load("mtltest/dungeon-diffuse.png");
+	ent->material->albedoTexture = bmap_load("mtltest/dungeon-diffuse.png");
 	ent->material->emissionTexture = bmap_load("mtltest/dungeon-emissive.png");
 	ent->material->attributeTexture = bmap_load("mtltest/dungeon-attributes.png");
 	ent->material->normalTexture = bmap_load("mtltest/dungeon-normals.png");

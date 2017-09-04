@@ -12,11 +12,11 @@
 typedef struct
 {
 	SHADER * shader;
-	BITMAP * colorTexture;
+	BITMAP * albedoTexture;
 	BITMAP * attributeTexture; // r=roughness, g=metallic, b=fresnell, a=ambient occlusion
 	BITMAP * emissionTexture;
 	BITMAP * normalTexture; // r,g,b∊[-1;1]
-	COLOR color;
+	COLOR albedo;
 	COLOR emission;
 	var roughness;
 	var metallic;

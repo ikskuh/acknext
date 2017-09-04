@@ -252,9 +252,14 @@ ACKNEXT_API_BLOCK
 		// this fallbacks to the defaultShader if none is set.
 		opengl_setShader(material->shader);
 
-		currentShader->vecColor = material->color;
+		currentShader->vecAlbedo = material->albedo;
 		currentShader->vecAttributes = (VECTOR){material->roughness,material->metallic,material->fresnell};
 		currentShader->vecEmission = material->emission;
+
+		mtl_setvar(const_cast<MATERIAL*>(material), "texAlbedo",     GL_SAMPLER_2D, (void const*)&material->albedoTexture);
+		mtl_setvar(const_cast<MATERIAL*>(material), "texEmission",   GL_SAMPLER_2D, (void const*)&material->emissionTexture);
+		mtl_setvar(const_cast<MATERIAL*>(material), "texNormalMap",  GL_SAMPLER_2D, (void const*)&material->normalTexture);
+		mtl_setvar(const_cast<MATERIAL*>(material), "texAttributes", GL_SAMPLER_2D, (void const*)&material->attributeTexture);
 
 		shader_setUniforms(&currentShader->api(), &currentShader->api());
 		shader_setUniforms(&currentShader->api(), material);

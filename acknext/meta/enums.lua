@@ -22,7 +22,7 @@ enum.SHADERVAR =
 	"vecViewPort",
 
 	-- Material
-	"vecColor",
+	"vecAlbedo",
 	"vecEmission",
 	"vecAttributes",
 	"texColor",
