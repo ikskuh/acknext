@@ -85,7 +85,7 @@ ACKNEXT_API_BLOCK
 		int levels = 0;
 		{
 			int a = width, b = height;
-			while(a > 1 && b > 1) {
+			while(a > 0 && b > 0) {
 				a >>= 1;
 				b >>= 1;
 				levels++;

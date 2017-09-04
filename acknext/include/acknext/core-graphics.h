@@ -28,6 +28,7 @@ typedef struct
 typedef struct
 {
 	GLuint ACKCONST object;
+	int ACKCONST textureSlotCount; // number of texture slot this object uses
 	SHADERFLAGS ACKCONST flags;
 } SHADER;
 
@@ -40,6 +41,7 @@ typedef struct
 	GLenum ACKCONST type;
 	int ACKCONST size;
 	SHADERVAR ACKCONST var;
+	int ACKCONST textureSlot; // the index of the texture slot this uniform has assigned
 } UNIFORM;
 
 // BITMAP api:
@@ -96,11 +98,15 @@ ACKFUN bool shader_addFileSource(SHADER * shader, GLenum type, const char * file
 
 ACKFUN bool shader_link(SHADER * shader);
 
-ACKFUN UNIFORM const * shader_getUniform(SHADER * shader, int index);
+ACKFUN UNIFORM const * shader_getUniform(SHADER const * shader, int index);
 
-ACKFUN int shader_getUniformCount(SHADER * shader);
+ACKFUN int shader_getUniformCount(SHADER const * shader);
 
-ACKFUN void shader_logInfo(SHADER * shader);
+ACKFUN UNIFORM const * shader_getUniformByName(SHADER const * shader, char const * name);
+
+ACKFUN void shader_setUniforms(SHADER * shader, void const * source);
+
+ACKFUN void shader_logInfo(SHADER const * shader);
 
 ACKFUN void shader_remove(SHADER * shader);
 

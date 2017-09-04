@@ -33,6 +33,32 @@ void Shader::setUniform(SHADERVAR var, std::function<void(int,int)> const & func
 	}
 }
 
+bool isSampler(GLenum type)
+{
+	switch(type)
+	{
+		case GL_SAMPLER_1D:
+		case GL_SAMPLER_1D_ARRAY:
+		case GL_SAMPLER_1D_ARRAY_SHADOW:
+		case GL_SAMPLER_1D_SHADOW:
+		case GL_SAMPLER_2D:
+		case GL_SAMPLER_2D_ARRAY:
+		case GL_SAMPLER_2D_ARRAY_SHADOW:
+		case GL_SAMPLER_2D_MULTISAMPLE:
+		case GL_SAMPLER_2D_MULTISAMPLE_ARRAY:
+		case GL_SAMPLER_2D_RECT:
+		case GL_SAMPLER_2D_RECT_SHADOW:
+		case GL_SAMPLER_3D:
+		case GL_SAMPLER_CUBE:
+		case GL_SAMPLER_CUBE_MAP_ARRAY:
+		case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW:
+		case GL_SAMPLER_CUBE_SHADOW:
+			return true;
+		default:
+			return false;
+	}
+}
+
 ACKNEXT_API_BLOCK
 {
 	SHADER * shader_create()
@@ -81,6 +107,10 @@ ACKNEXT_API_BLOCK
 
 		shader->shaders.push_back(sh);
 		glAttachShader(shader->api().object, sh);
+
+		if(type == TESSCTRLSHADER || type == TESSEVALSHADER) {
+			shader->api().flags |= TESSELATION;
+		}
 
 		return true;
 	}
@@ -135,6 +165,7 @@ ACKNEXT_API_BLOCK
 			engine_log("link log: %s", log.data());
 		}
 
+		_shader->textureSlotCount = 0;
 		{
 			GLint count;
 			glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &count);
@@ -168,21 +199,15 @@ ACKNEXT_API_BLOCK
 	#include "uniformconfig.h"
 	#undef _UNIFORM
 
-				switch(uni->var) {
-					case TEXCOLOR_VAR:
-						glProgramUniform1i(program, uni->location, 0);
-						break;
-					case TEXATTRIBUTES_VAR:
-						glProgramUniform1i(program, uni->location, 1);
-						break;
-					case TEXEMISSION_VAR:
-						glProgramUniform1i(program, uni->location, 2);
-						break;
-					case TEXNORMALMAP_VAR:
-						glProgramUniform1i(program, uni->location, 3);
-						break;
-					default:
-						break;
+				if(isSampler(uni->type))
+				{
+					// preinitialize uniforms with correct slut
+					uni->textureSlot = _shader->textureSlotCount++;
+					glProgramUniform1i(program, uni->location, uni->textureSlot);
+				}
+				else
+				{
+					uni->textureSlot = -1;
 				}
 			}
 		}
@@ -208,9 +233,9 @@ ACKNEXT_API_BLOCK
 	}
 
 
-	ACKFUN void shader_logInfo(SHADER * _shader)
+	ACKFUN void shader_logInfo(SHADER const * _shader)
 	{
-		Shader * shader = promote<Shader>(_shader);
+		Shader const * shader = promote<Shader>(_shader);
 		if(shader == nullptr) {
 			engine_seterror(ERR_INVALIDARGUMENT, "shader must not be NULL!");
 			return;
@@ -238,26 +263,33 @@ ACKNEXT_API_BLOCK
 
 		for(UNIFORM const & uni : shader->uniforms)
 		{
-			char const * variable = "Unknown";
+			char const * variable = "";
 			switch(uni.var) {
 #define _UNIFORM(xname, xtype, value, _rtype) \
-				case value: variable = #value; break;
+				case value: variable = "(" #value ")"; break;
 #include "uniformconfig.h"
 #undef _UNIFORM
 			}
 
-			engine_log("\tUniform: [%d:%2d] %s \t→ %s, %d", uni.block, uni.location, uni.name, variable, uni.size); \
+			engine_log(
+				"\tUniform: [%d:%2d] %s%s, size=%d, slot=%d",
+				uni.block,
+				uni.location,
+				uni.name,
+				variable,
+				uni.size,
+				uni.textureSlot);
 		}
 	}
 
-	UNIFORM const * shader_getUniform(SHADER * shader, int index)
+	UNIFORM const * shader_getUniform(SHADER const * shader, int index)
 	{
-		Shader * sh = promote<Shader>(shader);
+		Shader const * sh = promote<Shader>(shader);
 		if(sh == nullptr) {
 			engine_seterror(ERR_INVALIDARGUMENT, "shader must not be NULL!");
 			return nullptr;
 		}
-		if(sh->api().flags & LINKED) {
+		if(!(sh->api().flags & LINKED)) {
 			engine_seterror(ERR_INVALIDOPERATION, "shader must be linked!");
 			return nullptr;
 		}
@@ -268,18 +300,105 @@ ACKNEXT_API_BLOCK
 		return &sh->uniforms[index];
 	}
 
-	int shader_getUniformCount(SHADER * shader)
+	int shader_getUniformCount(SHADER const * shader)
 	{
-		Shader * sh = promote<Shader>(shader);
+		Shader const * sh = promote<Shader>(shader);
 		if(sh == nullptr) {
 			engine_seterror(ERR_INVALIDARGUMENT, "shader must not be NULL!");
 			return -1;
 		}
-		if(sh->api().flags & LINKED) {
+		if(!(sh->api().flags & LINKED)) {
 			engine_seterror(ERR_INVALIDOPERATION, "shader must be linked!");
 			return -1;
 		}
 		return int(sh->uniforms.size());
+	}
+
+	UNIFORM const * shader_getUniformByName(const SHADER *shader, const char *name)
+	{
+		const int cnt = shader_getUniformCount(shader);
+		if(cnt < 0) {
+			return nullptr;
+		}
+		for(int i = 0; i < cnt; i++)
+		{
+			UNIFORM const * uni = shader_getUniform(shader, i);
+			if(strcmp(uni->name, name) == 0) {
+				return uni;
+			}
+		}
+		return nullptr;
+	}
+
+	void shader_setUniforms(SHADER * shader, void const * source)
+	{
+		Shader * sh = promote<Shader>(shader);
+		if(sh == nullptr) {
+			engine_seterror(ERR_INVALIDARGUMENT, "shader must not be NULL!");
+			return;
+		}
+		if(!(sh->api().flags & LINKED)) {
+			engine_seterror(ERR_INVALIDOPERATION, "shader must be linked!");
+			return;
+		}
+		Dummy const * dummy = promote<Dummy>(reinterpret_cast<DUMMY const*>(source));
+		if(dummy == nullptr) {
+			engine_seterror(ERR_INVALIDARGUMENT, "source must be an engine object!");
+			return;
+		}
+		const GLuint pgm = shader->object;
+		for(auto const & prop : dummy->properties)
+		{
+			UNIFORM const * uni = shader_getUniformByName(shader, prop.first.c_str());
+			if(uni == nullptr) {
+				continue;
+			}
+			Property const & p = prop.second;
+			if(uni->type != p.type) {
+				engine_log("Warning: %s does not match the shader specification!", uni->name);
+				continue;
+			}
+			const int loc = uni->location;
+
+			if(isSampler(p.type))
+			{
+				opengl_setTexture(uni->textureSlot, p.data.texture);
+			}
+			else
+			{
+				switch(p.type)
+				{
+					case GL_INT:
+						glProgramUniform1i(pgm, loc, p.data.ints[0]);
+						break;
+					case GL_INT_VEC2:
+						glProgramUniform2i(pgm, loc, p.data.ints[0], p.data.ints[1]);
+						break;
+					case GL_INT_VEC3:
+						glProgramUniform3i(pgm, loc, p.data.ints[0], p.data.ints[1], p.data.ints[2]);
+						break;
+					case GL_INT_VEC4:
+						glProgramUniform4i(pgm, loc, p.data.ints[0], p.data.ints[1], p.data.ints[2], p.data.ints[3]);
+						break;
+					case GL_FLOAT:
+						glProgramUniform1f(pgm, loc, p.data.floats[0]);
+						break;
+					case GL_FLOAT_VEC2:
+						glProgramUniform2f(pgm, loc, p.data.floats[0], p.data.floats[1]);
+						break;
+					case GL_FLOAT_VEC3:
+						glProgramUniform3f(pgm, loc, p.data.floats[0], p.data.floats[1], p.data.floats[2]);
+						break;
+					case GL_FLOAT_VEC4:
+						glProgramUniform4f(pgm, loc, p.data.floats[0], p.data.floats[1], p.data.floats[2], p.data.floats[3]);
+						break;
+					// TODO: Add more, also add support for samplers!
+					default:
+						engine_log("Warning: %s has an unsupported property type!", uni->name);
+						continue;
+				}
+			}
+		}
 	}
 
 	void shader_remove(SHADER * shader)

@@ -185,12 +185,12 @@ static int physfsrwops_close(SDL_RWops *rw)
 } /* physfsrwops_close */
 
 
-static SDL_RWops *create_rwops(PHYSFS_File *handle)
+static SDL_RWops *create_rwops(char const * fileName, PHYSFS_File *handle)
 {
     SDL_RWops *retval = NULL;
 
     if (handle == NULL)
-        SDL_SetError("PhysicsFS error: %s", PHYSFS_getLastError());
+        SDL_SetError("PhysicsFS error: %s\n\t%s", fileName, PHYSFS_getLastError());
     else
     {
         retval = SDL_AllocRW();
@@ -217,7 +217,7 @@ SDL_RWops *PHYSFSRWOPS_makeRWops(PHYSFS_File *handle)
     if (handle == NULL)
         SDL_SetError("NULL pointer passed to PHYSFSRWOPS_makeRWops().");
     else
-        retval = create_rwops(handle);
+        retval = create_rwops("???", handle);
 
     return retval;
 } /* PHYSFSRWOPS_makeRWops */
@@ -225,19 +225,19 @@ SDL_RWops *PHYSFSRWOPS_makeRWops(PHYSFS_File *handle)
 
 SDL_RWops *PHYSFSRWOPS_openRead(const char *fname)
 {
-    return create_rwops(PHYSFS_openRead(fname));
+    return create_rwops(fname, PHYSFS_openRead(fname));
 } /* PHYSFSRWOPS_openRead */
 
 
 SDL_RWops *PHYSFSRWOPS_openWrite(const char *fname)
 {
-    return create_rwops(PHYSFS_openWrite(fname));
+    return create_rwops(fname, PHYSFS_openWrite(fname));
 } /* PHYSFSRWOPS_openWrite */
 
 
 SDL_RWops *PHYSFSRWOPS_openAppend(const char *fname)
 {
-    return create_rwops(PHYSFS_openAppend(fname));
+    return create_rwops(fname, PHYSFS_openAppend(fname));
 } /* PHYSFSRWOPS_openAppend */
 
 

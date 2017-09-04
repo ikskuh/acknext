@@ -3,6 +3,7 @@
 
 #include "config.h"
 #include <stdbool.h>
+#include <GL/gl3w.h>
 #include "ackenum.h"
 
 ACKFUN int engine_main(void (*main)(), int argc, char ** argv);
@@ -27,5 +28,13 @@ ACKVAR char const * ACKCONST engine_lasterror_text;
 
 ACKVAR char ACKCONST ** ACKCONST engine_argv;
 ACKVAR int ACKCONST engine_argc;
+
+#define mtl_setvar    obj_setvar
+#define ent_setvar    obj_setvar
+#define shader_setvar obj_setvar
+#define bmap_setvar   obj_setvar
+ACKFUN void obj_setvar(void * obj, char const * name, GLenum type, void const * data);
+
+ACKFUN void obj_listvar(void const * obj);
 
 #endif // _ACKNEXT_CORE_H_

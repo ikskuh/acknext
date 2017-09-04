@@ -19,5 +19,3 @@ DISTFILES += \
     resource/shaders/gamma.glsl \
     resource/shaders/acklights.glsl
 
-SOURCES += \
-    l3dt/heightfield.c

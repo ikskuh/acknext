@@ -11,7 +11,7 @@ out vec2 uv0, uv1;
 
 out float distance;
 
-uniform sampler2D texEmission;
+uniform sampler2D texHeightmap;
 uniform sampler2D texNormalMap;
 
 vec4 interpolate(in vec4 v0, in vec4 v1, in vec4 v2, in vec4 v3)
@@ -37,7 +37,7 @@ void main()
 
 	vec2 uv = (pos.xz + 0.5) / vec2(fTerrainScale * vecTerrainSize.x, fTerrainScale * vecTerrainSize.y);
 
-	pos.y = texture(texEmission, uv).r;
+	pos.y = texture(texHeightmap, uv).r;
 	uv.y = 1.0 - uv.y; // normal textures are "upside down"
 
 	position = (matWorld * vec4(pos, 1)).rgb;

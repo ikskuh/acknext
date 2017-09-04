@@ -12,7 +12,7 @@
 
 static std::unordered_map<std::string, MODEL*> modelCache;
 
-static VECTOR ass_to_ack(const aiVector3D & vec)
+static inline VECTOR ass_to_ack(const aiVector3D & vec)
 {
 	return (VECTOR){ vec.x, vec.y, vec.z };
 }

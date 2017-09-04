@@ -8,8 +8,9 @@
 
 void debug_tools();
 
+MESH * mesh;
 BUFFER * indexBuffer;
-MATERIAL * material;
+SHADER * shdTerrain;
 
 bool showWframe = false;
 
@@ -40,13 +41,11 @@ void render(CAMERA * context)
 	MATRIX matView, matProj;
 	camera_to_matrix(context, &matView, &matProj, NULL);
 
-	opengl_setMaterial(material);
-	opengl_setIndexBuffer(indexBuffer);
-	opengl_setVertexBuffer(NULL);
+	opengl_setShader(shdTerrain);
 
 	opengl_setTransform(&matWorld, &matView, &matProj);
 
-	GLuint program = material->shader->object;
+	GLuint program = shdTerrain->object;
 	glProgramUniform1i(
 		program,
 		glGetUniformLocation(program, "iSubdivision"),
@@ -58,8 +57,7 @@ void render(CAMERA * context)
 		context->position.y,
 		context->position.z);
 
-	glPatchParameteri(GL_PATCH_VERTICES, 4);
-	opengl_draw(GL_PATCHES, 0, indexBuffer->size / sizeof(INDEX));
+	opengl_drawMesh(mesh);
 
 	opengl_drawDebug(&matView, &matProj);
 }
@@ -87,8 +85,6 @@ void storepos()
 		file_close(file);
 	}
 }
-
-
 
 void gamemain()
 {
@@ -162,7 +158,9 @@ void gamemain()
 
 	buffer_unmap(indexBuffer);
 
-	SHADER * shdTerrain = shader_create();
+	mesh = mesh_create(GL_QUADS, NULL, indexBuffer);
+
+	shdTerrain = shader_create();
 	shader_addFileSource(shdTerrain, VERTEXSHADER, "shaders/terrain.vert");
 	shader_addFileSource(shdTerrain, TESSCTRLSHADER, "shaders/terrain.tesc");
 	shader_addFileSource(shdTerrain, TESSEVALSHADER, "shaders/terrain.tese");
@@ -190,12 +188,18 @@ void gamemain()
 			hf->horizontalScale);
 	}
 
-	material = mtl_create();
-	material->shader = shdTerrain;
-	material->colorTexture = bmap_to_mipmap(bmap_load("/terrain/GrassyMountains_TX.jpg"));
-	material->normalTexture = bmap_to_mipmap(bmap_load("/terrain/GrassyMountains_TN.png"));
-	material->attributeTexture = bmap_to_mipmap(bmap_load("/textures/grass-01.jpg"));
-	material->emissionTexture = heightmapTexture;
+	shader_setvar(shdTerrain, "vecTerrainSize", GL_INT_VEC2, (int[]){hf->width,hf->height});
+	shader_setvar(shdTerrain, "vecTileSize", GL_INT_VEC2, (int[]){sizeX, sizeY});
+	shader_setvar(shdTerrain, "fTerrainScale", GL_FLOAT, &hf->horizontalScale);
+
+	BITMAP * bmpLSC   = bmap_to_mipmap(bmap_load("/terrain/GrassyMountains_TX.jpg"));
+	BITMAP * bmpNM    = bmap_to_mipmap(bmap_load("/terrain/GrassyMountains_TN.png"));
+	BITMAP * bmpDetail = bmap_to_mipmap(bmap_load("/textures/grass-01.jpg"));
+
+	mtl_setvar(shdTerrain, "texLargeScaleColor", GL_SAMPLER_2D, &bmpLSC);
+	mtl_setvar(shdTerrain, "texNormalMap", GL_SAMPLER_2D, &bmpNM);
+	mtl_setvar(shdTerrain, "texDetail", GL_SAMPLER_2D, &bmpDetail);
+	mtl_setvar(shdTerrain, "texHeightmap", GL_SAMPLER_2D, &heightmapTexture);
 
 #define	GL_TEXTURE_MAX_ANISOTROPY_EXT          0x84FE
 #define	GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT      0x84FF
@@ -207,12 +211,11 @@ void gamemain()
 		engine_log("max anisotropy: %f", fLargest);
 
 		glTextureParameterf(
-			material->colorTexture->object,
+			bmpLSC->object,
 			GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
 		glTextureParameterf(
-			material->attributeTexture->object,
+			bmpDetail->object,
 			GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
-
 	}
 
 	{
@@ -237,6 +240,15 @@ void gamemain()
 		GL_RED_INTEGER, GL_UNSIGNED_BYTE,
 		ids);
 
+	shader_setvar(shdTerrain, "texTerrainMaterial", GL_TEXTURE_2D, amtexture);
+
+	shader_logInfo(shdTerrain);
+
+	obj_listvar(shdTerrain);
+
+	// Äh wut, aber ja, ist sinnvoller so im moment
+	shader_setUniforms(shdTerrain, shdTerrain);
+
 	free(ids);
 	while(true)
 	{
@@ -245,6 +257,7 @@ void gamemain()
 		}
 		task_yield();
 	}
+
 }
 
 int main(int argc, char *argv[])

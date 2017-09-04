@@ -154,7 +154,8 @@ SOURCES += \
     src/virtfs/resourcemanager.cpp \
     src/math/color.cpp \
     src/graphics/opengl/programuniform.cpp \
-    src/core/blob_compression.c
+    src/core/blob_compression.c \
+    src/core/engineobject.cpp
 
 RESOURCES += \
     $$PWD/../resource/builtin.qrc

@@ -216,7 +216,7 @@ ACKNEXT_API_BLOCK
 			count = mesh->vertexBuffer->size / sizeof(VERTEX);
 
 		GLenum type = mesh->primitiveType;
-		if(currentShader->api().flags & LINKED)
+		if(currentShader->api().flags & TESSELATION)
 		{
 			type = GL_PATCHES;
 			switch(mesh->primitiveType)
@@ -237,7 +237,7 @@ ACKNEXT_API_BLOCK
 			}
 		}
 		opengl_draw(
-			mesh->primitiveType,
+			type,
 			0,
 			count);
 	}
@@ -256,9 +256,9 @@ ACKNEXT_API_BLOCK
 		currentShader->vecAttributes = (VECTOR){material->roughness,material->metallic,material->fresnell};
 		currentShader->vecEmission = material->emission;
 
-		opengl_setTexture(0, material->colorTexture);
-		opengl_setTexture(1, material->attributeTexture);
-		opengl_setTexture(2, material->emissionTexture);
-		opengl_setTexture(3, material->normalTexture, defaultNormalMap);
+		// opengl_setTexture(0, material->colorTexture);
+		// opengl_setTexture(1, material->attributeTexture);
+		// opengl_setTexture(2, material->emissionTexture);
+		// opengl_setTexture(3, material->normalTexture, defaultNormalMap);
 	}
 }
