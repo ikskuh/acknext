@@ -18,3 +18,8 @@ flags.WARPFLAGS =
 {
 	"NoMove",
 }
+flags.SHADERFLAGS = 
+{
+	"TESSELATION",
+	"LINKED",
+}

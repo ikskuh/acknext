@@ -87,12 +87,13 @@ ACKNEXT_API_BLOCK
 
 			Model * model = promote<Model>(ent->model);
 
-			for(MESH & mesh : model->meshes)
+			for(uint i = 0; i < model->api().meshCount; i++)
 			{
-				opengl_setIndexBuffer(mesh.indexBuffer);
-				opengl_setVertexBuffer(mesh.vertexBuffer);
+				MESH const * mesh = model->api().meshes[i];
+				MATERIAL const * mtl = model->api().materials[i];
+
 				if(ent->material == nullptr) {
-					opengl_setMaterial(mesh.material);
+					opengl_setMaterial(mtl);
 				}
 
 				opengl_setTransform(
@@ -103,7 +104,7 @@ ACKNEXT_API_BLOCK
 				// opengl_setLights() {
 				int lcount = 0;
 				LIGHTDATA * lights = (LIGHTDATA*)glMapNamedBuffer(
-				            buffer_getObject(ubo),
+				            ubo->object,
 							GL_WRITE_ONLY);
 				for(LIGHT * l = light_next(nullptr); l != nullptr; l = light_next(l))
 				{
@@ -120,18 +121,18 @@ ACKNEXT_API_BLOCK
 						break;
 					}
 				}
-				glUnmapNamedBuffer(buffer_getObject(ubo));
+				glUnmapNamedBuffer(ubo->object);
 
 				GLuint binding_point_index = 2;
 				GLint block_index = glGetUniformBlockIndex(
-					defaultShader->program,
+					defaultShader->api().object,
 					"LightBlock");
 				glBindBufferBase(
 					GL_UNIFORM_BUFFER,
 					binding_point_index,
-					buffer_getObject(ubo));
+					ubo->object);
 				glUniformBlockBinding(
-					defaultShader->program,
+					defaultShader->api().object,
 					block_index,
 					binding_point_index);
 				defaultShader->iLightCount = lcount;
@@ -141,7 +142,7 @@ ACKNEXT_API_BLOCK
 				// }
 				// void opengl_setLights();
 
-				opengl_draw(GL_TRIANGLES, 0, mesh.indexBuffer->size / sizeof(INDEX));
+				opengl_drawMesh(mesh);
 			}
 		}
 		DebugDrawer::render(matView, matProj);

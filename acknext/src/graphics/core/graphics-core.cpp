@@ -142,12 +142,12 @@ void render_init()
 	::defaultShader = promote<Shader>(defaultShader);
 
 	uint32_t white = 0xFFFFFFFF;
-	defaultWhiteTexture = promote<Bitmap>(bmap_create(TEX_2D));
-	bmap_set(demote(defaultWhiteTexture), 1, 1, FORMAT_RGBA8, &white);
+	defaultWhiteTexture = promote<Bitmap>(bmap_create(GL_TEXTURE_2D, GL_RGBA8));
+	bmap_set(demote(defaultWhiteTexture), 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &white);
 
 	uint32_t normalY = 0xFFFF8080;
-	defaultNormalMap = promote<Bitmap>(bmap_create(TEX_2D));
-	bmap_set(demote(defaultNormalMap), 1, 1, FORMAT_RGBA8, &normalY);
+	defaultNormalMap = promote<Bitmap>(bmap_create(GL_TEXTURE_2D, GL_RGBA8));
+	bmap_set(demote(defaultNormalMap), 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &normalY);
 
 	camera = camera_create();
 	promote<Camera>(::camera)->userCreated = false;

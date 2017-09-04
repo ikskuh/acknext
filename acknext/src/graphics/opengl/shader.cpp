@@ -1,28 +1,14 @@
 #include "shader.hpp"
 
-static GLenum getShaderType(SHADERTYPE type)
-{
-	switch(type) {
-		case VERTEXSHADER: return GL_VERTEX_SHADER;
-		case FRAGMENTSHADER: return GL_FRAGMENT_SHADER;
-		case GEOMETRYSHADER: return GL_GEOMETRY_SHADER;
-		case TESSCTRLSHADER: return GL_TESS_CONTROL_SHADER;
-		case TESSEVALSHADER: return GL_TESS_EVALUATION_SHADER;
-		default:
-			engine_seterror(ERR_INVALIDARGUMENT, "%d is not a valid shader type!", type);
-			return GL_INVALID_ENUM;
-	}
-}
-
 Shader::Shader() :
     EngineObject<SHADER>(),
-    program(glCreateProgram()),
     uniforms(), shaders(),
 #define _UNIFORM(xname, xtype, value, _rtype) xname(),
 #include "uniformconfig.h"
 #undef _UNIFORM
-    isLinked(false)
+    stub(42) // required for termination
 {
+	api().object = glCreateProgram();
 #define _UNIFORM(xname, xtype, value, _rtype) this->xname.shader = this;
 #include "uniformconfig.h"
 #undef _UNIFORM
@@ -33,7 +19,7 @@ Shader::~Shader()
 	for(GLuint sh : this->shaders) {
 		glDeleteShader(sh);
 	}
-	glDeleteProgram(this->program);
+	glDeleteProgram(api().object);
 }
 
 void Shader::setUniform(SHADERVAR var, std::function<void(int,int)> const & func)
@@ -43,7 +29,7 @@ void Shader::setUniform(SHADERVAR var, std::function<void(int,int)> const & func
 		if(u.var != var) {
 			continue;
 		}
-		func(this->program, u.location);
+		func(api().object, u.location);
 	}
 }
 
@@ -54,19 +40,19 @@ ACKNEXT_API_BLOCK
 		return demote(new Shader());
 	}
 
-	bool shader_addSource(SHADER * _shader, SHADERTYPE type, const char * source)
+	bool shader_addSource(SHADER * _shader, GLenum type, const char * source)
 	{
 		Shader * shader = promote<Shader>(_shader);
 		if(shader == nullptr) {
 			engine_seterror(ERR_INVALIDARGUMENT, "shader must not be NULL!");
 			return false;
 		}
-		if(shader->isLinked) {
+		if(shader->api().flags & LINKED) {
 			engine_seterror(ERR_INVALIDOPERATION, "Shader is already linked!");
 			return false;
 		}
 
-		GLuint sh = glCreateShader(getShaderType(type));
+		GLuint sh = glCreateShader(type);
 		if(sh == 0) {
 			return false;
 		}
@@ -94,12 +80,12 @@ ACKNEXT_API_BLOCK
 		}
 
 		shader->shaders.push_back(sh);
-		glAttachShader(shader->program, sh);
+		glAttachShader(shader->api().object, sh);
 
 		return true;
 	}
 
-	bool shader_addFileSource(SHADER * shader, SHADERTYPE type, const char * fileName)
+	bool shader_addFileSource(SHADER * shader, GLenum type, const char * fileName)
 	{
 		BLOB * blob = blob_load(fileName);
 		if(!blob) {
@@ -117,23 +103,25 @@ ACKNEXT_API_BLOCK
 			engine_seterror(ERR_INVALIDARGUMENT, "shader must not be NULL!");
 			return false;
 		}
-		if(shader->isLinked) {
+		if(shader->api().flags & LINKED) {
 			engine_seterror(ERR_INVALIDOPERATION, "Shader is already linked!");
 			return false;
 		}
-		glLinkProgram(shader->program);
 		GLint status;
-		glGetProgramiv(shader->program, GL_LINK_STATUS, &status);
+		GLuint const program = shader->api().object;
+
+		glLinkProgram(program);
+		glGetProgramiv(program, GL_LINK_STATUS, &status);
 
 		GLint len;
-		glGetProgramiv(shader->program, GL_INFO_LOG_LENGTH, &len);
+		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len);
 
 		std::vector<GLchar> log(len + 1);
-		glGetProgramInfoLog(shader->program, log.size(), &len, log.data());
+		glGetProgramInfoLog(shader->api().object, log.size(), &len, log.data());
 		log[len] = 0;
 
 		for(GLuint sh : shader->shaders) {
-			glDetachShader(shader->program, sh);
+			glDetachShader(program, sh);
 			glDeleteShader(sh);
 		}
 		shader->shaders.clear();
@@ -149,13 +137,13 @@ ACKNEXT_API_BLOCK
 
 		{
 			GLint count;
-			glGetProgramiv(shader->program, GL_ACTIVE_UNIFORMS, &count);
+			glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &count);
 
 			shader->uniforms.resize(count);
 			for(int i = 0; i < count; i++) {
 				UNIFORM * uni = &shader->uniforms[i];
 				glGetActiveUniform(
-					shader->program,
+					program,
 					i,
 					sizeof(uni->name),
 					nullptr,
@@ -164,7 +152,7 @@ ACKNEXT_API_BLOCK
 					uni->name);
 				uni->index = i;
 				uni->block = -1; // No block by default
-				uni->location = glGetUniformLocation(shader->program, uni->name);
+				uni->location = glGetUniformLocation(program, uni->name);
 
 	#define _UNIFORM(xname, xtype, value, _rtype) \
 				do { \
@@ -182,16 +170,16 @@ ACKNEXT_API_BLOCK
 
 				switch(uni->var) {
 					case TEXCOLOR_VAR:
-						glProgramUniform1i(shader->program, uni->location, 0);
+						glProgramUniform1i(program, uni->location, 0);
 						break;
 					case TEXATTRIBUTES_VAR:
-						glProgramUniform1i(shader->program, uni->location, 1);
+						glProgramUniform1i(program, uni->location, 1);
 						break;
 					case TEXEMISSION_VAR:
-						glProgramUniform1i(shader->program, uni->location, 2);
+						glProgramUniform1i(program, uni->location, 2);
 						break;
 					case TEXNORMALMAP_VAR:
-						glProgramUniform1i(shader->program, uni->location, 3);
+						glProgramUniform1i(program, uni->location, 3);
 						break;
 					default:
 						break;
@@ -201,24 +189,50 @@ ACKNEXT_API_BLOCK
 
 		{
 			int count;
-			glGetProgramiv(shader->program, GL_ACTIVE_UNIFORM_BLOCKS, &count);
+			glGetProgramiv(program, GL_ACTIVE_UNIFORM_BLOCKS, &count);
 			for(int i = 0; i < count; i++)
 			{
 				int len;
-				glGetActiveUniformBlockiv(shader->program, i, GL_UNIFORM_BLOCK_NAME_LENGTH, &len);
-
-				char name[len + 1];
-				glGetActiveUniformBlockName(shader->program, i, len + 1, NULL, name);
-
-				engine_log("Uniform Buffer Block %d: %s", i, name);
-
-				glGetActiveUniformBlockiv(shader->program, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &len);
+				glGetActiveUniformBlockiv(program, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &len);
 				int locations[len];
-				glGetActiveUniformBlockiv(shader->program, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, locations);
+				glGetActiveUniformBlockiv(program, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, locations);
 				for(int j = 0; j < len; j++) {
 					// Now associate each uniform with its uniform block
 					shader->uniforms[locations[j]].block = i;
 				}
+			}
+		}
+
+		shader->api().flags |= LINKED;
+		return true;
+	}
+
+
+	ACKFUN void shader_logInfo(SHADER * _shader)
+	{
+		Shader * shader = promote<Shader>(_shader);
+		if(shader == nullptr) {
+			engine_seterror(ERR_INVALIDARGUMENT, "shader must not be NULL!");
+			return;
+		}
+		if(!(shader->api().flags & LINKED)) {
+			engine_seterror(ERR_INVALIDOPERATION, "Shader is not linked!");
+			return;
+		}
+		engine_log("Shader %d:", _shader->object);
+		GLuint const program = shader->api().object;
+		{
+			int count;
+			glGetProgramiv(program, GL_ACTIVE_UNIFORM_BLOCKS, &count);
+			for(int i = 0; i < count; i++)
+			{
+				int len;
+				glGetActiveUniformBlockiv(program, i, GL_UNIFORM_BLOCK_NAME_LENGTH, &len);
+
+				char name[len + 1];
+				glGetActiveUniformBlockName(program, i, len + 1, NULL, name);
+
+				engine_log("\tUniform Buffer Block %d: %s", i, name);
 			}
 		}
 
@@ -232,11 +246,8 @@ ACKNEXT_API_BLOCK
 #undef _UNIFORM
 			}
 
-			engine_log("Uniform: [%d:%2d] %s \t→ %s, %d", uni.block, uni.location, uni.name, variable, uni.size); \
+			engine_log("\tUniform: [%d:%2d] %s \t→ %s, %d", uni.block, uni.location, uni.name, variable, uni.size); \
 		}
-
-		shader->isLinked = true;
-		return true;
 	}
 
 	UNIFORM const * shader_getUniform(SHADER * shader, int index)
@@ -246,7 +257,7 @@ ACKNEXT_API_BLOCK
 			engine_seterror(ERR_INVALIDARGUMENT, "shader must not be NULL!");
 			return nullptr;
 		}
-		if(sh->isLinked == false) {
+		if(sh->api().flags & LINKED) {
 			engine_seterror(ERR_INVALIDOPERATION, "shader must be linked!");
 			return nullptr;
 		}
@@ -264,21 +275,11 @@ ACKNEXT_API_BLOCK
 			engine_seterror(ERR_INVALIDARGUMENT, "shader must not be NULL!");
 			return -1;
 		}
-		if(sh->isLinked == false) {
+		if(sh->api().flags & LINKED) {
 			engine_seterror(ERR_INVALIDOPERATION, "shader must be linked!");
 			return -1;
 		}
 		return int(sh->uniforms.size());
-	}
-
-	GLDATA shader_getObject(SHADER * shader)
-	{
-		Shader * sh = promote<Shader>(shader);
-		if(sh == nullptr) {
-			engine_seterror(ERR_INVALIDARGUMENT, "shader must not be NULL!");
-			return 0;
-		}
-		return sh->program;
 	}
 
 	void shader_remove(SHADER * shader)

@@ -20,7 +20,7 @@ extern Bitmap * defaultNormalMap;
 void opengl_setTexture(int slot, BITMAP const * _texture, Bitmap const * _fallback)
 {
 	Bitmap const * texture = FALLBACK(promote<Bitmap>(_texture), FALLBACK(_fallback, defaultWhiteTexture));
-	glBindTextureUnit(slot, texture->id);
+	glBindTextureUnit(slot, texture->api().object);
 }
 
 ACKNEXT_API_BLOCK
@@ -34,15 +34,15 @@ ACKNEXT_API_BLOCK
 		GLuint id = 0;
 		Buffer const * buffer = promote<Buffer>(_buffer);
 		if(buffer != nullptr) {
-			if(buffer->type != GL_ARRAY_BUFFER) {
+			if(buffer->api().type != GL_ARRAY_BUFFER) {
 				engine_seterror(ERR_INVALIDARGUMENT, "Buffer is not a vertex buffer.");
 				return;
 			}
-			if((_buffer->size % sizeof(VERTEX)) != 0) {
+			if((buffer->api().size % sizeof(VERTEX)) != 0) {
 				engine_seterror(ERR_INVALIDARGUMENT, "Buffer size is not divisible by vertex size.");
 				return;
 			}
-			id = buffer->id;
+			id = buffer->api().object;
 		}
 
 		glVertexArrayVertexBuffer(
@@ -57,15 +57,15 @@ ACKNEXT_API_BLOCK
 		GLuint id = 0;
 		Buffer const * buffer = promote<Buffer>(_buffer);
 		if(buffer != nullptr) {
-			if(buffer->type != GL_ELEMENT_ARRAY_BUFFER) {
+			if(buffer->api().type != GL_ELEMENT_ARRAY_BUFFER) {
 				engine_seterror(ERR_INVALIDARGUMENT, "Buffer is not an index buffer.");
 				return;
 			}
-			if((_buffer->size % sizeof(INDEX)) != 0) {
+			if((buffer->api().size % sizeof(INDEX)) != 0) {
 				engine_seterror(ERR_INVALIDARGUMENT, "Buffer size is not divisible by index size.");
 				return;
 			}
-			id = buffer->id;
+			id = buffer->api().object;
 		}
 
 		glVertexArrayElementBuffer(vao, id);
@@ -141,25 +141,54 @@ ACKNEXT_API_BLOCK
 		unsigned int offset,
 		unsigned int count)
 	{
-		if(currentIndexBuffer == nullptr) {
-			engine_seterror(ERR_INVALIDOPERATION, "There is no current index buffer to be drawn.");
-			return;
+		int mode = 0;
+		if(currentIndexBuffer && currentVertexBuffer) {
+			mode = 1;
+		} else if(currentIndexBuffer) {
+			mode = 2;
+		} else if(currentVertexBuffer) {
+			mode = 3;
 		}
-		if((offset + count) > (currentIndexBuffer->api().size / sizeof(INDEX))) {
-			engine_seterror(ERR_INVALIDOPERATION, "offset and count index the index buffer outside of its range.");
-			return;
+
+		switch(mode) {
+			case 0:
+				engine_seterror(ERR_INVALIDOPERATION, "There is no vertex or index buffer to be drawn.");
+				return;
+			case 1:
+			case 2:
+				if((offset + count) > (currentIndexBuffer->api().size / sizeof(INDEX))) {
+					engine_seterror(ERR_INVALIDOPERATION, "offset and count index the index buffer outside of its range.");
+					return;
+				}
+				glDrawElements(
+					primitiveType,
+					count,
+					GL_UNSIGNED_INT,
+					(const void *)(sizeof(INDEX) * offset));
+				break;
+			case 3:
+				if((offset + count) > (currentVertexBuffer->api().size / sizeof(VERTEX))) {
+					engine_seterror(ERR_INVALIDOPERATION, "offset and count index the vertex buffer outside of its range.");
+					return;
+				}
+				glDrawArrays(
+					primitiveType,
+					offset,
+					count);
+				break;
+			default: abort();
 		}
-		glDrawElements(
-			primitiveType,
-			count,
-			GL_UNSIGNED_INT,
-			(const void *)(sizeof(INDEX) * offset));
 	}
 
 	void opengl_setShader(SHADER const * shader)
 	{
+		if((shader != nullptr) && !(shader->flags & LINKED)) {
+			engine_seterror(ERR_INVALIDOPERATION, "Trying to render with an unlinked shader!");
+			return;
+		}
+
 		currentShader = FALLBACK(const_cast<Shader*>(promote<Shader>(shader)), defaultShader);
-		glUseProgram(currentShader->program);
+		glUseProgram(currentShader->api().object);
 
 		currentShader->fGamma = screen_gamma;
 		currentShader->vecTime = (VECTOR2){ total_time, time_step };
@@ -169,17 +198,48 @@ ACKNEXT_API_BLOCK
 	void opengl_setTexture(int slot, BITMAP const * _texture)
 	{
 		Bitmap const * texture = FALLBACK(promote<Bitmap>(_texture), defaultWhiteTexture);
-		glBindTextureUnit(slot, texture->id);
+		glBindTextureUnit(slot, texture->api().object);
 	}
 
-	void opengl_setMesh(MESH const * mesh)
+	void opengl_drawMesh(MESH const * mesh)
 	{
 		if(mesh == nullptr) {
 			engine_seterror(ERR_INVALIDARGUMENT, "mesh must not be NULL!");
 		}
 		opengl_setIndexBuffer(mesh->indexBuffer);
 		opengl_setVertexBuffer(mesh->vertexBuffer);
-		opengl_setMaterial(mesh->material);
+
+		GLuint count;
+		if(mesh->indexBuffer)
+			count = mesh->indexBuffer->size / sizeof(INDEX);
+		else
+			count = mesh->vertexBuffer->size / sizeof(VERTEX);
+
+		GLenum type = mesh->primitiveType;
+		if(currentShader->api().flags & LINKED)
+		{
+			type = GL_PATCHES;
+			switch(mesh->primitiveType)
+			{
+				case GL_POINTS:
+					glPatchParameteri(GL_PATCH_VERTICES, 1);
+					break;
+				case GL_LINES:
+					glPatchParameteri(GL_PATCH_VERTICES, 2);
+					break;
+				case GL_TRIANGLES:
+					glPatchParameteri(GL_PATCH_VERTICES, 3);
+					break;
+				case GL_QUADS:
+					glPatchParameteri(GL_PATCH_VERTICES, 4);
+					break;
+				default: abort();
+			}
+		}
+		opengl_draw(
+			mesh->primitiveType,
+			0,
+			count);
 	}
 
 	void opengl_setMaterial(MATERIAL const * material)

@@ -6,10 +6,7 @@
 class Buffer : public EngineObject<BUFFER>
 {
 public:
-	GLuint id;
-	GLenum type;
-public:
-	explicit Buffer(BUFFERTYPE type);
+	explicit Buffer(GLenum type);
 	NOCOPY(Buffer);
 	~Buffer();
 };

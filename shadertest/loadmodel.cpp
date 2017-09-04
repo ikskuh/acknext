@@ -43,7 +43,7 @@ void printNodes(aiNode const * node, char const * indent = "")
 	if(node->mNumMeshes > 0)
 	{
 		strcpy(buffer, "(");
-		for(int i = 0; i < node->mNumMeshes; i++) {
+		for(uint i = 0; i < node->mNumMeshes; i++) {
 			if(i > 0) strcat(buffer,", ");
 			std::sprintf(buf, "%d", i);
 			strcat(buffer, buf);
@@ -77,7 +77,7 @@ void printNodes(aiNode const * node, char const * indent = "")
 	strcat(buffer, "  ");
 	if(node->mNumChildren > 0 && node->mChildren)
 	{
-		for(int i = 0; i < node->mNumChildren; i++)
+		for(uint i = 0; i < node->mNumChildren; i++)
 		{
 			printNodes(node->mChildren[i], buffer);
 		}
@@ -92,7 +92,7 @@ void translateNodes(MODEL * target, aiNode const * node, uint8_t parent, uint8_t
 	ai_to_ack(&bone.transform, node->mTransformation);
 	strcpy(bone.name, node->mName.C_Str());
 	mat_id(&bone.bindToBoneTransform);
-	for(int i = 0; i < node->mNumChildren; i++) {
+	for(uint i = 0; i < node->mNumChildren; i++) {
 		translateNodes(target, node->mChildren[i], id, index);
 	}
 }
@@ -210,7 +210,7 @@ extern "C" MODEL * load_bonestructure(char const * file)
 		engine_log("\tDuration: %f ÷ %f", anim->mDuration, anim->mTicksPerSecond);
 		for(uint j = 0; j < anim->mNumChannels; j++)
 		{
-			auto chan = anim->mChannels[j];
+			// auto chan = anim->mChannels[j];
 			// engine_log("\tChannel[%d]: %s", j, chan->mNodeName.C_Str());
 		}
 	}
@@ -224,13 +224,13 @@ extern "C" MODEL * load_bonestructure(char const * file)
 			++boneCount;
 			aiNode const * top = stack.top();
 			stack.pop();
-			for(int i = 0; i < top->mNumChildren; i++) {
+			for(uint i = 0; i < top->mNumChildren; i++) {
 				stack.push(top->mChildren[i]);
 			}
 		}
 	}
 
-	MODEL * model = model_create(scene->mNumMeshes, scene->mNumMaterials, boneCount, scene->mNumAnimations);
+	MODEL * model = model_create(scene->mNumMeshes, boneCount, scene->mNumAnimations);
 
 	uint8_t counter = 0;
 	translateNodes(model, scene->mRootNode, 0, counter);
@@ -241,8 +241,7 @@ extern "C" MODEL * load_bonestructure(char const * file)
 		auto mesh = scene->mMeshes[i];
 		engine_log("Mesh: %s", mesh->mName.C_Str());
 
-		model->meshes[i] = (MESH*)malloc(sizeof(MESH));
-		model->meshes[i]->material = NULL;
+		model->meshes[i] = mesh_create(GL_TRIANGLES, NULL, NULL);
 		model->meshes[i]->indexBuffer = buffer_create(INDEXBUFFER);
 		model->meshes[i]->vertexBuffer = buffer_create(VERTEXBUFFER);
 
@@ -291,7 +290,7 @@ extern "C" MODEL * load_bonestructure(char const * file)
 				{
 					auto bone = mesh->mBones[j];
 					int index = -1;
-					for(uint k = 0; k < model->boneCount; k++)
+					for(int k = 0; k < model->boneCount; k++)
 					{
 						if(strcmp(model->bones[k].name, bone->mName.C_Str()) == 0)
 						{

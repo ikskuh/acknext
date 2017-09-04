@@ -1,8 +1,8 @@
 #ifndef QACKNEXTWIDGET_HPP
 #define QACKNEXTWIDGET_HPP
 
-#include <QOpenGLWidget>
 #include <acknext.h>
+#include <QOpenGLWidget>
 
 class QAcknextWidget : public QOpenGLWidget
 {

@@ -2,62 +2,36 @@
 
 #include <SDL2/SDL_image.h>
 
-static GLenum getTextureTarget(TEXTURETYPE type)
+Bitmap::Bitmap(GLenum type, GLenum format)
 {
-	switch(type) {
-		case TEX_1D: return GL_TEXTURE_1D;
-		case TEX_2D: return GL_TEXTURE_2D;
-		case TEX_3D: return GL_TEXTURE_3D;
-		case TEX_1D_ARRAY: return GL_TEXTURE_1D_ARRAY;
-		case TEX_2D_ARRAY: return GL_TEXTURE_2D_ARRAY;
-		default:
-			engine_seterror(ERR_INVALIDARGUMENT, "The given texture type is not valid!");
-			return GL_INVALID_ENUM;
-	}
-}
-
-static GLenum getTextureFormat(PIXELFORMAT format)
-{
-	switch(format) {
-		case FORMAT_FLOAT: return GL_R32F;
-		case FORMAT_RGB8: return GL_RGB8;
-		case FORMAT_RGBA8: return GL_RGBA8;
-		case FORMAT_BGRA8: return GL_RGBA8;
-		case FORMAT_RGBA16F: return GL_RGBA16F;
-		case FORMAT_RGBA32F: return GL_RGBA32F;
-		default:
-			engine_seterror(ERR_INVALIDARGUMENT, "The given format is not supported!");
-			return GL_INVALID_ENUM;
-	}
-}
-
-Bitmap::Bitmap(TEXTURETYPE type)
-{
-	api().type = type;
-	this->target = getTextureTarget(type);
-	glCreateTextures(this->target, 1, &this->id);
+	api().target = type;
+	api().format = format;
+	glCreateTextures(api().target, 1, &api().object);
 }
 
 Bitmap::~Bitmap()
 {
-	glDeleteTextures(1, &this->id);
+	glDeleteTextures(1, &api().object);
 }
 
 ACKNEXT_API_BLOCK
 {
-	BITMAP * bmap_create(TEXTURETYPE type)
+	// for loading bitmaps
+	int bmap_miplevels = 0; // 0=infinite
+
+	BITMAP * bmap_create(GLenum type, GLenum format)
 	{
-		return demote(new Bitmap(type));
+		return demote(new Bitmap(type, format));
 	}
 
-	BITMAP * bmap_createblack(int width, int height, PIXELFORMAT format)
+	BITMAP * bmap_createblack(int width, int height, GLenum format)
 	{
 		if(width < 0 || height < 0) {
 			engine_seterror(ERR_INVALIDARGUMENT, "width and height must be greater 0!");
 			return nullptr;
 		}
-		BITMAP * bmp = bmap_create(TEX_2D);
-		bmap_set(bmp, width, height, format, nullptr);
+		BITMAP * bmp = bmap_create(GL_TEXTURE_2D, format);
+		bmap_set(bmp, width, height, format, GL_UNSIGNED_BYTE, nullptr);
 		return bmp;
 	}
 
@@ -82,99 +56,83 @@ ACKNEXT_API_BLOCK
 		}
 		surface = converted;
 
-		BITMAP * bmp = bmap_create(TEX_2D);
+		BITMAP * bmp = bmap_create(GL_TEXTURE_2D, GL_RGBA8);
 
 		SDL_LockSurface(surface);
-		bmap_set(bmp, surface->w, surface->h, FORMAT_RGBA8, surface->pixels);
+		bmap_set(bmp, surface->w, surface->h, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
 		SDL_UnlockSurface(surface);
 
 		SDL_FreeSurface(surface);
 		return bmp;
 	}
 
-	void bmap_set(BITMAP * bitmap, int width, int height, PIXELFORMAT format, void const * data)
+	void bmap_set(BITMAP * bitmap, int width, int height, GLenum pixelFormat, GLenum channelFormat, void const * data)
 	{
 		Bitmap * bmp = promote<Bitmap>(bitmap);
 		if(bmp == nullptr) {
 			engine_seterror(ERR_INVALIDARGUMENT, "bitmap must not be NULl!");
 			return;
 		}
-		if(bmp->target != GL_TEXTURE_1D_ARRAY && bmp->target != GL_TEXTURE_2D) {
-			engine_seterror(ERR_INVALIDOPERATION, "bitmap must be either TEX_1D_ARRAY or TEX_2D!");
+		if(bitmap->target != GL_TEXTURE_1D_ARRAY && bitmap->target != GL_TEXTURE_2D) {
+			engine_seterror(ERR_INVALIDOPERATION, "bitmap must be either GL_TEXTURE_1D_ARRAY or GL_TEXTURE_2D!");
 			return;
 		}
 		if(width < 0 || height < 0) {
 			engine_seterror(ERR_INVALIDARGUMENT, "width and height must be greater 0!");
 			return;
 		}
-		GLenum fmt = getTextureFormat(format);
-		if(fmt == GL_INVALID_ENUM) {
-			engine_seterror(ERR_INVALIDARGUMENT, "format must be a valid texture format!");
-			return;
-		}
 
-		GLenum dfmt = GL_INVALID_ENUM;
-		GLenum pfmt = GL_INVALID_ENUM;
-		switch(format) {
-			case FORMAT_FLOAT:
-				dfmt = GL_FLOAT;
-				pfmt = GL_RED;
-				break;
-			case FORMAT_RGB8:
-			case FORMAT_RGBA8:
-				dfmt = GL_UNSIGNED_BYTE;
-				pfmt = GL_RGBA;
-				break;
-			case FORMAT_BGRA8:
-				dfmt = GL_UNSIGNED_BYTE;
-				pfmt = GL_BGRA;
-				break;
-			case FORMAT_RGBA16F: pfmt = GL_RGBA; dfmt = GL_HALF_FLOAT; break;
-			case FORMAT_RGBA32F: pfmt = GL_RGBA; dfmt = GL_FLOAT; break;
-			default: abort();
+		int levels = 0;
+		{
+			int a = width, b = height;
+			while(a > 1 && b > 1) {
+				a >>= 1;
+				b >>= 1;
+				levels++;
+			}
 		}
 
 		glTextureStorage2D(
-			bmp->id,
-			1,
-			fmt,
+			bitmap->object,
+			levels,
+			bitmap->format,
 			width,
 			height);
 
 		if(data != nullptr) {
 			glTextureSubImage2D(
-				bmp->id,
+				bitmap->object,
 				0,
 				0, 0,
 				width, height,
-				pfmt,
-				dfmt,
+				pixelFormat,
+				channelFormat,
 				data);
 		}
 
-		glTextureParameteri(bmp->id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTextureParameteri(bmp->id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTextureParameteri(bitmap->object, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTextureParameteri(bitmap->object, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-		glTextureParameteri(bmp->id, GL_TEXTURE_WRAP_R, GL_REPEAT);
-		glTextureParameteri(bmp->id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTextureParameteri(bitmap->object, GL_TEXTURE_WRAP_R, GL_REPEAT);
+		glTextureParameteri(bitmap->object, GL_TEXTURE_WRAP_S, GL_REPEAT);
 
 		bitmap->width = width;
 		bitmap->height = height;
-		bitmap->format = format;
+		bitmap->format = pixelFormat;
 		bitmap->depth = 1;
 	}
 
 
-	BITMAP * bmap_to_mipmap(BITMAP * _bmp)
+	BITMAP * bmap_to_mipmap(BITMAP * bitmap)
 	{
-		Bitmap * bmp = promote<Bitmap>(_bmp);
+		Bitmap * bmp = promote<Bitmap>(bitmap);
 		if(bmp == nullptr) {
 			return nullptr;
 		}
-		glTextureParameteri(bmp->id, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTextureParameteri(bmp->id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glGenerateTextureMipmap(bmp->id);
-		return _bmp;
+		glTextureParameteri(bitmap->object, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTextureParameteri(bitmap->object, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glGenerateTextureMipmap(bitmap->object);
+		return bitmap;
 	}
 
 	void bmap_remove(BITMAP * bitmap)
@@ -183,15 +141,5 @@ ACKNEXT_API_BLOCK
 		if(bmp) {
 			delete bmp;
 		}
-	}
-
-	GLDATA bmap_getObject(BITMAP * bitmap)
-	{
-		Bitmap * bmp = promote<Bitmap>(bitmap);
-		if(bmp == nullptr) {
-			engine_seterror(ERR_INVALIDARGUMENT, "bitmap is NULL.");
-			return 0;
-		}
-		return bmp->id;
 	}
 }

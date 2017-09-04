@@ -36,9 +36,9 @@ void main()
 		gl_in[3].gl_Position).xyz;
 
 	vec2 uv = (pos.xz + 0.5) / vec2(fTerrainScale * vecTerrainSize.x, fTerrainScale * vecTerrainSize.y);
-	uv.y = 1.0 - uv.y;
 
 	pos.y = texture(texEmission, uv).r;
+	uv.y = 1.0 - uv.y; // normal textures are "upside down"
 
 	position = (matWorld * vec4(pos, 1)).rgb;
 

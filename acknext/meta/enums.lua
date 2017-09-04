@@ -6,45 +6,6 @@ enum.STAGETYPE =
 	"Custom",
 }
 
-enum.BUFFERTYPE = 
-{
-	postfix = "BUFFER",
-	"VERTEX",
-	"INDEX",
-	"UNIFORM",
-};
-
-enum.SHADERTYPE = 
-{
-	postfix = "SHADER",
-	"VERTEX",
-	"FRAGMENT",
-	"GEOMETRY",
-	"TESSCTRL",
-	"TESSEVAL",
-};
-
-enum.PIXELFORMAT = 
-{
-	prefix = "FORMAT_",
-	"Float",
-	"Rgb8",
-	"Rgba8",
-	"Bgra8",
-	"Rgba16f",
-	"Rgba32f",
-}
-
-enum.TEXTURETYPE = 
-{
-	prefix = "TEX_",
-	"1D",
-	"1D_Array",
-	"2D",
-	"3D",
-	"2D_Array",
-}
-
 enum.SHADERVAR = 
 {
 	postfix = "_VAR",
@@ -116,11 +77,4 @@ enum.HULLTYPE =
 	"Capsule",
 	"Polygon",
 	"Convex",
-}
-
-enum.ACCESSMODE = 
-{
-	"ReadOnly",
-	"WriteOnly",
-	"ReadWrite",
 }

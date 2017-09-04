@@ -6,7 +6,7 @@
 			<int name="nx">2048</int>
 			<int name="ny">2048</int>
 			<float name="MinAlt">-16.9681</float>
-			<float name="MaxAlt">704.931</float>
+			<float name="MaxAlt">704.93</float>
 			<float name="HorizScale">2</float>
 		</varlist>
 		<varlist name="Texture">
@@ -23,10 +23,6 @@
 		<varlist name="HF">
 			<string name="Filename">GrassyMountains_HF.hfz</string>
 			<string name="MapType">HF</string>
-			<varlist name="MipMaps">
-				<int name="Step">8</int>
-				<int name="Max">8</int>
-			</varlist>
 		</varlist>
 		<varlist name="WM">
 			<string name="Filename">GrassyMountains_WM.wmf</string>
@@ -59,7 +55,7 @@
 	</varlist>
 	<varlist name="Climates">
 		<varlist name="Temperate">
-			<string name="Filename">C:\Users\Annonymous\L3DT\Resources\Std 16.05.3.1\Climates\temperate26\Temperate26.cli.xml</string>
+			<string name="Filename">C:\users\felix\L3DT\Resources\Std 16.05.3.1\Climates\temperate26\Temperate26.cli.xml</string>
 		</varlist>
 	</varlist>
 </varlist>

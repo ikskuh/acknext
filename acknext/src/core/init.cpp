@@ -214,6 +214,9 @@ ACKNEXT_API_BLOCK
 				}
 
 				SDL_GetWindowSize(engine.window, &screen_size.width, &screen_size.height);
+
+				// No vsync for debugging
+				SDL_GL_SetSwapInterval(0);
 			}
 		}
 
@@ -236,6 +239,7 @@ ACKNEXT_API_BLOCK
 		scheduler_init();
 
 		engine_log("Engine ready.");
+		engine_log("==========================================================================================");
 
 		lastFrameTime = high_resolution_clock::now();
 
@@ -334,6 +338,7 @@ ACKNEXT_API_BLOCK
 
 	void engine_close()
 	{
+		engine_log("==========================================================================================");
 		engine_log("Shutting down scheduler...");
 	    scheduler_shutdown();
 

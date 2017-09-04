@@ -1,10 +1,15 @@
 #ifndef MESH_HPP
 #define MESH_HPP
 
-class Mesh
+#include "engine.hpp"
+
+class Mesh :
+	public EngineObject<MESH>
 {
 public:
-	Mesh();
+	explicit Mesh(GLenum primitiveType = GL_TRIANGLES);
+	NOCOPY(Mesh);
+	~Mesh();
 };
 
 #endif // MESH_HPP

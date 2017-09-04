@@ -29,13 +29,13 @@ void myview(void * context)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 
-	if(key_space) {
+	if(key_space || key_o) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	} else {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
-	GLuint program = shader_getObject(material->shader);
+	GLuint program = material->shader->object;
 
 	GLuint binding_point_index = 4;
 	GLint block_index = glGetUniformBlockIndex(
@@ -44,7 +44,7 @@ void myview(void * context)
 	glBindBufferBase(
 		GL_UNIFORM_BUFFER,
 		binding_point_index,
-		buffer_getObject(bonesBuf));
+		bonesBuf->object);
 	glUniformBlockBinding(
 		program,
 		block_index,

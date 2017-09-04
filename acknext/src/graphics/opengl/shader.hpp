@@ -28,14 +28,14 @@ public:
 
 class Shader : public EngineObject<SHADER>
 {
+	template<typename T> friend class UniformProxy;
 public:
-	GLuint program;
 	std::vector<UNIFORM> uniforms;
 	std::vector<GLuint> shaders;
 #define _UNIFORM(xname, xtype, value, _rtype) UniformProxy<_rtype> xname;
 #include "uniformconfig.h"
 #undef _UNIFORM
-	bool isLinked;
+	int stub;
 public:
 	Shader();
 	NOCOPY(Shader);
@@ -50,7 +50,7 @@ inline void UniformProxy<T>::operator =(T const & value)
 {
 	if(location < 0)
 		return;
-	glProgramUniform(shader->program, location, value);
+	glProgramUniform(shader->api().object, location, value);
 }
 
 #endif // SHADER_HPP

@@ -1,39 +1,22 @@
 #include "buffer.hpp"
 
-static GLenum getBufferType(BUFFERTYPE type)
+Buffer::Buffer(GLenum type) :
+    EngineObject<BUFFER>()
 {
-	switch(type) {
-		case VERTEXBUFFER: return GL_ARRAY_BUFFER;
-		case INDEXBUFFER: return GL_ELEMENT_ARRAY_BUFFER;
-		case UNIFORMBUFFER: return GL_UNIFORM_BUFFER;
-		default:
-			engine_seterror(ERR_INVALIDARGUMENT, "Invalid buffer type!");
-			return GL_INVALID_ENUM;
-	}
-}
-
-Buffer::Buffer(BUFFERTYPE type) :
-    EngineObject<BUFFER>(),
-	type(getBufferType(type))
-{
-	glCreateBuffers(1, &this->id);
+	glCreateBuffers(1, &this->api().object);
 	api().type = type;
 	api().size = 0;
 }
 
 Buffer::~Buffer()
 {
-	glDeleteBuffers(1, &this->id);
+	glDeleteBuffers(1, &this->api().object);
 }
 
 ACKNEXT_API_BLOCK
 {
-	BUFFER * buffer_create(BUFFERTYPE type)
+	BUFFER * buffer_create(GLenum type)
 	{
-		GLenum t = getBufferType(type);
-		if(t == GL_INVALID_ENUM) {
-			return nullptr;
-		}
 		return demote(new Buffer(type));
 	}
 
@@ -45,7 +28,7 @@ ACKNEXT_API_BLOCK
 			return;
 		}
 		glNamedBufferData(
-			buf->id,
+			buffer->object,
 			size,
 		    data,
 			GL_DYNAMIC_DRAW); // TODO: Fix this later
@@ -68,29 +51,29 @@ ACKNEXT_API_BLOCK
 			return;
 		}
 		glNamedBufferSubData(
-			buf->id,
+			buffer->object,
 			offset,
 			size,
 		    data);
 	}
 
-	ACKFUN void * buffer_map(BUFFER * buffer, ACCESSMODE mode)
+	ACKFUN void * buffer_map(BUFFER * buffer, GLenum mode)
 	{
 		Buffer * buf = promote<Buffer>(buffer);
 		if(buf == nullptr) {
 			engine_seterror(ERR_INVALIDARGUMENT, "buffer must not be null!");
 			return nullptr;
 		}
-		GLenum glmode;
 		switch(mode) {
-			case READONLY: glmode = GL_READ_ONLY; break;
-			case WRITEONLY: glmode = GL_READ_WRITE; break;
-			case READWRITE: glmode = GL_WRITE_ONLY; break;
+			case READONLY:
+			case WRITEONLY:
+			case READWRITE:
+				break;
 			default:
 				engine_seterror(ERR_INVALIDARGUMENT, "Invalid access mode!");
 				return nullptr;
 		}
-		return glMapNamedBuffer(buf->id, glmode);
+		return glMapNamedBuffer(buffer->object, mode);
 	}
 
 	ACKFUN void buffer_unmap(BUFFER * buffer)
@@ -100,17 +83,7 @@ ACKNEXT_API_BLOCK
 			engine_seterror(ERR_INVALIDARGUMENT, "buffer must not be null!");
 			return;
 		}
-		glUnmapNamedBuffer(buf->id);
-	}
-
-	GLDATA buffer_getObject(BUFFER * buffer)
-	{
-		Buffer * buf = promote<Buffer>(buffer);
-		if(buf == nullptr) {
-			engine_seterror(ERR_INVALIDARGUMENT, "buffer must not be null!");
-			return 0;
-		}
-		return buf->id;
+		glUnmapNamedBuffer(buffer->object);
 	}
 
 	void buffer_remove(BUFFER * buffer)

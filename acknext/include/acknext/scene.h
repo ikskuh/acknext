@@ -36,12 +36,11 @@ typedef struct
 	UBYTE4 boneWeights;
 } VERTEX;
 
-// Plain type, has no backend
 typedef struct
 {
-	BUFFER   * vertexBuffer;
-	BUFFER   * indexBuffer;
-	MATERIAL * material;
+	GLenum ACKCONST primitiveType;
+	BUFFER * vertexBuffer;
+	BUFFER * indexBuffer;
 } MESH;
 
 // Plain type, has no backend
@@ -66,10 +65,10 @@ typedef struct
 {
 	// counts have a minimum of 1
 	int ACKCONST meshCount;
-	int ACKCONST materialCount;
 	int ACKCONST animationCount;
 	int ACKCONST boneCount;
 
+	// Materials are 1:1 mapped to meshes!
 	MESH      * /*ACKCONST*/ * ACKCONST meshes;     // assigned by model_create or model_reshape
 	MATERIAL  * /*ACKCONST*/ * ACKCONST materials;  // assigned by model_create or model_reshape
 	ANIMATION * /*ACKCONST*/ * ACKCONST animations; // assigned by model_create or model_reshape
@@ -118,7 +117,7 @@ ACKFUN MODEL * model_get(char const * fileName); // uses caching
 
 ACKFUN void model_remove(MODEL * model); // only created or loaded ones
 
-ACKFUN MODEL * model_create(int numMeshes, int numMaterials, int numBones, int numAnimations);
+ACKFUN MODEL * model_create(int numMeshes, int numBones, int numAnimations);
 
 ACKFUN void model_reshape(MODEL * model, int meshC, int matC, int boneC, int animC);
 
@@ -138,6 +137,11 @@ ACKFUN void camera_to_matrix(
 	VIEW const * reference);
 
 ACKFUN void render_scene_with_camera(CAMERA * camera);
+
+// mesh api:
+ACKFUN MESH * mesh_create(GLenum primitiveType, BUFFER * vertexBuffer, BUFFER * indexBuffer);
+
+ACKFUN void mesh_remove(MESH * mesh);
 
 // material api:
 

@@ -63,6 +63,11 @@ float textureNoTile( in vec2 x, float v )
     return mix( cola, colb, smoothstep(0.2,0.8,f-0.1*(cola-colb)) );
 }
 
+float map(float v, float a0, float a1, float b0, float b1)
+{
+	return b0 + (b1-b0) * (v - b0) / (b1 - b0);
+}
+
 void main()
 {
 	vec3 sun = normalize(vec3(0.3, 0.6, 0.4));
@@ -71,13 +76,15 @@ void main()
 	// fragment.rgb = 0.5 + 0.5 * normal;
 	fragment.rgb = texture(texColor, uv0).rgb;
 
-	float fDetail = 1.2 * textureNoTile(2.0 * position.xz, 0.6);
+	float fDetail0 = textureNoTile(2.0 * position.xz, 0.6);
+	float fDetail1 = textureNoTile(0.1 * position.xz, 0.6);
+	float fDetail2 = textureNoTile(0.01 * position.xz, 0.6);
 
-	fDetail = mix(fDetail, 1.0, clamp(0.025 * distance, 0, 1));
+	float fDetail = (fDetail0 + fDetail1 + fDetail2) / 3.0;
 
 	fragment.rgb *= fDetail;
 
-	fragment.rgb *= dot(normal, sun);
+	fragment.rgb *= (0.3 + 0.8 * dot(normal, sun));
 
 	/*
 	float ringA = mod(position.y, 10.0) - 5.0;

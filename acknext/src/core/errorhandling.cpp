@@ -55,6 +55,8 @@ ACKNEXT_API_BLOCK
 		_print_stacktrace();
 
 		engine_lasterror_text = buffer;
+
+		abort();
 	}
 }
 

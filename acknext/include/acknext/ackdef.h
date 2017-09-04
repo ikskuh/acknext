@@ -6,6 +6,8 @@
 
 #define GLIDE (1<<0)
 #define NOMOVE (1<<1)
+#define TESSELATION (1<<0)
+#define LINKED (1<<1)
 #define CLEAR_DEPTH (1<<0)
 #define CLEAR_COLOR (1<<1)
 #define CLEAR_STENCIL (1<<2)
@@ -13,6 +15,7 @@
 #define VISIBLE (1<<1)
 
 typedef BITFIELD MOVEFLAGS;
+typedef BITFIELD SHADERFLAGS;
 typedef BITFIELD STAGEFLAGS;
 typedef BITFIELD VIEWFLAGS;
 typedef BITFIELD WARPFLAGS;

@@ -15,11 +15,11 @@ ACKFUN void opengl_setMaterial(MATERIAL const * material);
 
 ACKFUN void opengl_setTexture(int slot, BITMAP const * texture);
 
-ACKFUN void opengl_setMesh(MESH const * mesh);
-
 ACKFUN void opengl_setLights();
 
 ACKFUN void opengl_setTransform(MATRIX const * matWorld, MATRIX const * matView, MATRIX const * matProj);
+
+ACKFUN void opengl_drawMesh(MESH const * mesh);
 
 ACKFUN void opengl_draw(
 	unsigned int primitiveType,

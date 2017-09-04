@@ -107,6 +107,7 @@ Model::Model() :
 
 Model::~Model()
 {
+	/*
 	for(MESH & mesh : meshes) {
 		buffer_remove(mesh.indexBuffer);
 		buffer_remove(mesh.vertexBuffer);
@@ -116,27 +117,34 @@ Model::~Model()
 		bmap_remove(mtl.emissionTexture);
 		bmap_remove(mtl.attributeTexture);
 	}
+	*/
 }
 
 ACKNEXT_API_BLOCK
 {
-	MODEL * model_create(int numMeshes, int numMaterials, int numBones, int numAnimations)
+	MODEL * model_create(int numMeshes, int numBones, int numAnimations)
 	{
 		Model * model = new Model();
 		MODEL & api = model->api();
 
 		api.meshCount = maxv(numMeshes, 1);
-		api.materialCount = maxv(numMaterials, 1);
 		api.boneCount = maxv(numBones, 1);
 		api.animationCount = maxv(numAnimations, 1);
 
 		api.meshes = (MESH**)malloc(sizeof(MESH*)*api.meshCount);
+		api.materials = (MATERIAL**)malloc(sizeof(MATERIAL*)*api.meshCount);
 		api.animations = (ANIMATION**)malloc(sizeof(ANIMATION*)*api.animationCount);
-		api.materials = (MATERIAL**)malloc(sizeof(MATERIAL*)*api.materialCount);
 
 		return demote(model);
 	}
 
+	MODEL * model_load(const char *fileName)
+	{
+		engine_seterror(ERR_INVALIDOPERATION, "model_load not implemented yet!");
+		return nullptr;
+	}
+
+	/*
 	MODEL * model_load(const char *fileName)
 	{
 		using namespace Assimp;
@@ -234,12 +242,13 @@ ACKNEXT_API_BLOCK
 							if(tex->achFormatHint != nullptr) {
 								engine_log("Texture format hint: '%s'", tex->achFormatHint);
 							}
-							dst.colorTexture = bmap_create(TEX_2D);
+							dst.colorTexture = bmap_create(GL_TEXTURE_2D, GL_RGBA);
 							bmap_set(
 								dst.colorTexture,
 								tex->mWidth,
 								tex->mHeight,
-								FORMAT_BGRA8,
+								GL_BGRA,
+								GL_UNSIGNED_BYTE,
 								tex->pcData);
 						}
 					} else {
@@ -361,6 +370,7 @@ ACKNEXT_API_BLOCK
 
 		return demote(model);
 	}
+	*/
 
 	MODEL * model_get(char const * fileName) // uses caching
 	{
