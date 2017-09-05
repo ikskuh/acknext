@@ -119,7 +119,7 @@ ACKNEXT_API_BLOCK
 					{
 						lights[lcount].type = l->type;
 						lights[lcount].intensity = l->intensity;
-						lights[lcount].arc = DEG_TO_RAD * l->arc;
+						lights[lcount].arc = cos(0.5 * DEG_TO_RAD * l->arc); // arc is full arc, but cos() is half-arc
 						lights[lcount].position = l->position;
 						lights[lcount].direction = l->direction;
 						lights[lcount].color = l->color;

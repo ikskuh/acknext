@@ -22,7 +22,7 @@ struct LightSource
 {
 	/*0*/ int type;
 	/*1*/ float intensity;
-	/*2*/ float arc;
+	/*2*/ float arc; // actually cos(arc) for convenience
 	/*4*/ vec3 position;
 	/*8*/ vec3 direction;
 	/*C*/ vec3 color;
@@ -73,13 +73,15 @@ vec3 applyLighting(
 			toLight = -lights[i].direction;
 			break;
 		case 3: // spot
+			toLight = normalize(lights[i].position - position);
 			atten = attenuate(
 			            position,
 			            lights[i].position,
 			            lights[i].intensity,
 			            1.0 / 512.0);
-			toLight = normalize(lights[i].position - position);
-			break;
+			if(dot(lights[i].direction, -toLight) < lights[i].arc) {
+				atten = 0;
+			}
 			break;
 		default: discard;
 		}

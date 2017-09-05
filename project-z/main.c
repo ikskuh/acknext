@@ -4,6 +4,8 @@
 #include <string.h>
 #include <GL/gl3w.h>
 
+#include <stdlib.h>
+
 #include <assert.h>
 
 #include "../l3dt/l3dt.h"
@@ -54,6 +56,28 @@ void storepos()
 #define	GL_TEXTURE_MAX_ANISOTROPY_EXT          0x84FE
 #define	GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT      0x84FF
 
+void funnylight()
+{
+	LIGHT * funlight = light_create(SPOTLIGHT);
+	funlight->color = COLOR_WHITE;
+	funlight->intensity = 10.0;
+	funlight->arc = 30;
+	funlight->position = camera->position;
+	funlight->direction = *vec_rotate(vector(0,0,-1), &camera->rotation);
+
+	while(true)
+	{
+		draw_point3d(&funlight->position, &COLOR_RED);
+		draw_line3d(
+			&funlight->position,
+			vec_add(
+				vec_clone(&funlight->position),
+				vec_normalize(vec_clone(&funlight->direction), 10)),
+			&COLOR_GREEN);
+		task_yield();
+	}
+}
+
 void gamemain()
 {
 	GLfloat fLargest;
@@ -71,6 +95,8 @@ void gamemain()
 	event_attach(on_kp_plus, more);
 	event_attach(on_kp_minus, less);
 	event_attach(on_s, storepos);
+
+	event_attach(on_l, funnylight);
 
 	{
 		ACKFILE * file = file_open_read("camera.dat");
@@ -252,6 +278,11 @@ void gamemain()
 
 	while(true)
 	{
+		if(key_n) {
+			sun->color = COLOR_BLACK;
+		} else {
+			sun->color = *color_hex(0xfffac1);
+		}
 		if(key_4) {
 			engine_log("%f ms / %f FPS", 1000.0 * time_step, 1.0 / time_step);
 		}
