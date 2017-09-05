@@ -36,6 +36,8 @@ enum.SHADERVAR =
 	"fGamma",
 	"vecTime",
 	
+	"vecFogColor",
+	
 	"iDebugMode",
 }
 

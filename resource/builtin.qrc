@@ -6,5 +6,6 @@
         <file>shaders/lighting.glsl</file>
         <file>shaders/gamma.glsl</file>
         <file>shaders/ackpbr.glsl</file>
+        <file>shaders/fog.glsl</file>
     </qresource>
 </RCC>

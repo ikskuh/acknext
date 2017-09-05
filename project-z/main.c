@@ -176,6 +176,7 @@ void gamemain()
 		shader_addFileSource(shdTerrain, FRAGMENTSHADER, "/builtin/shaders/lighting.glsl");
 		shader_addFileSource(shdTerrain, FRAGMENTSHADER, "/builtin/shaders/gamma.glsl");
 		shader_addFileSource(shdTerrain, FRAGMENTSHADER, "/builtin/shaders/ackpbr.glsl");
+		shader_addFileSource(shdTerrain, FRAGMENTSHADER, "/builtin/shaders/fog.glsl");
 		shader_link(shdTerrain);
 
 		glGetIntegerv(GL_MAX_TESS_GEN_LEVEL, &iSubdivision);

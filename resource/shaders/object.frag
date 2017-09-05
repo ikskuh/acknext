@@ -36,6 +36,8 @@ vec3 applyLighting(
 	float roughness, float metallic, float fresnell,
 	vec3 cAlbedo);
 
+vec3 applyFog(vec3 position, vec3 surface);
+
 struct LightSource
 {
 	/*0*/ int type;
@@ -114,8 +116,8 @@ void main() {
 		lightedSurface = cAlbedo.rgb;
 	}
 
-	fragment.rgb = toGamma(
-		occlusion * lightedSurface +
-		cEmissive.rgb);
+	vec3 surface = occlusion * lightedSurface + cEmissive.rgb;
+
+	fragment.rgb = toGamma(applyFog(position, surface));
 	fragment.a = 1.0;
 }

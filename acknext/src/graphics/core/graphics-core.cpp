@@ -133,6 +133,9 @@ void render_init()
 	if(shader_addFileSource(defaultShader, FRAGMENTSHADER, "/builtin/shaders/ackpbr.glsl") == false) {
 		abort();
 	}
+	if(shader_addFileSource(defaultShader, FRAGMENTSHADER, "/builtin/shaders/fog.glsl") == false) {
+		abort();
+	}
 	if(shader_link(defaultShader) == false) {
 		abort();
 	}

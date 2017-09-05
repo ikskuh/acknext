@@ -76,6 +76,9 @@ ACKNEXT_API_BLOCK
 		MATRIX matView, matProj;
 		camera_to_matrix(perspective, &matView, &matProj, NULL);
 
+		COLOR fog = *color_rgb(152,179,166);
+		fog.alpha = 0.0003;
+
 		for(ENTITY * ent = ent_next(nullptr); ent != nullptr; ent = ent_next(ent))
 		{
 			// Entity * entity = promote<Entity>(ent);
@@ -193,6 +196,7 @@ ACKNEXT_API_BLOCK
 				}
 
 				currentShader->vecViewPos = perspective->position;
+				currentShader->vecFogColor = fog;
 
 				// shader < mtl < model < mesh < ent
 				shader_setUniforms(&currentShader->api(), demote(model));

@@ -32,6 +32,8 @@ vec3 applyLighting(
 	float roughness, float metallic, float fresnell,
 	vec3 cAlbedo);
 
+vec3 applyFog(vec3 position, vec3 surface);
+
 uniform int iLightCount;
 
 in float distance;
@@ -89,7 +91,8 @@ void main()
 		mix(c10, c11, xy.y),
 		xy.x);
 
-	fragment.rgb = toGamma(applyLighting(position, normal, 0.9, 0.0, 150.0, albedo));
-	// fragment.rgb = toGamma(albedo);
+	vec3 surface = applyLighting(position, normal, 0.9, 0.0, 150.0, albedo);
+
+	fragment.rgb = toGamma(applyFog(position, surface));
 	fragment.a = 1.0;
 }
