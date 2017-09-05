@@ -43,7 +43,7 @@ in float distance;
 
 float sum( vec3 v ) { return v.x+v.y+v.z; }
 
-float textureNoTile( in vec2 x, float v )
+vec3 textureNoTile(in uint ind, in vec2 x, float v )
 {
     float k = texture( texDetail, 0.005*x ).y; // cheap (cache friendly) lookup
 
@@ -57,8 +57,8 @@ float textureNoTile( in vec2 x, float v )
     vec2 offa = sin(vec2(3.0,7.0)*(i+0.0)); // can replace with any other hash
     vec2 offb = sin(vec2(3.0,7.0)*(i+1.0)); // can replace with any other hash
 
-    float cola = textureGrad( texDetail, x + v*offa, duvdx, duvdy ).x;
-    float colb = textureGrad( texDetail, x + v*offb, duvdx, duvdy ).x;
+    vec3 cola = textureGrad( texTerrainMaterials, vec3(x + v*offa, float(ind)), duvdx, duvdy ).rgb;
+    vec3 colb = textureGrad( texTerrainMaterials, vec3(x + v*offb, float(ind)), duvdx, duvdy ).rgb;
 
     return mix( cola, colb, smoothstep(0.2,0.8,f-0.1*(cola-colb)) );
 }
@@ -76,20 +76,20 @@ void main()
 	// fragment.rgb = 0.5 + 0.5 * normal;
 	fragment.rgb = texture(texLargeScaleColor, uv0).rgb;
 
-	float fDetail0 = textureNoTile(2.0 * position.xz, 0.6);
-	float fDetail1 = textureNoTile(0.1 * position.xz, 0.6);
-	float fDetail2 = textureNoTile(0.01 * position.xz, 0.6);
+//	float fDetail0 = textureNoTile(2.0 * position.xz, 0.6);
+//	float fDetail1 = textureNoTile(0.1 * position.xz, 0.6);
+//	float fDetail2 = textureNoTile(0.01 * position.xz, 0.6);
 
-	float fDetail = (fDetail0 + fDetail1 + fDetail2) / 3.0;
+//	float fDetail = (fDetail0 + fDetail1 + fDetail2) / 3.0;
 
-	fragment.rgb *= fDetail;
+//	fragment.rgb *= fDetail;
 
 	uint type = texture(texTerrainMaterial, uv0).r;
 //	fragment.r = float((type / 1u) % 2u);
 //	fragment.g = float((type / 2u) % 2u);
 //	fragment.b = float((type / 4u) % 2u);
 
-	fragment.rgb = texture(texTerrainMaterials, vec3(1024.0 * uv0, float(type))).rgb;
+	fragment.rgb = textureNoTile(type, 1024.0 * uv0, 0.6);
 
 	fragment.rgb *= (0.3 + 0.8 * dot(normal, sun));
 

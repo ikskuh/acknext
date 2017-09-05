@@ -215,8 +215,8 @@ void gamemain()
 			{ 0x0C, "/textures/TexturesCom_Grass0169_1_seamless_S.jpg" },
 			{ 0x0E, "/textures/TexturesCom_Grass0157_1_seamless_S.jpg" },
 			{ 0x0F, "/textures/TexturesCom_GrassDead0101_1_seamless_S.jpg" },
-			{ 0x10, "/textures/TexturesCom_Cliffs0177_1_seamless_S.jpg" },
-			{ 0x11, "/textures/TexturesCom_RockMossy0112_11_seamless_S.jpg" },
+			{ 0x10, "/textures/TexturesCom_Cliffs0167_1_seamless_S.jpg" },
+			{ 0x11, "/textures/TexturesCom_Cliffs0177_1_seamless_S.jpg" },
 			{ 0, NULL },
 		};
 		for(int i = 0; maps[i].file; i++)
