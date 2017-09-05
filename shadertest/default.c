@@ -43,7 +43,7 @@ void debug_tools()
 				key_e - key_q,
 				key_s - key_w,
 			};
-			vec_normalize(&mov, (10 + 20 * key_lshift) * time_step);
+			vec_normalize(&mov, (10 + 20 * key_lshift - 9 * key_lalt) * time_step);
 			vec_rotate(&mov, &camera->rotation);
 			vec_add(&camera->position, &mov);
 		}

@@ -10,7 +10,6 @@ void debug_tools();
 
 BUFFER * bonesBuf;
 MODEL * model;
-MATERIAL * material;
 
 void putmat(char const * title, MATRIX const * mat)
 {
@@ -22,6 +21,7 @@ void putmat(char const * title, MATRIX const * mat)
 		mat->fields[3][0], mat->fields[3][1], mat->fields[3][2], mat->fields[3][3]);
 }
 
+/*
 void myview(void * context)
 {
 	glClearColor(0.3, 0.3, 1.0, 1.0);
@@ -35,62 +35,59 @@ void myview(void * context)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
-	GLuint program = material->shader->object;
+	{
+		MATRIX transforms[ACKNEXT_MAX_BONES];
+		transforms[0] = model->bones[0].transform;
+		for(int i = 1; i < model->boneCount; i++)
+		{
+			BONE * bone = &model->bones[i];
+			mat_mul(&transforms[i], &bone->transform, &transforms[bone->parent]);
+		}
 
-	GLuint binding_point_index = 4;
+		MATRIX * boneTrafos = buffer_map(bonesBuf, READWRITE);
+		for(int i = 0; i < model->boneCount; i++)
+		{
+			BONE * bone = &model->bones[i];
+			mat_mul(&boneTrafos[i], &bone->bindToBoneTransform, &transforms[i]);
+		}
+		buffer_unmap(bonesBuf);
+	}
+
+	GLuint program = shader->object;
+
 	GLint block_index = glGetUniformBlockIndex(
 		program,
 		"BoneBlock");
-	glBindBufferBase(
-		GL_UNIFORM_BUFFER,
-		binding_point_index,
-		bonesBuf->object);
-	glUniformBlockBinding(
-		program,
-		block_index,
-		binding_point_index);
+	if(block_index >= 0)
+	{
+		GLuint binding_point_index = 4;
+		glBindBufferBase(
+			GL_UNIFORM_BUFFER,
+			binding_point_index,
+			bonesBuf->object);
+		glUniformBlockBinding(
+			program,
+			block_index,
+			binding_point_index);
+	}
 
 	MATRIX matWorld;
 	mat_id(&matWorld);
-	// matWorld.fields[0][0] = 0.5;
-	// matWorld.fields[1][1] = 0.5;
-	// matWorld.fields[2][2] = 0.5;
 
 	MATRIX matView, matProj;
 	camera_to_matrix(context, &matView, &matProj, NULL);
 
-	MATRIX transforms[ACKNEXT_MAX_BONES];
-	transforms[0] = model->bones[0].transform;
-	for(int i = 1; i < model->boneCount; i++)
-	{
-		BONE * bone = &model->bones[i];
-		mat_mul(&transforms[i], &bone->transform, &transforms[bone->parent]);
-	}
-
-	MATRIX * boneTrafos = buffer_map(bonesBuf, READWRITE);
-	for(int i = 0; i < model->boneCount; i++)
-	{
-		BONE * bone = &model->bones[i];
-		mat_mul(&boneTrafos[i], &bone->bindToBoneTransform, &transforms[i]);
-	}
-	buffer_unmap(bonesBuf);
-
-	opengl_setMaterial(material);
-
 	for(int i = 0; i < model->meshCount; i++)
 	{
 		MESH * mesh = model->meshes[i];
-
-		opengl_setIndexBuffer(mesh->indexBuffer);
-		opengl_setVertexBuffer(mesh->vertexBuffer);
-
+		opengl_setMaterial(model->materials[i]);
 		opengl_setTransform(&matWorld, &matView, &matProj);
-
-		opengl_draw(GL_TRIANGLES, 0, mesh->indexBuffer->size / sizeof(INDEX));
+		opengl_drawMesh(mesh);
 	}
 
 	opengl_drawDebug(&matView, &matProj);
 }
+*/
 
 MODEL * load_bonestructure(char const * file);
 
@@ -135,7 +132,22 @@ void gamemain()
 {
 	filesys_addResource("/home/felix/projects/acknext/scripts/", "/");
 
-	view_create((RENDERCALL)myview, camera);
+	{
+		//*
+		VIEW * a = view_create((RENDERCALL)render_scene_with_camera, camera);
+		a->size = (SIZE){ screen_size.width/2, screen_size.height };
+		a->position = (POINT){ 0, 0 };
+		// a->flags &= ~FULLSCREEN;
+		//*/
+
+		/*
+		VIEW * b = view_create((RENDERCALL)render_scene_with_camera, camera);
+		b->size = a->size;
+		b->position = (POINT){ a->size.width, 0 };
+		b->flags &= ~FULLSCREEN;
+		//*/
+	}
+
 	task_defer(debug_tools, NULL);
 	event_attach(on_escape, engine_shutdown);
 
@@ -147,11 +159,16 @@ void gamemain()
 
 	model = load_bonestructure("/home/felix/projects/acknext/scripts/wuson.x");
 
-	material = mtl_create();
-	material->shader = shader_create();
-	if(!shader_addFileSource(material->shader, VERTEXSHADER, "bones.vert")) abort();
-	if(!shader_addFileSource(material->shader, FRAGMENTSHADER, "bones.frag")) abort();
-	if(!shader_link(material->shader)) abort();
+	model->materials[0]->albedoTexture = bmap_load("texture.png");
+	model->materials[0]->albedo = (COLOR){1,1,1,1};
+	model->materials[0]->roughness = 0.3;
+
+	ENTITY * ent = ent_create(NULL, vector(0,0,0), NULL);
+	ent->model = model;
+
+	LIGHT * lamp = light_create(POINTLIGHT);
+	lamp->position = (VECTOR){0,0,10};
+	lamp->intensity = 50;
 
 	while(model)
 	{

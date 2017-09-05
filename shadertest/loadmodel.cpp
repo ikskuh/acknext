@@ -183,21 +183,23 @@ extern "C" void animate(MODEL * model, char const * name, double frameTime)
 
 extern "C" MODEL * load_bonestructure(char const * file)
 {
+	unsigned int flags =
+		  aiProcess_JoinIdenticalVertices
+		| aiProcess_MakeLeftHanded
+		| aiProcess_CalcTangentSpace
+	    | aiProcess_GenUVCoords // required for tangent space :(
+		| aiProcess_Triangulate
+		| aiProcess_GenNormals
+		| aiProcess_LimitBoneWeights
+		| aiProcess_ValidateDataStructure
+		| aiProcess_ImproveCacheLocality
+		| aiProcess_RemoveRedundantMaterials
+		| aiProcess_OptimizeMeshes
+		| aiProcess_OptimizeGraph
+		| aiProcess_FlipUVs
+		;
 
-	auto fags = aiProcess_CalcTangentSpace
-	        | aiProcess_JoinIdenticalVertices
-	        | aiProcess_MakeLeftHanded
-	        | aiProcess_Triangulate
-	        | aiProcess_GenNormals
-	        | aiProcess_LimitBoneWeights
-	        | aiProcess_ValidateDataStructure
-	        | aiProcess_FindInstances
-	        | aiProcess_OptimizeGraph
-	        | aiProcess_OptimizeMeshes
-	        | aiProcess_FlipUVs
-			;
-
-	scene = importer.ReadFile(file,fags);
+	scene = importer.ReadFile(file, flags);
 	if(!scene) {
 		engine_log("Failed to load: %s", importer.GetErrorString());
 		return nullptr;
@@ -236,35 +238,65 @@ extern "C" MODEL * load_bonestructure(char const * file)
 	translateNodes(model, scene->mRootNode, 0, counter);
 	assert(counter == boneCount);
 
-	for(uint i = 0; i < scene->mNumMeshes; i++)
+	for(uint index = 0; index < scene->mNumMeshes; index++)
 	{
-		auto mesh = scene->mMeshes[i];
+		auto mesh = scene->mMeshes[index];
 		engine_log("Mesh: %s", mesh->mName.C_Str());
 
-		model->meshes[i] = mesh_create(GL_TRIANGLES, NULL, NULL);
-		model->meshes[i]->indexBuffer = buffer_create(INDEXBUFFER);
-		model->meshes[i]->vertexBuffer = buffer_create(VERTEXBUFFER);
+		model->meshes[index] = mesh_create(GL_TRIANGLES, NULL, NULL);
+		model->meshes[index]->indexBuffer = buffer_create(INDEXBUFFER);
+		model->meshes[index]->vertexBuffer = buffer_create(VERTEXBUFFER);
 
-		buffer_set(model->meshes[i]->vertexBuffer, sizeof(VERTEX) * mesh->mNumVertices, NULL);
-		buffer_set(model->meshes[i]->indexBuffer, sizeof(INDEX) * 3 * mesh->mNumFaces, NULL);
+		buffer_set(model->meshes[index]->vertexBuffer, sizeof(VERTEX) * mesh->mNumVertices, NULL);
+		buffer_set(model->meshes[index]->indexBuffer, sizeof(INDEX) * 3 * mesh->mNumFaces, NULL);
 
 		{
-			VERTEX * vertices = (VERTEX*)buffer_map(model->meshes[i]->vertexBuffer, WRITEONLY);
+			VERTEX * vertices = (VERTEX*)buffer_map(model->meshes[index]->vertexBuffer, WRITEONLY);
 
-			memset(vertices, 0, model->meshes[i]->vertexBuffer->size);
+			memset(vertices, 0, model->meshes[index]->vertexBuffer->size);
 
 			// Nontrivial init
 			for(uint j = 0; j < mesh->mNumVertices; j++)
 			{
-				vertices[j].boneWeights = { 255, 0, 0, 0 };
 				vertices[j].color = COLOR_WHITE;
+				vertices[j].texcoord0 = (UVCOORD){0,0};
+				vertices[j].texcoord1 = (UVCOORD){0,0};
+				vertices[j].bones = (UBYTE4){ 0, 0, 0, 0 };
+				vertices[j].boneWeights = (UBYTE4){255,0,0,0};
 
 				vertices[j].position = ai_to_ack(mesh->mVertices[j]);
+				vertices[j].normal = ai_to_ack(mesh->mNormals[j]);
+				vertices[j].tangent = ai_to_ack(mesh->mTangents[j]);
+			}
 
-				vertices[j].texcoord0 = (UVCOORD) {
-					mesh->mTextureCoords[0][j].x,
-					mesh->mTextureCoords[0][j].y,
-				};
+			if(mesh->HasTextureCoords(0))
+			{
+				for(unsigned int i = 0; i < mesh->mNumVertices; i++) {
+					auto const & vec = mesh->mTextureCoords[0][i];
+					auto & dst = vertices[i];
+					dst.texcoord0.u = vec.x;
+					dst.texcoord0.v = vec.y;
+				}
+			}
+			if(mesh->HasTextureCoords(1))
+			{
+				for(unsigned int i = 0; i < mesh->mNumVertices; i++) {
+					auto const & vec = mesh->mTextureCoords[1][i];
+					auto & dst = vertices[i];
+					dst.texcoord1.u = vec.x;
+					dst.texcoord1.v = vec.y;
+				}
+			}
+			if(mesh->HasVertexColors(0))
+			{
+				for(unsigned int i = 0; i < mesh->mNumVertices; i++) {
+					auto const & vec = mesh->mColors[0][i];
+					auto & dst = vertices[i];
+					dst.color.red = vec.r;
+					dst.color.green = vec.g;
+					dst.color.blue = vec.b;
+					dst.color.alpha = vec.a;
+				}
 			}
 
 			if(mesh->HasBones())
@@ -329,11 +361,11 @@ extern "C" MODEL * load_bonestructure(char const * file)
 				}
 			}
 
-			buffer_unmap(model->meshes[i]->vertexBuffer);
+			buffer_unmap(model->meshes[index]->vertexBuffer);
 		}
 		{
-			INDEX * indices = (INDEX*)buffer_map(model->meshes[i]->indexBuffer, WRITEONLY);
-			memset(indices, 0, model->meshes[i]->indexBuffer->size);
+			INDEX * indices = (INDEX*)buffer_map(model->meshes[index]->indexBuffer, WRITEONLY);
+			memset(indices, 0, model->meshes[index]->indexBuffer->size);
 
 			for(uint j = 0; j < mesh->mNumFaces; j++)
 			{
@@ -345,11 +377,86 @@ extern "C" MODEL * load_bonestructure(char const * file)
 				*indices++ = face.mIndices[2];
 			}
 
-			buffer_unmap(model->meshes[i]->indexBuffer);
+			buffer_unmap(model->meshes[index]->indexBuffer);
 		}
 	}
 
-	printNodes(scene->mRootNode);
+	if(scene->HasMaterials())
+	{
+		std::vector<MATERIAL*> materials(scene->mNumMaterials);
+		for(unsigned int idx = 0; idx < scene->mNumMaterials; idx++)
+		{
+			materials[idx] = mtl_create();
+			MATERIAL & dst = *materials[idx];
+			aiMaterial const & src = *scene->mMaterials[idx];
+			engine_log("material %d");
+
+			memset(&dst, 0, sizeof(MATERIAL));
+			dst.albedo = (COLOR){1,1,1,1};
+			dst.roughness = 1.0;
+
+			aiColor4D cDiffuse, cEmissive;
+
+			if(src.Get(AI_MATKEY_COLOR_DIFFUSE, cDiffuse) == aiReturn_SUCCESS) {
+				dst.albedo.red = cDiffuse.r;
+				dst.albedo.green = cDiffuse.g;
+				dst.albedo.blue = cDiffuse.b;
+				dst.albedo.alpha = cDiffuse.a;
+			}
+
+			if(src.Get(AI_MATKEY_COLOR_EMISSIVE, cEmissive) == aiReturn_SUCCESS) {
+				dst.emission.red = cEmissive.r;
+				dst.emission.green = cEmissive.g;
+				dst.emission.blue = cEmissive.b;
+				dst.emission.alpha = cEmissive.a;
+			}
+
+			float fShininess, fReflectivity;
+			if(src.Get(AI_MATKEY_REFLECTIVITY, fReflectivity) == aiReturn_SUCCESS) {
+				dst.metallic = fReflectivity;
+			}
+			if(src.Get(AI_MATKEY_SHININESS, fShininess) == aiReturn_SUCCESS) {
+				dst.roughness = 1.0 - fShininess;
+			}
+
+			aiString path;
+			if(src.GetTexture(aiTextureType_DIFFUSE, 0, &path) == aiReturn_SUCCESS) {
+				engine_log("Texture: %s", path.C_Str());
+
+				if(path.data[0] == '*') {
+					if(!scene->HasTextures()) {
+						engine_log("Model '%s' wants to use internal texture, but has none!", file);
+					} else {
+						int index = atoi(path.data + 1);
+						aiTexture * tex = scene->mTextures[index];
+						if(tex->achFormatHint != nullptr) {
+							engine_log("Texture format hint: '%s'", tex->achFormatHint);
+						}
+						dst.albedoTexture = bmap_create(GL_TEXTURE_2D, GL_RGBA);
+						bmap_set(
+							dst.albedoTexture,
+							tex->mWidth,
+							tex->mHeight,
+							GL_BGRA,
+							GL_UNSIGNED_BYTE,
+							tex->pcData);
+					}
+				} else {
+					dst.albedoTexture = bmap_load(path.C_Str());
+				}
+
+				if(dst.albedoTexture == nullptr) {
+					engine_seterror(ERR_FILESYSTEM, "Could not load the texture %s", path.C_Str());
+				}
+			}
+		}
+		for(uint i = 0; i < scene->mNumMeshes; i++)
+		{
+			model->materials[i] = materials[scene->mMeshes[i]->mMaterialIndex];
+		}
+	}
+
+	// printNodes(scene->mRootNode);
 
 	return model;
 }

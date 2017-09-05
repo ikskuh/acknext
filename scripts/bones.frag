@@ -9,8 +9,6 @@ in vec3 normal;
 
 out vec4 fragment;
 
-uniform sampler2D texColor;
-
 void main()
 {
 	fragment.rgb = color;

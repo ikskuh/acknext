@@ -30,6 +30,7 @@ struct LIGHTDATA
 };
 
 static BUFFER * ubo = nullptr;
+static BUFFER * bonesBuf = nullptr;
 
 extern Shader * currentShader;
 
@@ -49,6 +50,12 @@ ACKNEXT_API_BLOCK
 		{
 			ubo = buffer_create(UNIFORMBUFFER);
 			buffer_set(ubo, sizeof(LIGHTDATA) * LIGHT_LIMIT, nullptr);
+		}
+
+		if(!bonesBuf)
+		{
+			bonesBuf = buffer_create(UNIFORMBUFFER);
+			buffer_set(bonesBuf, sizeof(MATRIX) * ACKNEXT_MAX_BONES, NULL);
 		}
 
 		// glEnable(GL_CULL_FACE);
@@ -82,6 +89,25 @@ ACKNEXT_API_BLOCK
 				glm::translate(glm::mat4(), ack_to_glm(ent->position)) *
 				glm::mat4_cast(ack_to_glm(ent->rotation)) *
 				glm::scale(glm::mat4(), ack_to_glm(ent->scale)));
+
+			// Update bones
+			{
+				MATRIX transforms[ACKNEXT_MAX_BONES];
+				transforms[0] = ent->model->bones[0].transform;
+				for(int i = 1; i < ent->model->boneCount; i++)
+				{
+					BONE * bone = &ent->model->bones[i];
+					mat_mul(&transforms[i], &bone->transform, &transforms[bone->parent]);
+				}
+
+				MATRIX * boneTrafos = (MATRIX*)buffer_map(bonesBuf, READWRITE);
+				for(int i = 0; i < ent->model->boneCount; i++)
+				{
+					BONE * bone = &ent->model->bones[i];
+					mat_mul(&boneTrafos[i], &bone->bindToBoneTransform, &transforms[i]);
+				}
+				buffer_unmap(bonesBuf);
+			}
 
 			if(ent->material != nullptr) {
 				// sets shader&material vars
@@ -147,6 +173,24 @@ ACKNEXT_API_BLOCK
 				}
 				// }
 				// void opengl_setLights();
+
+				{ // opengl_setBones()
+					GLint block_index = glGetUniformBlockIndex(
+						currentShader->api().object,
+						"BoneBlock");
+					if(block_index >= 0)
+					{
+						GLuint binding_point_index = 4;
+						glBindBufferBase(
+							GL_UNIFORM_BUFFER,
+							binding_point_index,
+							bonesBuf->object);
+						glUniformBlockBinding(
+							currentShader->api().object,
+							block_index,
+							binding_point_index);
+					}
+				}
 
 				currentShader->vecViewPos = perspective->position;
 

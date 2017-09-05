@@ -16,7 +16,7 @@ uniform mat4 matProj;
 
 layout(std140) uniform BoneBlock
 {
-	 mat4 bones[BONES_LIMIT];
+	mat4 bones[BONES_LIMIT];
 };
 
 out vec3 position, color, normal, tangent, cotangent;
@@ -41,7 +41,7 @@ void main() {
 	gl_Position = matProj * matView * vec4(position, 1);
 	normal = normalize((matWorld * vec4(mNormal, 0.0) ).xyz);
 	tangent = normalize(( matWorld * vec4(mTangent, 0.0) ).xyz);
-	color = vBoneWeight.rgb;
+	color = vColor; // vBoneWeight.rgb;
 	uv0 = vUV0;
 	uv1 = vUV1;
 	cotangent = cross(tangent, normal);

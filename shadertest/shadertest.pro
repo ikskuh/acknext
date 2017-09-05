@@ -26,5 +26,5 @@ INCLUDEPATH += $$PWD/../acknext/include
 # DEPENDPATH += $$PWD/../../tcc-0.9.26
 
 DISTFILES += \
-    ../scripts/bones.frag \
-    ../scripts/bones.vert
+    ../scripts/bones.vert \
+    ../scripts/bones.frag
