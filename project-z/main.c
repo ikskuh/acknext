@@ -60,8 +60,8 @@ void funnylight()
 {
 	LIGHT * funlight = light_create(SPOTLIGHT);
 	funlight->color = COLOR_WHITE;
-	funlight->intensity = 10.0;
-	funlight->arc = 30;
+	funlight->intensity = 25.0;
+	funlight->arc = 40;
 	funlight->position = camera->position;
 	funlight->direction = *vec_rotate(vector(0,0,-1), &camera->rotation);
 

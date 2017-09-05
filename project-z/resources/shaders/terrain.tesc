@@ -18,8 +18,8 @@ float calcTessLevel(int a, int b)
 		distToPivot(gl_in[a].gl_Position.xyz),
 		distToPivot(gl_in[b].gl_Position.xyz));
 
-	float f = clamp(mindist / 12000, 0, 1);
-	f = pow(1 - f, 16);
+	float f = clamp((mindist - 50) / 16000, 0, 1);
+	f = pow(1 - f, 32);
 
 	return max(iSubdivision * f, 2);
 }

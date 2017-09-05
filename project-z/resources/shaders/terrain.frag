@@ -3,11 +3,7 @@
 #pragma acknext include "Hallo, Welt!"
 
 in vec3 position;
-in vec3 tangent;
-in vec3 cotangent;
-in vec3 color;
 in vec2 uv0;
-in vec3 normal;
 
 uniform int iDebugMode;
 
@@ -67,11 +63,16 @@ float map(float v, float a0, float a1, float b0, float b1)
 	return b0 + (b1-b0) * (v - b0) / (b1 - b0);
 }
 
+uniform ivec2 vecTerrainSize;
+uniform sampler2D texNormalMap;
+
 void main()
 {
-	vec2 dx = vec2(1.0 / 2048.0, 0.0);
-	vec2 dy = vec2(0.0, 1.0 / 2048.0);
-	vec2 xy = fract(2048.0f * uv0);
+	vec3 normal = normalize(2.0 * texture(texNormalMap, uv0).xzy - 1.0);
+
+	vec2 dx = vec2(1.0 / float(vecTerrainSize.x), 0.0);
+	vec2 dy = vec2(0.0, 1.0 / float(vecTerrainSize.y));
+	vec2 xy = pow(fract(vec2(vecTerrainSize.xy) * uv0), vec2(2.0));
 
 	uint type00 = texture(texTerrainMaterial, uv0).r;
 	uint type01 = texture(texTerrainMaterial, uv0+dy).r;

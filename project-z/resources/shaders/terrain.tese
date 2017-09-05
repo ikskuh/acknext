@@ -6,13 +6,12 @@ uniform mat4 matWorld;
 uniform mat4 matView;
 uniform mat4 matProj;
 
-out vec3 position, color, normal, tangent, cotangent;
-out vec2 uv0, uv1;
+out vec3 position;
+out vec2 uv0;
 
 out float distance;
 
 uniform sampler2D texHeightmap;
-uniform sampler2D texNormalMap;
 
 vec4 interpolate(in vec4 v0, in vec4 v1, in vec4 v2, in vec4 v3)
 {
@@ -46,11 +45,5 @@ void main()
 
 	gl_Position = matProj * matView * vec4(position, 1);
 
-	normal = normalize(2.0 * texture(texNormalMap, uv).rbg - 1.0);
-	tangent = cross(normal, vec3(0,0,1));
-	cotangent = cross(tangent, normal);
-
-	color = vec3(1,1,1);
 	uv0 = uv;
-	uv1 = uv;
 }
