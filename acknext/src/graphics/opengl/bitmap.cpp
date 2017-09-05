@@ -11,6 +11,9 @@ Bitmap::Bitmap(GLenum type, GLenum format)
 
 Bitmap::~Bitmap()
 {
+	if(api().pixels) {
+		free(api().pixels);
+	}
 	glDeleteTextures(1, &api().object);
 }
 
@@ -59,6 +62,10 @@ ACKNEXT_API_BLOCK
 		BITMAP * bmp = bmap_create(GL_TEXTURE_2D, GL_RGBA8);
 
 		SDL_LockSurface(surface);
+
+		bmp->pixels = malloc(4 * surface->w * surface->h);
+		memcpy(bmp->pixels, surface->pixels, 4 * surface->w * surface->h);
+
 		bmap_set(bmp, surface->w, surface->h, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
 		SDL_UnlockSurface(surface);
 

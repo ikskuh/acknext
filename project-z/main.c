@@ -4,6 +4,8 @@
 #include <string.h>
 #include <GL/gl3w.h>
 
+#include <assert.h>
+
 #include "../l3dt/l3dt.h"
 
 void debug_tools();
@@ -17,48 +19,6 @@ int iSubdivision = 1;
 
 extern var debug_movement;
 extern var debug_speedup;
-
-/*
-void render(CAMERA * context)
-{
-	glClearColor(0.3, 0.3, 1.0, 1.0);
-	glClearDepth(1.0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_DEPTH_TEST);
-
-	if(key_space || showWframe) {
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	} else {
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	}
-
-	MATRIX matWorld;
-	mat_id(&matWorld);
-	// matWorld.fields[0][0] = 0.5;
-	// matWorld.fields[1][1] = 0.5;
-	// matWorld.fields[2][2] = 0.5;
-
-	MATRIX matView, matProj;
-	camera_to_matrix(context, &matView, &matProj, NULL);
-
-	opengl_setShader(shdTerrain);
-
-	opengl_setTransform(&matWorld, &matView, &matProj);
-
-	GLuint program = shdTerrain->object;
-	glProgramUniform3f(
-		program,
-		glGetUniformLocation(program, "vecViewPos"),
-		context->position.x,
-		context->position.y,
-		context->position.z);
-
-	shader_setUniforms(shdTerrain, mesh);
-	opengl_drawMesh(mesh);
-
-	opengl_drawDebug(&matView, &matProj);
-}
-*/
 
 void twframe()
 {
@@ -233,15 +193,48 @@ void gamemain()
 		abort();
 	}
 
-	uint8_t * ids = malloc(am->width * am->height);
-
-	BITMAP * amtexture = bmap_create(GL_TEXTURE_2D, GL_R8UI);
+	BITMAP * amtexture = bmap_create(GL_TEXTURE_2D, GL_RG8UI);
 	bmap_set(amtexture,
 		am->width, am->height,
-		GL_RED_INTEGER, GL_UNSIGNED_BYTE,
-		ids);
+		GL_RG_INTEGER, GL_UNSIGNED_BYTE,
+		am->data);
+	shader_setvar(model->materials[0], "texTerrainMaterial", GL_UNSIGNED_INT_SAMPLER_2D, &amtexture);
 
-	shader_setvar(model->materials[0], "texTerrainMaterial", GL_TEXTURE_2D, amtexture);
+	BITMAP * materials = bmap_create(GL_TEXTURE_2D_ARRAY, GL_RGBA8);
+	{
+		glTextureStorage3D(
+			materials->object,
+			10,
+			materials->format,
+			1024,
+			1024,
+			18);
+		struct { int index; char const * file; } maps[] =
+		{
+			{ 0x0B, "/textures/TexturesCom_Grass0160_1_seamless_S.jpg" },
+			{ 0x0C, "/textures/TexturesCom_Grass0169_1_seamless_S.jpg" },
+			{ 0x0E, "/textures/TexturesCom_Grass0157_1_seamless_S.jpg" },
+			{ 0x0F, "/textures/TexturesCom_GrassDead0101_1_seamless_S.jpg" },
+			{ 0x10, "/textures/TexturesCom_Cliffs0177_1_seamless_S.jpg" },
+			{ 0x11, "/textures/TexturesCom_RockMossy0112_11_seamless_S.jpg" },
+			{ 0, NULL },
+		};
+		for(int i = 0; maps[i].file; i++)
+		{
+			BITMAP * source = bmap_load(maps[i].file);
+			assert(source && source->width == 1024 && source->height == 1024);
+			glTextureSubImage3D(
+				materials->object,
+				0,
+				0, 0, maps[i].index,
+				1024, 1024, 1,
+				GL_RGBA, GL_UNSIGNED_BYTE,
+				source->pixels);
+			bmap_remove(source);
+		}
+		glGenerateTextureMipmap(materials->object);
+		shader_setvar(model->materials[0], "texTerrainMaterials", GL_SAMPLER_2D_ARRAY, &materials);
+	}
 
 	shader_logInfo(shdTerrain);
 
@@ -250,7 +243,6 @@ void gamemain()
 	// Äh wut, aber ja, ist sinnvoller so im moment
 	shader_setUniforms(shdTerrain, shdTerrain);
 
-	free(ids);
 	while(true)
 	{
 		if(key_4) {

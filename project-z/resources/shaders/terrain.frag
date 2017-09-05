@@ -11,8 +11,10 @@ in vec3 normal;
 
 uniform int iDebugMode;
 
-uniform sampler2D texLargeScaleColor;
-uniform sampler2D texDetail;
+uniform sampler2D      texLargeScaleColor;
+uniform sampler2D      texDetail;
+uniform usampler2D     texTerrainMaterial;
+uniform sampler2DArray texTerrainMaterials;
 
 uniform vec4 vecEmission;
 uniform vec4 vecColor;
@@ -81,6 +83,13 @@ void main()
 	float fDetail = (fDetail0 + fDetail1 + fDetail2) / 3.0;
 
 	fragment.rgb *= fDetail;
+
+	uint type = texture(texTerrainMaterial, uv0).r;
+//	fragment.r = float((type / 1u) % 2u);
+//	fragment.g = float((type / 2u) % 2u);
+//	fragment.b = float((type / 4u) % 2u);
+
+	fragment.rgb = texture(texTerrainMaterials, vec3(1024.0 * uv0, float(type))).rgb;
 
 	fragment.rgb *= (0.3 + 0.8 * dot(normal, sun));
 

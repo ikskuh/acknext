@@ -16,6 +16,7 @@ typedef struct
 	int ACKCONST width;
 	int ACKCONST height;
 	int ACKCONST depth; // 3D textures ;)
+	void * ACKCONST pixels; // when bitmap is loaded, contains raw data
 } BITMAP;
 
 typedef struct
