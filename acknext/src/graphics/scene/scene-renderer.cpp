@@ -109,7 +109,7 @@ ACKNEXT_API_BLOCK
 				GLint block_index = glGetUniformBlockIndex(
 					currentShader->api().object,
 					"LightBlock");
-				if(block_index > 0) // only when lights are required
+				if(block_index >= 0) // only when lights are required
 				{
 					int lcount = 0;
 					LIGHTDATA * lights = (LIGHTDATA*)glMapNamedBuffer(

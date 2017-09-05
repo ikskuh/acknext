@@ -243,6 +243,13 @@ void gamemain()
 	// Äh wut, aber ja, ist sinnvoller so im moment
 	shader_setUniforms(shdTerrain, shdTerrain);
 
+	LIGHT * sun = light_create(SUNLIGHT);
+	sun->direction = *vec_normalize(vector(0.6, -1, -0.4), 1.0);
+	sun->color = *color_hex(0xfffac1);
+
+	LIGHT * ambi = light_create(AMBIENTLIGHT);
+	ambi->color = *color_hex(0x232c33);
+
 	while(true)
 	{
 		if(key_4) {

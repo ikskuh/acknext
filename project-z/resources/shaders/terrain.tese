@@ -46,7 +46,7 @@ void main()
 
 	gl_Position = matProj * matView * vec4(position, 1);
 
-	normal = normalize(2.0 * texture(texNormalMap, uv).rgb - 1.0);
+	normal = normalize(2.0 * texture(texNormalMap, uv).rbg - 1.0);
 	tangent = cross(normal, vec3(0,0,1));
 	cotangent = cross(tangent, normal);
 
