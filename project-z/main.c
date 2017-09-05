@@ -51,8 +51,15 @@ void storepos()
 	}
 }
 
+#define	GL_TEXTURE_MAX_ANISOTROPY_EXT          0x84FE
+#define	GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT      0x84FF
+
 void gamemain()
 {
+	GLfloat fLargest;
+	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest);
+	engine_log("max anisotropy: %f", fLargest);
+
 	debug_speedup = 500;
 
 	view_create((RENDERCALL)render_scene_with_camera, camera);
@@ -160,22 +167,12 @@ void gamemain()
 		BITMAP * bmpLSC   = bmap_to_mipmap(bmap_load("/terrain/GrassyMountains_TX.jpg"));
 		BITMAP * bmpDetail = bmap_to_mipmap(bmap_load("/textures/grass-01.jpg"));
 
-#define	GL_TEXTURE_MAX_ANISOTROPY_EXT          0x84FE
-#define	GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT      0x84FF
-
-		{
-			GLfloat fLargest;
-			glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest);
-
-			engine_log("max anisotropy: %f", fLargest);
-
-			glTextureParameterf(
-				bmpLSC->object,
-				GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
-			glTextureParameterf(
-				bmpDetail->object,
-				GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
-		}
+		glTextureParameterf(
+			bmpLSC->object,
+			GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
+		glTextureParameterf(
+			bmpDetail->object,
+			GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
 
 		shader_setvar(model->materials[0], "texLargeScaleColor", GL_SAMPLER_2D, &bmpLSC);
 		shader_setvar(model->materials[0], "texDetail", GL_SAMPLER_2D, &bmpDetail);
@@ -233,6 +230,9 @@ void gamemain()
 			bmap_remove(source);
 		}
 		glGenerateTextureMipmap(materials->object);
+		glTextureParameterf(
+			materials->object,
+			GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
 		shader_setvar(model->materials[0], "texTerrainMaterials", GL_SAMPLER_2D_ARRAY, &materials);
 	}
 

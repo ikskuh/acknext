@@ -84,12 +84,25 @@ void main()
 
 //	fragment.rgb *= fDetail;
 
-	uint type = texture(texTerrainMaterial, uv0).r;
-//	fragment.r = float((type / 1u) % 2u);
-//	fragment.g = float((type / 2u) % 2u);
-//	fragment.b = float((type / 4u) % 2u);
+	vec2 dx = vec2(1.0 / 2048.0, 0.0);
+	vec2 dy = vec2(0.0, 1.0 / 2048.0);
 
-	fragment.rgb = textureNoTile(type, 1024.0 * uv0, 0.6);
+	vec2 xy = fract(2048.0f * uv0);
+
+	uint type00 = texture(texTerrainMaterial, uv0).r;
+	uint type01 = texture(texTerrainMaterial, uv0+dy).r;
+	uint type10 = texture(texTerrainMaterial, uv0+dx).r;
+	uint type11 = texture(texTerrainMaterial, uv0+dx+dy).r;
+
+	vec3 c00 = textureNoTile(type00, 1024.0 * uv0, 0.6);
+	vec3 c01 = textureNoTile(type01, 1024.0 * uv0, 0.6);
+	vec3 c10 = textureNoTile(type10, 1024.0 * uv0, 0.6);
+	vec3 c11 = textureNoTile(type11, 1024.0 * uv0, 0.6);
+
+	fragment.rgb = mix(
+		mix(c00, c01, xy.y),
+		mix(c10, c11, xy.y),
+		xy.x);
 
 	fragment.rgb *= (0.3 + 0.8 * dot(normal, sun));
 
