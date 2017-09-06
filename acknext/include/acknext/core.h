@@ -34,7 +34,8 @@ ACKVAR int ACKCONST engine_argc;
 #define shader_setvar obj_setvar
 #define bmap_setvar   obj_setvar
 #define mesh_setvar   obj_setvar
-ACKFUN void obj_setvar(void * obj, char const * name, GLenum type, void const * data);
+
+ACKFUN void obj_setvar(void * obj, char const * name, GLenum type, ...);
 
 ACKFUN void obj_listvar(void const * obj);
 

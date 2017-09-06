@@ -256,10 +256,10 @@ ACKNEXT_API_BLOCK
 		currentShader->vecAttributes = (VECTOR){material->roughness,material->metallic,material->fresnell};
 		currentShader->vecEmission = material->emission;
 
-		mtl_setvar(const_cast<MATERIAL*>(material), "texAlbedo",     GL_SAMPLER_2D, (void const*)&material->albedoTexture);
-		mtl_setvar(const_cast<MATERIAL*>(material), "texEmission",   GL_SAMPLER_2D, (void const*)&material->emissionTexture);
-		mtl_setvar(const_cast<MATERIAL*>(material), "texNormalMap",  GL_SAMPLER_2D, (void const*)&material->normalTexture);
-		mtl_setvar(const_cast<MATERIAL*>(material), "texAttributes", GL_SAMPLER_2D, (void const*)&material->attributeTexture);
+		mtl_setvar(const_cast<MATERIAL*>(material), "texAlbedo",     GL_SAMPLER_2D, material->albedoTexture);
+		mtl_setvar(const_cast<MATERIAL*>(material), "texEmission",   GL_SAMPLER_2D, material->emissionTexture);
+		mtl_setvar(const_cast<MATERIAL*>(material), "texNormalMap",  GL_SAMPLER_2D, material->normalTexture);
+		mtl_setvar(const_cast<MATERIAL*>(material), "texAttributes", GL_SAMPLER_2D, material->attributeTexture);
 
 		shader_setUniforms(&currentShader->api(), &currentShader->api());
 		shader_setUniforms(&currentShader->api(), material);

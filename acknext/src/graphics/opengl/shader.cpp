@@ -33,57 +33,6 @@ void Shader::setUniform(SHADERVAR var, std::function<void(int,int)> const & func
 	}
 }
 
-bool isSampler(GLenum type)
-{
-	switch(type)
-	{
-		case GL_SAMPLER_1D:
-		case GL_SAMPLER_1D_ARRAY:
-		case GL_SAMPLER_1D_ARRAY_SHADOW:
-		case GL_SAMPLER_1D_SHADOW:
-		case GL_SAMPLER_2D:
-		case GL_SAMPLER_2D_ARRAY:
-		case GL_SAMPLER_2D_ARRAY_SHADOW:
-		case GL_SAMPLER_2D_MULTISAMPLE:
-		case GL_SAMPLER_2D_MULTISAMPLE_ARRAY:
-		case GL_SAMPLER_2D_RECT:
-		case GL_SAMPLER_2D_RECT_SHADOW:
-		case GL_SAMPLER_3D:
-		case GL_SAMPLER_BUFFER:
-		case GL_SAMPLER_CUBE:
-		case GL_SAMPLER_CUBE_MAP_ARRAY:
-		case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW:
-		case GL_SAMPLER_CUBE_SHADOW:
-			return true;
-		case GL_INT_SAMPLER_1D:
-		case GL_INT_SAMPLER_1D_ARRAY:
-		case GL_INT_SAMPLER_2D:
-		case GL_INT_SAMPLER_2D_ARRAY:
-		case GL_INT_SAMPLER_2D_MULTISAMPLE:
-		case GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:
-		case GL_INT_SAMPLER_2D_RECT:
-		case GL_INT_SAMPLER_3D:
-		case GL_INT_SAMPLER_BUFFER:
-		case GL_INT_SAMPLER_CUBE:
-		case GL_INT_SAMPLER_CUBE_MAP_ARRAY:
-			return true;
-		case GL_UNSIGNED_INT_SAMPLER_1D:
-		case GL_UNSIGNED_INT_SAMPLER_1D_ARRAY:
-		case GL_UNSIGNED_INT_SAMPLER_2D:
-		case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
-		case GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE:
-		case GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:
-		case GL_UNSIGNED_INT_SAMPLER_2D_RECT:
-		case GL_UNSIGNED_INT_SAMPLER_3D:
-		case GL_UNSIGNED_INT_SAMPLER_BUFFER:
-		case GL_UNSIGNED_INT_SAMPLER_CUBE:
-		case GL_UNSIGNED_INT_SAMPLER_CUBE_MAP_ARRAY:
-			return true;
-		default:
-			return false;
-	}
-}
-
 ACKNEXT_API_BLOCK
 {
 	SHADER * shader_create()
@@ -224,7 +173,7 @@ ACKNEXT_API_BLOCK
 	#include "uniformconfig.h"
 	#undef _UNIFORM
 
-				if(isSampler(uni->type))
+				if(Property::isSampler(uni->type))
 				{
 					// preinitialize uniforms with correct slut
 					uni->textureSlot = _shader->textureSlotCount++;
@@ -385,7 +334,7 @@ ACKNEXT_API_BLOCK
 			}
 			const int loc = uni->location;
 
-			if(isSampler(p.type))
+			if(p.isSampler())
 			{
 				opengl_setTexture(uni->textureSlot, p.data.texture);
 			}

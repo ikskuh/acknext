@@ -513,6 +513,9 @@ ACKNEXT_API_BLOCK
 								GL_BGRA,
 								GL_UNSIGNED_BYTE,
 								tex->pcData);
+
+							dst.albedoTexture->pixels = malloc(sizeof(aiTexel) * tex->mWidth * tex->mHeight);
+							memcpy(dst.albedoTexture->pixels, tex->pcData, sizeof(aiTexel) * tex->mWidth * tex->mHeight);
 						}
 					} else {
 

@@ -28,8 +28,6 @@ private slots:
 
 	void on_actionWireframe_triggered();
 
-	void on_actionInit_triggered();
-
 private:
 	void on_actionSetMode(int mode);
 

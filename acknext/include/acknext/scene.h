@@ -11,6 +11,29 @@
 // Plain type, has no backend
 typedef struct
 {
+	VECTOR position;
+	VECTOR normal;
+	VECTOR tangent;
+	COLOR color;
+	UVCOORD texcoord0;
+	UVCOORD texcoord1;
+	UBYTE4 bones;
+	UBYTE4 boneWeights;
+} VERTEX;
+
+// Plain type, has no backend
+typedef struct
+{
+	uint8_t parent;
+	char name[16];
+	// VECTOR offset;
+	// QUATERNION rotation;
+	MATRIX transform;
+	MATRIX bindToBoneTransform;
+} BONE;
+
+typedef struct
+{
 	SHADER * shader;
 	BITMAP * albedoTexture;
 	BITMAP * attributeTexture; // r=roughness, g=metallic, b=fresnell, a=ambient occlusion
@@ -23,36 +46,12 @@ typedef struct
 	var fresnell;
 } MATERIAL;
 
-// Plain type, has no backend
-typedef struct
-{
-	VECTOR position;
-	VECTOR normal;
-	VECTOR tangent;
-	COLOR color;
-	UVCOORD texcoord0;
-	UVCOORD texcoord1;
-	UBYTE4 bones;
-	UBYTE4 boneWeights;
-} VERTEX;
-
 typedef struct
 {
 	GLenum ACKCONST primitiveType;
 	BUFFER * vertexBuffer;
 	BUFFER * indexBuffer;
 } MESH;
-
-// Plain type, has no backend
-typedef struct
-{
-	uint8_t parent;
-	char name[16];
-	// VECTOR offset;
-	// QUATERNION rotation;
-	MATRIX transform;
-	MATRIX bindToBoneTransform;
-} BONE;
 
 // requires backend
 typedef struct

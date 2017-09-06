@@ -3,16 +3,17 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 
-Property::Property(GLenum type, void const * data)
+Property::Property(GLenum type, Value const & value)
 {
-	this->set(type, data);
+	this->set(type, value);
 }
 
-void Property::set(GLenum type, void const * data)
+void Property::set(GLenum type, Value const & value)
 {
 	this->type = type;
-	memcpy(&this->data, data, sizeof(this->data));
+	this->data = value;
 }
 
 BaseEngineObject::BaseEngineObject() : magic(0xBADC0DED)
@@ -42,14 +43,61 @@ Property const & BaseEngineObject::getProperty(std::string const & name) const
 
 ACKNEXT_API_BLOCK
 {
-	void obj_setvar(void * obj, char const * name, GLenum type, void const * data)
+	void obj_setvar(void * obj, char const * name, GLenum type, ...)
 	{
+		va_list list;
+		va_start(list, type);
+
+		Value value;
+		if(Property::isSampler(type))
+		{
+			value.texture = va_arg(list, BITMAP*);
+		}
+		else
+		{
+			switch(type)
+			{
+#define MAKEVECS(_Name, _Type, _Var) \
+				case GL_##_Name: \
+					value._Var[0] = va_arg(list, _Type); \
+					break; \
+				case GL_##_Name##_VEC2: \
+					value._Var[0] = va_arg(list, _Type); \
+					value._Var[1] = va_arg(list, _Type); \
+					break; \
+				case GL_##_Name##_VEC3: \
+					value._Var[0] = va_arg(list, _Type); \
+					value._Var[1] = va_arg(list, _Type); \
+					value._Var[2] = va_arg(list, _Type); \
+					break; \
+				case GL_##_Name##_VEC4: \
+					value._Var[0] = va_arg(list, _Type); \
+					value._Var[1] = va_arg(list, _Type); \
+					value._Var[2] = va_arg(list, _Type); \
+					value._Var[3] = va_arg(list, _Type); \
+					break
+				MAKEVECS(BOOL, int, bools);
+				MAKEVECS(INT, int, ints);
+				MAKEVECS(UNSIGNED_INT, uint, uints);
+				MAKEVECS(FLOAT, double, floats);
+				MAKEVECS(DOUBLE, double, floats);
+#undef MAKEVECS
+				case GL_FLOAT_MAT4:
+					value.matrices[0] = va_arg(list, MATRIX);
+					break;
+				default:
+					engine_log("0x%04X is an unsupported property type!", type);
+					abort();
+			}
+		}
+		va_end(list);
+
 		Dummy * ptr = promote<Dummy>(reinterpret_cast<DUMMY*>(obj));
 		if(ptr == nullptr) {
 			engine_log("obj_setvar received NULL object!");
 			return;
 		}
-		ptr->setProperty(name, Property(type, data));
+		ptr->setProperty(name, Property(type, value));
 	}
 
 	void obj_listvar(void const * obj)
@@ -62,21 +110,96 @@ ACKNEXT_API_BLOCK
 		engine_log("Properties(%p):", obj);
 		for(auto const & prop : ptr->properties)
 		{
-			char buf[256];
+			char const * name = prop.first.c_str();
 			Property const & p = prop.second;
-			switch(p.type)
+			if(p.isSampler())
 			{
-				case GL_FLOAT: std::sprintf(buf, "%f", p.data.floats[0]); break;
-				case GL_FLOAT_VEC2: std::sprintf(buf, "(%f, %f)", p.data.floats[0], p.data.floats[1]); break;
-				case GL_FLOAT_VEC3: std::sprintf(buf, "(%f, %f, %f)", p.data.floats[0],p.data.floats[1], p.data.floats[2]); break;
-				case GL_FLOAT_VEC4: std::sprintf(buf, "(%f, %f, %f, %f)", p.data.floats[0],p.data.floats[1], p.data.floats[2], p.data.floats[3]); break;
-				case GL_INT: std::sprintf(buf, "%d", p.data.ints[0]); break;
-				case GL_INT_VEC2: std::sprintf(buf, "(%d, %d)", p.data.ints[0], p.data.ints[1]); break;
-				case GL_INT_VEC3: std::sprintf(buf, "(%d, %d, %d)", p.data.ints[0],p.data.ints[1], p.data.ints[2]); break;
-				case GL_INT_VEC4: std::sprintf(buf, "(%d, %d, %d, %d)", p.data.ints[0],p.data.ints[1], p.data.ints[2], p.data.ints[3]); break;
-				default: strcpy(buf, "???"); break;
+				if(p.data.texture) {
+					engine_log("\t%s = Texture(%d)", name, p.data.texture->object);
+				} else {
+					engine_log("\t%s = <null>", name);
+				}
 			}
-			engine_log("\t%s = %s", prop.first.c_str(), buf);
+			else
+			{
+				switch(p.type)
+				{
+	#define PRINTVEC(_Name, _Filter, _Var) \
+					case GL_##_Name: \
+						engine_log("\t%s = " _Filter, name, p.data._Var[0]); \
+						break; \
+					case GL_##_Name##_VEC2: \
+						engine_log("\t%s = (" _Filter ", " _Filter ")", name, p.data._Var[0], p.data._Var[1]); \
+						break; \
+					case GL_##_Name##_VEC3: \
+						engine_log("\t%s = (" _Filter ", " _Filter ", " _Filter ")", name, p.data._Var[0], p.data._Var[1], p.data._Var[2]); \
+						break; \
+					case GL_##_Name##_VEC4: \
+						engine_log("\t%s = (" _Filter ", " _Filter ", " _Filter ", " _Filter ")", name, p.data._Var[0], p.data._Var[1], p.data._Var[2], p.data._Var[3]); \
+						break
+
+					PRINTVEC(BOOL, "%d", bools);
+					PRINTVEC(INT, "%d", ints);
+					PRINTVEC(UNSIGNED_INT, "%u", uints);
+					PRINTVEC(FLOAT, "%f", floats);
+					PRINTVEC(DOUBLE, "%f", floats);
+	#undef PRINTVEC
+					default:
+						engine_log("\t%s = <Display not supported>", name);
+						break;
+				}
+			}
 		}
+	}
+}
+
+bool Property::isSampler(GLenum value)
+{
+	switch(value)
+	{
+		case GL_SAMPLER_1D:
+		case GL_SAMPLER_1D_ARRAY:
+		case GL_SAMPLER_1D_ARRAY_SHADOW:
+		case GL_SAMPLER_1D_SHADOW:
+		case GL_SAMPLER_2D:
+		case GL_SAMPLER_2D_ARRAY:
+		case GL_SAMPLER_2D_ARRAY_SHADOW:
+		case GL_SAMPLER_2D_MULTISAMPLE:
+		case GL_SAMPLER_2D_MULTISAMPLE_ARRAY:
+		case GL_SAMPLER_2D_RECT:
+		case GL_SAMPLER_2D_RECT_SHADOW:
+		case GL_SAMPLER_3D:
+		case GL_SAMPLER_BUFFER:
+		case GL_SAMPLER_CUBE:
+		case GL_SAMPLER_CUBE_MAP_ARRAY:
+		case GL_SAMPLER_CUBE_MAP_ARRAY_SHADOW:
+		case GL_SAMPLER_CUBE_SHADOW:
+			return true;
+		case GL_INT_SAMPLER_1D:
+		case GL_INT_SAMPLER_1D_ARRAY:
+		case GL_INT_SAMPLER_2D:
+		case GL_INT_SAMPLER_2D_ARRAY:
+		case GL_INT_SAMPLER_2D_MULTISAMPLE:
+		case GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:
+		case GL_INT_SAMPLER_2D_RECT:
+		case GL_INT_SAMPLER_3D:
+		case GL_INT_SAMPLER_BUFFER:
+		case GL_INT_SAMPLER_CUBE:
+		case GL_INT_SAMPLER_CUBE_MAP_ARRAY:
+			return true;
+		case GL_UNSIGNED_INT_SAMPLER_1D:
+		case GL_UNSIGNED_INT_SAMPLER_1D_ARRAY:
+		case GL_UNSIGNED_INT_SAMPLER_2D:
+		case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
+		case GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE:
+		case GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:
+		case GL_UNSIGNED_INT_SAMPLER_2D_RECT:
+		case GL_UNSIGNED_INT_SAMPLER_3D:
+		case GL_UNSIGNED_INT_SAMPLER_BUFFER:
+		case GL_UNSIGNED_INT_SAMPLER_CUBE:
+		case GL_UNSIGNED_INT_SAMPLER_CUBE_MAP_ARRAY:
+			return true;
+		default:
+			return false;
 	}
 }

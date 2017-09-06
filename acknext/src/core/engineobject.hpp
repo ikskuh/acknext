@@ -14,20 +14,29 @@
 
 extern "C" void engine_log(char const * format, ...);
 
+union Value
+{
+	int ints[4];
+	uint uints[4];
+	float floats[4];
+	bool bools[4];
+	MATRIX matrices[4];
+	BITMAP * texture;
+};
+
 struct Property
 {
 	Property() = default;
 
-	explicit Property(GLenum type, void const * data);
+	explicit Property(GLenum type, Value const & value);
 
-	void set(GLenum type, void const * data);
+	void set(GLenum type, Value const & value);
 
 	GLenum type;
-	union {
-		int ints[4];
-		float floats[4];
-		BITMAP * texture;
-	} data;
+	Value data;
+
+	bool isSampler() const { return isSampler(this->type); }
+	static bool isSampler(GLenum type);
 };
 
 extern "C" void obj_listvar(void const*);

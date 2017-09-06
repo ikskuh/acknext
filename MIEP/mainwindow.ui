@@ -13,9 +13,9 @@
   <property name="windowTitle">
    <string>Acknext MIEP</string>
   </property>
-  <widget class="QWidget" name="centralWidget">
+  <widget class="QAcknextWidget" name="centralWidget">
    <property name="styleSheet">
-    <string notr="true">background-color: red</string>
+    <string notr="true"/>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout">
     <property name="spacing">
@@ -33,9 +33,6 @@
     <property name="bottomMargin">
      <number>0</number>
     </property>
-    <item>
-     <widget class="QMdiArea" name="mdiArea"/>
-    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -112,7 +109,6 @@
    </attribute>
    <addaction name="actionOpen"/>
    <addaction name="actionSave"/>
-   <addaction name="actionInit"/>
   </widget>
   <action name="actionOpen">
    <property name="icon">
@@ -196,13 +192,16 @@
     <string>Ctrl+4</string>
    </property>
   </action>
-  <action name="actionInit">
-   <property name="text">
-    <string>Init!</string>
-   </property>
-  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>QAcknextWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">qacknextwidget.hpp</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../resource/ackui.qrc"/>
  </resources>

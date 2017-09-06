@@ -37,15 +37,23 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     qacknextwidget.cpp \
-    daaang.cpp
+    daaang.cpp \
+    materialeditor.cpp \
+    ackcolorselector.cpp \
+    imageview.cpp
 
 HEADERS += \
         mainwindow.hpp \
     qacknextwidget.hpp \
-    daaang.hpp
+    daaang.hpp \
+    materialeditor.hpp \
+    ackcolorselector.hpp \
+    imageview.hpp
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    materialeditor.ui \
+    ackcolorselector.ui
 
 RESOURCES += \
     ../resource/ackui.qrc

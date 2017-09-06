@@ -13,8 +13,6 @@ QAcknextWidget::QAcknextWidget(QWidget *parent) : QOpenGLWidget(parent), mModelD
 	format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
 	format.setSwapInterval(1); // Vsync
 	this->setFormat(format);
-
-	this->mModelDisplay = ent_create(nullptr, vector(0,0,0), NULL);
 }
 
 QAcknextWidget::~QAcknextWidget()
@@ -26,6 +24,29 @@ QAcknextWidget::~QAcknextWidget()
 
 void QAcknextWidget::initializeGL()
 {
+	auto string = QCoreApplication::applicationFilePath().toUtf8();
+	char * argv[] = {
+		string.data(),
+		"--no-sdl",
+	};
+
+	engine_open(2, argv);
+
+	engine_resize(this->width(), this->height());
+
+	filesys_addResource("/", "/");
+
+	filesys_addResource("/home/felix/projects/acknext/scripts", "/demo");
+
+	LIGHT * sun = light_create(SUNLIGHT);
+	sun->direction = (VECTOR){ -10, 30, 20 };
+	vec_normalize(&sun->direction, 1.0);
+
+
+	camera->position.z = 64;
+
+
+	this->mModelDisplay = ent_create(nullptr, vector(0,0,0), NULL);
 }
 
 void QAcknextWidget::setModel(MODEL *model)

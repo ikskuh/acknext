@@ -33,14 +33,14 @@ void more()
 	glGetIntegerv(GL_MAX_TESS_GEN_LEVEL, &max);
 	if(iSubdivision < max)
 		iSubdivision ++;
-	shader_setvar(shdTerrain, "iSubdivision", GL_INT, (int[]){iSubdivision});
+	shader_setvar(shdTerrain, "iSubdivision", GL_INT, iSubdivision);
 }
 
 void less()
 {
 	if(iSubdivision > 0)
 		iSubdivision --;
-	shader_setvar(shdTerrain, "iSubdivision", GL_INT, (int[]){iSubdivision});
+	shader_setvar(shdTerrain, "iSubdivision", GL_INT, iSubdivision);
 }
 
 void storepos()
@@ -179,13 +179,13 @@ void gamemain()
 
 	mesh = mesh_create(GL_QUADS, NULL, indexBuffer);
 	{
-		mesh_setvar(mesh, "vecTerrainSize", GL_INT_VEC2, (int[]){ hf->width, hf->height });
-		mesh_setvar(mesh, "vecTileSize", GL_INT_VEC2, (int[]){ sizeX, sizeY });
-		mesh_setvar(mesh, "texHeightmap", GL_SAMPLER_2D, &heightmapTexture);
-		mesh_setvar(mesh, "fTerrainScale", GL_FLOAT, &hf->horizontalScale);
-
 		BITMAP * bmpNM    = bmap_to_mipmap(bmap_load("/terrain/GrassyMountains_TN.png"));
-		mesh_setvar(mesh, "texNormalMap", GL_SAMPLER_2D, &bmpNM);
+
+		mesh_setvar(mesh, "vecTerrainSize", GL_INT_VEC2, hf->width, hf->height);
+		mesh_setvar(mesh, "vecTileSize", GL_INT_VEC2, sizeX, sizeY);
+		mesh_setvar(mesh, "texHeightmap", GL_SAMPLER_2D, heightmapTexture);
+		mesh_setvar(mesh, "fTerrainScale", GL_FLOAT, hf->horizontalScale);
+		mesh_setvar(mesh, "texNormalMap", GL_SAMPLER_2D, bmpNM);
 	}
 
 	shdTerrain = shader_create();
@@ -202,13 +202,13 @@ void gamemain()
 
 		glGetIntegerv(GL_MAX_TESS_GEN_LEVEL, &iSubdivision);
 		engine_log("Maximum subdivision: %d", iSubdivision);
-		shader_setvar(shdTerrain, "iSubdivision", GL_INT, (int[]){iSubdivision});
 
-		shader_setvar(shdTerrain, "vecTesselationParameters", GL_FLOAT_VEC3, (float[]) {
+		shader_setvar(shdTerrain, "iSubdivision", GL_INT, iSubdivision);
+		shader_setvar(shdTerrain, "vecTesselationParameters", GL_FLOAT_VEC3,
 			20.0f, // tesselation rate
 			32.0f, // ???
-			50.0f, // ???
-		});
+			50.0f  // ???
+		);
 	}
 
 	MODEL * model = model_create(1, 0, 0);
@@ -228,8 +228,8 @@ void gamemain()
 			bmpDetail->object,
 			GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
 
-		shader_setvar(model->materials[0], "texLargeScaleColor", GL_SAMPLER_2D, &bmpLSC);
-		shader_setvar(model->materials[0], "texDetail", GL_SAMPLER_2D, &bmpDetail);
+		shader_setvar(model->materials[0], "texLargeScaleColor", GL_SAMPLER_2D, bmpLSC);
+		shader_setvar(model->materials[0], "texDetail", GL_SAMPLER_2D, bmpDetail);
 	}
 
 	ENTITY * ent = ent_create(NULL, vector(0,0,0), NULL);
@@ -249,7 +249,7 @@ void gamemain()
 		am->width, am->height,
 		GL_RG_INTEGER, GL_UNSIGNED_BYTE,
 		am->data);
-	shader_setvar(model->materials[0], "texTerrainMaterial", GL_UNSIGNED_INT_SAMPLER_2D, &amtexture);
+	shader_setvar(model->materials[0], "texTerrainMaterial", GL_UNSIGNED_INT_SAMPLER_2D, amtexture);
 
 	BITMAP * materials = bmap_create(GL_TEXTURE_2D_ARRAY, GL_RGBA8);
 	{
@@ -287,7 +287,7 @@ void gamemain()
 		glTextureParameterf(
 			materials->object,
 			GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
-		shader_setvar(model->materials[0], "texTerrainMaterials", GL_SAMPLER_2D_ARRAY, &materials);
+		shader_setvar(model->materials[0], "texTerrainMaterials", GL_SAMPLER_2D_ARRAY, materials);
 	}
 
 	shader_logInfo(shdTerrain);
@@ -334,7 +334,6 @@ void gamemain()
 			vec_add(&camera->position, &mov);
 
 			camera->position.y = l3hf_get(hf, camera->position.x, camera->position.z) + 1.8;
-
 		}
 		task_yield();
 	}
