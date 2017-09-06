@@ -307,6 +307,8 @@ void gamemain()
 			engine_log("%f ms / %f FPS", 1000.0 * time_step, 1.0 / time_step);
 		}
 
+		camera->position.y = l3hf_get(hf, camera->position.x, camera->position.z) + 1.8;
+
 		task_yield();
 	}
 

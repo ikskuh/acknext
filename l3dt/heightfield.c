@@ -184,7 +184,7 @@ float l3hf_get(L3Heightfield const * hf, float x, float y)
 	int y0 = floor(y);
 	int y1 = y0 + 1;
 
-	return DATA(hf, x0, y0);
+	// return DATA(hf, x0, y0);
 
 	float dx = x - x0;
 	float dy = y - y0;
