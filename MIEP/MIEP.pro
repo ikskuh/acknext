@@ -36,11 +36,13 @@ INCLUDEPATH += $$PWD/../acknext/include
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    qacknextwidget.cpp
+    qacknextwidget.cpp \
+    daaang.cpp
 
 HEADERS += \
         mainwindow.hpp \
-    qacknextwidget.hpp
+    qacknextwidget.hpp \
+    daaang.hpp
 
 FORMS += \
         mainwindow.ui

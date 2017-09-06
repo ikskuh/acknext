@@ -4,12 +4,12 @@ var debug_movement = 10;
 var debug_speedup = 250;
 var debug_slowdown = 9;
 
-static bool camera_movement_enabled = false;
+bool debug_camera_movement_enabled = false;
 
 static void toggleMovement(void *x)
 {
 	(void)x;
-	camera_movement_enabled = !camera_movement_enabled;
+	debug_camera_movement_enabled = !debug_camera_movement_enabled;
 	beep();
 }
 
@@ -41,7 +41,7 @@ void debug_tools()
 	event_attach(on_0, toggleMovement);
 	while(!key_escape)
 	{
-		if(camera_movement_enabled) {
+		if(debug_camera_movement_enabled) {
 			if(mouse_right) {
 				pan -= 0.3 * mickey.x;
 				tilt -= 0.3 * mickey.y;

@@ -505,7 +505,7 @@ ACKNEXT_API_BLOCK
 							if(tex->achFormatHint != nullptr) {
 								engine_log("Texture format hint: '%s'", tex->achFormatHint);
 							}
-							dst.albedoTexture = bmap_create(GL_TEXTURE_2D, GL_RGBA);
+							dst.albedoTexture = bmap_create(GL_TEXTURE_2D, GL_RGBA8);
 							bmap_set(
 								dst.albedoTexture,
 								tex->mWidth,

@@ -4,6 +4,12 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QAction>
+#include <QDebug>
+#include <QMdiArea>
+#include <QMdiSubWindow>
+#include <QOpenGLContext>
+#include "qacknextwidget.hpp"
+#include "daaang.hpp"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -12,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->setupUi(this);
 
 	this->on_actionSetMode(0);
+
 }
 
 MainWindow::~MainWindow()
@@ -28,24 +35,36 @@ void MainWindow::on_actionOpen_triggered()
 		return;
 	}
 
-	ui->centralWidget->makeCurrent();
+	QAcknextWidget * ack = new QAcknextWidget(ui->mdiArea);
+	ack->show();
+	ack->context()->setShareContext(con->context());
+
+	ack->makeCurrent();
+
 	MODEL * model = model_load(fileName.toUtf8().data());
-	ui->centralWidget->doneCurrent();
 
 	if(model == nullptr) {
 		QMessageBox::critical(
 			this,
 			this->windowTitle(),
 			tr("Failed to open file: %1").arg(engine_lasterror_text));
+		delete ack;
+		ack->doneCurrent();
 		return;
 	}
 
-	if(this->ui->centralWidget->model() != nullptr)
+	if(ack->model() != nullptr)
 	{
-		model_remove(this->ui->centralWidget->model());
+		model_remove(ack->model());
 	}
 
-	this->ui->centralWidget->setModel(model);
+	ack->setModel(model);
+
+	ack->doneCurrent();
+
+	auto iwn = this->ui->mdiArea->addSubWindow(ack);
+
+	iwn->show();
 }
 
 
@@ -66,15 +85,31 @@ void MainWindow::on_actionNormal_View_triggered()
 
 void MainWindow::on_actionSetMode(int mode)
 {
-	this->ui->actionScene_View->setChecked(mode == 0);
-	this->ui->actionLight_View->setChecked(mode == 1);
-	this->ui->actionNormal_View->setChecked(mode == 2);
-	opengl_debugMode = mode;
-	this->ui->centralWidget->update();
+	auto win = this->ui->mdiArea->currentSubWindow();
+	if(win)
+	{
+		QAcknextWidget * ack = (QAcknextWidget*)win->widget();
+		this->ui->actionScene_View->setChecked(mode == 0);
+		this->ui->actionLight_View->setChecked(mode == 1);
+		this->ui->actionNormal_View->setChecked(mode == 2);
+		opengl_debugMode = mode;
+		ack->update();
+	}
 }
 
 void MainWindow::on_actionWireframe_triggered()
 {
-	opengl_wireFrame = this->ui->actionWireframe->isChecked();
-    this->ui->centralWidget->update();
+	auto win = this->ui->mdiArea->currentSubWindow();
+	if(win) {
+		QAcknextWidget * ack = (QAcknextWidget*)win->widget();
+		opengl_wireFrame = this->ui->actionWireframe->isChecked();
+		ack->update();
+	}
+}
+
+void MainWindow::on_actionInit_triggered()
+{
+	con = new Daaang();
+	auto win = ui->mdiArea->addSubWindow(con);
+	win->show();
 }

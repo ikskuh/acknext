@@ -27,7 +27,7 @@ L3Attributefield * l3af_decode(void const * memory, size_t length)
 	L3Attributefield * result = malloc(sizeof(L3Attributefield) + sizeof(uint16_t) * header->width * header->height);
 	result->width = header->width;
 	result->height = header->height;
-	result->data = (uint16_t*)((uint8_t*)result + sizeof(L3Attributefield));
+	result->data = (L3Attribute*)((uint8_t*)result + sizeof(L3Attributefield));
 
 	memcpy(result->data, (uint8_t*)header + sizeof(AMFHeader), sizeof(uint16_t) * result->width * result->height);
 

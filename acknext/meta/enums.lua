@@ -16,10 +16,12 @@ enum.SHADERVAR =
 	"matWorldView",
 	"matViewProj",
 	"matWorldViewProj",
+	
 	-- TODO: Complete!
 	"vecViewDir",
 	"vecViewPos",
 	"vecViewPort",
+	"fArc",
 
 	-- Material
 	"vecAlbedo",

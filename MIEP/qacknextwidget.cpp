@@ -4,7 +4,7 @@
 #include <QApplication>
 #include <QMouseEvent>
 
-QAcknextWidget::QAcknextWidget(QWidget *parent) : QOpenGLWidget(parent)
+QAcknextWidget::QAcknextWidget(QWidget *parent) : QOpenGLWidget(parent), mModelDisplay(nullptr)
 {
 	QSurfaceFormat format;
 	format.setVersion(4, 5);
@@ -13,39 +13,19 @@ QAcknextWidget::QAcknextWidget(QWidget *parent) : QOpenGLWidget(parent)
 	format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
 	format.setSwapInterval(1); // Vsync
 	this->setFormat(format);
+
+	this->mModelDisplay = ent_create(nullptr, vector(0,0,0), NULL);
 }
 
 QAcknextWidget::~QAcknextWidget()
 {
 	ent_remove(this->mModelDisplay);
-	view_remove(this->mView);
-	engine_close();
+	// view_remove(this->mView);
+	// engine_close();
 }
 
 void QAcknextWidget::initializeGL()
 {
-	auto string = QCoreApplication::applicationFilePath().toUtf8();
-	char * argv[] = {
-	    string.data(),
-	    "--no-sdl",
-	};
-	engine_open(2, argv);
-
-	engine_resize(this->width(), this->height());
-
-	filesys_addResource("/", "/");
-
-	filesys_addResource("/home/felix/projects/acknext/scripts", "/demo");
-
-	camera->position.z = 64;
-
-	this->mView = view_create(reinterpret_cast<RENDERCALL>(render_scene_with_camera), camera);
-
-	this->mModelDisplay = ent_create(nullptr, vector(0,0,0), NULL);
-
-	this->mSun = light_create(SUNLIGHT);
-	this->mSun->direction = (VECTOR){ -10, 30, 20 };
-	vec_normalize(&this->mSun->direction, 1.0);
 }
 
 void QAcknextWidget::setModel(MODEL *model)
@@ -63,6 +43,9 @@ void QAcknextWidget::resizeGL(int w, int h)
 void QAcknextWidget::paintGL()
 {
 	engine_frame();
+
+	const_cast<SIZE&>(screen_size) = (SIZE) { this->width(), this->height() };
+	render_scene_with_camera(camera);
 }
 
 void QAcknextWidget::mousePressEvent(QMouseEvent *event)
@@ -84,5 +67,11 @@ void QAcknextWidget::mouseMoveEvent(QMouseEvent *event)
 
 	this->mModelDisplay->rotation = qx;
 
+	this->update();
+}
+
+void QAcknextWidget::wheelEvent(QWheelEvent *event)
+{
+	camera->position.z -= event->delta() / 120;
 	this->update();
 }

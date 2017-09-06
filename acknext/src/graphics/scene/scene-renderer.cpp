@@ -197,6 +197,7 @@ ACKNEXT_API_BLOCK
 
 				currentShader->vecViewPos = perspective->position;
 				currentShader->vecFogColor = fog;
+				currentShader->fArc = tan(0.5 * DEG_TO_RAD * camera->arc);
 
 				// shader < mtl < model < mesh < ent
 				shader_setUniforms(&currentShader->api(), demote(model));

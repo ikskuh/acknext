@@ -1,7 +1,9 @@
 #ifndef MAINWINDOW_HPP
 #define MAINWINDOW_HPP
 
+#include <acknext.h>
 #include <QMainWindow>
+#include <QOpenGLWidget>
 
 namespace Ui {
 	class MainWindow;
@@ -26,11 +28,14 @@ private slots:
 
 	void on_actionWireframe_triggered();
 
+	void on_actionInit_triggered();
+
 private:
 	void on_actionSetMode(int mode);
 
 private:
 	Ui::MainWindow *ui;
+	QOpenGLWidget * con;
 };
 
 #endif // MAINWINDOW_HPP

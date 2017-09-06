@@ -96,6 +96,8 @@ void tree()
 	}
 }
 
+extern bool debug_camera_movement_enabled;
+
 void gamemain()
 {
 	GLfloat fLargest;
@@ -201,6 +203,12 @@ void gamemain()
 		glGetIntegerv(GL_MAX_TESS_GEN_LEVEL, &iSubdivision);
 		engine_log("Maximum subdivision: %d", iSubdivision);
 		shader_setvar(shdTerrain, "iSubdivision", GL_INT, (int[]){iSubdivision});
+
+		shader_setvar(shdTerrain, "vecTesselationParameters", GL_FLOAT_VEC3, (float[]) {
+			20.0f, // tesselation rate
+			32.0f, // ???
+			50.0f, // ???
+		});
 	}
 
 	MODEL * model = model_create(1, 0, 0);
@@ -296,6 +304,8 @@ void gamemain()
 	LIGHT * ambi = light_create(AMBIENTLIGHT);
 	ambi->color = *color_hex(0x232c33);
 
+	var pan = 0;
+	var tilt = 0;
 	while(true)
 	{
 		if(key_n) {
@@ -307,8 +317,25 @@ void gamemain()
 			engine_log("%f ms / %f FPS", 1000.0 * time_step, 1.0 / time_step);
 		}
 
-		camera->position.y = l3hf_get(hf, camera->position.x, camera->position.z) + 1.8;
+		if(debug_camera_movement_enabled == false)
+		{
+			pan -= 0.3 * mickey.x;
+			tilt = clamp(tilt - 0.3 * mickey.y, -80, 85);
 
+			camera->rotation = *euler(pan, tilt, 0);
+
+			VECTOR mov = {
+				key_d - key_a,
+				0,
+				key_s - key_w,
+			};
+			vec_normalize(&mov, (3 + 3 * key_lshift) * time_step);
+			vec_rotate(&mov, euler(pan, 0, 0));
+			vec_add(&camera->position, &mov);
+
+			camera->position.y = l3hf_get(hf, camera->position.x, camera->position.z) + 1.8;
+
+		}
 		task_yield();
 	}
 

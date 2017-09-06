@@ -178,6 +178,7 @@ void render_frame()
 	}
 
 	SDL_GL_SwapWindow(engine.window);
+	glDisable(GL_SCISSOR_TEST);
 
 	DebugDrawer::reset();
 }
