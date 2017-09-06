@@ -5,6 +5,7 @@
 #include <memory>
 #include <stack>
 #include <assert.h>
+#include <libgen.h>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -252,7 +253,6 @@ ACKNEXT_API_BLOCK
 			return nullptr;
 		}
 
-
 		unsigned int flags =
 			  aiProcess_JoinIdenticalVertices
 			// | aiProcess_MakeLeftHanded // is this needed?
@@ -493,6 +493,7 @@ ACKNEXT_API_BLOCK
 
 				aiString path;
 				if(src.GetTexture(aiTextureType_DIFFUSE, 0, &path) == aiReturn_SUCCESS) {
+
 					engine_log("Texture: %s", path.C_Str());
 
 					if(path.data[0] == '*') {
@@ -514,7 +515,18 @@ ACKNEXT_API_BLOCK
 								tex->pcData);
 						}
 					} else {
-						dst.albedoTexture = bmap_load(path.C_Str());
+
+						char buffer[PATH_MAX];
+						strcpy(buffer, path.C_Str());
+						if(buffer[0] != '/') {
+							strcpy(buffer, fileName);
+							dirname(buffer);
+							strcat(buffer, "/");
+							strcat(buffer, path.C_Str());
+						}
+						engine_log("abspath: %s", buffer);
+
+						dst.albedoTexture = bmap_load(buffer);
 					}
 
 					if(dst.albedoTexture == nullptr) {

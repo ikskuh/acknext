@@ -12,6 +12,8 @@ typedef struct L3Heightfield
 
 L3Heightfield * l3hf_decode(void const * memory, size_t length);
 
+float l3hf_get(L3Heightfield const * hf, float x, float y);
+
 void l3hf_free(L3Heightfield * hf);
 
 typedef union L3Attribute

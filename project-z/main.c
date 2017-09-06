@@ -78,6 +78,24 @@ void funnylight()
 	}
 }
 
+L3Heightfield * hf;
+
+void tree()
+{
+	const int radius = 250;
+	const int count = 250;
+	const VECTOR center = camera->position;
+	for(int i = 0; i < count; i++)
+	{
+		VECTOR off;
+		off.x = center.x + (rand() / (float)RAND_MAX) * 2*radius - radius;
+		off.z = center.z + (rand() / (float)RAND_MAX) * 2*radius - radius;
+		off.y = l3hf_get(hf, off.x, off.z) - 0.2;
+		ent_create("/trees/baum.obj", &off, NULL);
+		task_yield();
+	}
+}
+
 void gamemain()
 {
 	GLfloat fLargest;
@@ -96,6 +114,7 @@ void gamemain()
 	event_attach(on_kp_minus, less);
 	event_attach(on_s, storepos);
 
+	event_attach(on_t, tree);
 	event_attach(on_l, funnylight);
 
 	{
@@ -114,7 +133,7 @@ void gamemain()
 
 	blob_remove(packed);
 
-	L3Heightfield * hf = l3hf_decode(unpacked->data, unpacked->size);
+	hf = l3hf_decode(unpacked->data, unpacked->size);
 
 	BITMAP * heightmapTexture = bmap_create(GL_TEXTURE_2D, GL_R32F);
 
@@ -287,6 +306,7 @@ void gamemain()
 		if(key_4) {
 			engine_log("%f ms / %f FPS", 1000.0 * time_step, 1.0 / time_step);
 		}
+
 		task_yield();
 	}
 

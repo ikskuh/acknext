@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 int min(int a, int b) {
 	return (a<b)?a:b;
@@ -156,6 +157,47 @@ L3Heightfield * l3hf_decode(void const * memory, size_t length)
 	}
 
 	return result;
+}
+
+
+static float lerp(float a, float b, float f)
+{
+	return a*(1-f) + b*f;
+}
+
+#define DATA(hf,x,y) hf->data[(y)*hf->width+(x)]
+
+float l3hf_get(L3Heightfield const * hf, float x, float y)
+{
+	if(hf == NULL) {
+		return 0.0;
+	}
+	x /= hf->horizontalScale;
+	y /= hf->horizontalScale;
+	if(x < 0) x = 0;
+	if(y < 0) y = 0;
+	if(x > (hf->width - 1)) x = (hf->width - 1);
+	if(y > (hf->height - 1)) y = (hf->height - 1);
+
+	int x0 = floor(x);
+	int x1 = x0 + 1;
+	int y0 = floor(y);
+	int y1 = y0 + 1;
+
+	return DATA(hf, x0, y0);
+
+	float dx = x - x0;
+	float dy = y - y0;
+
+	float h00 = DATA(hf, x0, y0);
+	float h01 = DATA(hf, x0, y1);
+	float h10 = DATA(hf, x1, y0);
+	float h11 = DATA(hf, x1, y1);
+
+	return lerp(
+		lerp(h00, h01, dy),
+		lerp(h10, h11, dy),
+		dx);
 }
 
 void l3hf_free(L3Heightfield * hf)
