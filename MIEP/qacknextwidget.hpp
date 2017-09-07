@@ -32,6 +32,9 @@ public:
 
 	MODEL * model() const { return this->mModelDisplay->model; }
 
+private:
+	void drawBones();
+
 signals:
 
 public slots:

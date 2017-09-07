@@ -14,14 +14,8 @@ Shader * currentShader;
 // graphics-core.cpp
 extern GLuint vao;
 extern Shader * defaultShader;
-extern Bitmap * defaultWhiteTexture;
-extern Bitmap * defaultNormalMap;
-
-void opengl_setTexture(int slot, BITMAP const * _texture, Bitmap const * _fallback)
-{
-	Bitmap const * texture = FALLBACK(promote<Bitmap>(_texture), FALLBACK(_fallback, defaultWhiteTexture));
-	glBindTextureUnit(slot, texture->api().object);
-}
+extern BITMAP * defaultWhiteTexture;
+extern BITMAP * defaultNormalMap;
 
 ACKNEXT_API_BLOCK
 {
@@ -197,7 +191,7 @@ ACKNEXT_API_BLOCK
 
 	void opengl_setTexture(int slot, BITMAP const * _texture)
 	{
-		Bitmap const * texture = FALLBACK(promote<Bitmap>(_texture), defaultWhiteTexture);
+		Bitmap const * texture = promote<Bitmap>(FALLBACK(_texture, defaultWhiteTexture));
 		glBindTextureUnit(slot, texture->api().object);
 	}
 
@@ -261,8 +255,8 @@ ACKNEXT_API_BLOCK
 		mtl_setvar(const_cast<MATERIAL*>(material), "texNormalMap",  GL_SAMPLER_2D, material->normalTexture);
 		mtl_setvar(const_cast<MATERIAL*>(material), "texAttributes", GL_SAMPLER_2D, material->attributeTexture);
 
-		shader_setUniforms(&currentShader->api(), &currentShader->api());
-		shader_setUniforms(&currentShader->api(), material);
+		shader_setUniforms(&currentShader->api(), &currentShader->api(), true);
+		shader_setUniforms(&currentShader->api(), material, false);
 
 		// TODO: Reimplement
 		// opengl_setTexture(0, material->colorTexture);

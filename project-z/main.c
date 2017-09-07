@@ -295,7 +295,7 @@ void gamemain()
 	obj_listvar(shdTerrain);
 
 	// Äh wut, aber ja, ist sinnvoller so im moment
-	shader_setUniforms(shdTerrain, shdTerrain);
+	shader_setUniforms(shdTerrain, shdTerrain, true);
 
 	LIGHT * sun = light_create(SUNLIGHT);
 	sun->direction = *vec_normalize(vector(0.6, -1, -0.4), 1.0);

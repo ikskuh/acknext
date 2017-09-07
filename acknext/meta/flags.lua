@@ -22,4 +22,5 @@ flags.SHADERFLAGS =
 {
 	"TESSELATION",
 	"LINKED",
+	"DOUBLESIDED",
 }

@@ -51,6 +51,8 @@ ACKFUN BITMAP * bmap_create(GLenum type, GLenum format);
 
 ACKFUN BITMAP * bmap_createblack(int width, int height, GLenum format);
 
+ACKFUN BITMAP * bmap_createpixel(COLOR color);
+
 ACKFUN BITMAP * bmap_load(char const * fileName);
 
 ACKFUN void bmap_set(
@@ -106,7 +108,7 @@ ACKFUN int shader_getUniformCount(SHADER const * shader);
 
 ACKFUN UNIFORM const * shader_getUniformByName(SHADER const * shader, char const * name);
 
-ACKFUN void shader_setUniforms(SHADER * shader, void const * source);
+ACKFUN void shader_setUniforms(SHADER * shader, void const * source, bool override);
 
 ACKFUN void shader_logInfo(SHADER const * shader);
 

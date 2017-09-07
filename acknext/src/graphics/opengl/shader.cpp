@@ -304,7 +304,7 @@ ACKNEXT_API_BLOCK
 		return nullptr;
 	}
 
-	void shader_setUniforms(SHADER * shader, void const * source)
+	void shader_setUniforms(SHADER * shader, void const * source, bool override)
 	{
 		Shader * sh = promote<Shader>(shader);
 		if(sh == nullptr) {
@@ -336,7 +336,9 @@ ACKNEXT_API_BLOCK
 
 			if(p.isSampler())
 			{
-				opengl_setTexture(uni->textureSlot, p.data.texture);
+				if(p.data.texture || override) {
+					opengl_setTexture(uni->textureSlot, p.data.texture);
+				}
 			}
 			else
 			{

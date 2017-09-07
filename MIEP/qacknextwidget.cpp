@@ -18,8 +18,8 @@ QAcknextWidget::QAcknextWidget(QWidget *parent) : QOpenGLWidget(parent), mModelD
 QAcknextWidget::~QAcknextWidget()
 {
 	ent_remove(this->mModelDisplay);
-	// view_remove(this->mView);
-	// engine_close();
+	view_remove(this->mView);
+	engine_close();
 }
 
 void QAcknextWidget::initializeGL()
@@ -39,14 +39,15 @@ void QAcknextWidget::initializeGL()
 	filesys_addResource("/home/felix/projects/acknext/scripts", "/demo");
 
 	LIGHT * sun = light_create(SUNLIGHT);
-	sun->direction = (VECTOR){ -10, 30, 20 };
-	vec_normalize(&sun->direction, 1.0);
+	sun->direction = (VECTOR){ 0, -1, 0 };
+	// vec_normalize(&sun->direction, 1.0);
 
 	LIGHT * ambi = light_create(AMBIENTLIGHT);
 	ambi->color = (COLOR){0.3,0.3,0.3,1.0};
 
 	camera->position.z = 64;
 
+	this->mView = view_create((RENDERCALL)render_scene_with_camera, camera);
 
 	this->mModelDisplay = ent_create(nullptr, vector(0,0,0), NULL);
 }
@@ -63,12 +64,47 @@ void QAcknextWidget::resizeGL(int w, int h)
 	this->update();
 }
 
+void QAcknextWidget::drawBones()
+{
+	MATRIX mat;
+	mat_id(&mat);
+
+	MATRIX transforms[ACKNEXT_MAX_BONES];
+	VECTOR positions[ACKNEXT_MAX_BONES];
+	transforms[0] = model()->bones[0].transform;
+
+	positions[0] = nullvector;
+	vec_transform(&positions[0], &transforms[0]);
+
+	for(int i = 1; i < model()->boneCount; i++)
+	{
+		BONE * bone = &model()->bones[i];
+		mat_mul(&transforms[i], &bone->transform, &transforms[bone->parent]);
+
+		positions[i] = nullvector;
+		vec_transform(&positions[i], &transforms[i]);
+
+		draw_line3d(&positions[i], &positions[bone->parent], &COLOR_GREEN);
+
+		// if(i == selection) {
+		// 	draw_point3d(&positions[i], &COLOR_RED);
+		// } else {
+			draw_point3d(&positions[i], &COLOR_BLUE);
+		// }
+	}
+}
+
 void QAcknextWidget::paintGL()
 {
-	engine_frame();
+	draw_line3d(vector(0,0,0), vector(100,0,0), &COLOR_RED);
+	draw_line3d(vector(0,0,0), vector(0,100,0), &COLOR_GREEN);
+	draw_line3d(vector(0,0,0), vector(0,0,100), &COLOR_BLUE);
 
-	const_cast<SIZE&>(screen_size) = (SIZE) { this->width(), this->height() };
-	render_scene_with_camera(camera);
+	if(this->model()) {
+		this->drawBones();
+	}
+
+	engine_frame();
 }
 
 void QAcknextWidget::mousePressEvent(QMouseEvent *event)
@@ -86,15 +122,24 @@ void QAcknextWidget::mouseMoveEvent(QMouseEvent *event)
 	quat_axis_angle(&qy, vector(1, 0, 0), delta.y());
 
 	quat_mult(&qx, &qy);
-	quat_mult(&qx, &this->mModelDisplay->rotation);
+	quat_mult(&camera->rotation, &qx);
 
-	this->mModelDisplay->rotation = qx;
+	// camera->rotation = qx;
+
+	var dist = vec_length(&camera->position);
+
+	vec_set(&camera->position, vector(0, 0, dist));
+	vec_rotate(&camera->position, &camera->rotation);
+
+	engine_log("%f %f %f", camera->position.x, camera->position.y, camera->position.z);
+
+	// this->mModelDisplay->rotation = qx;
 
 	this->update();
 }
 
 void QAcknextWidget::wheelEvent(QWheelEvent *event)
 {
-	camera->position.z -= event->delta() / 120;
+	vec_normalize(&camera->position, vec_length(&camera->position) + event->delta() / 120);
 	this->update();
 }

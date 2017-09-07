@@ -40,6 +40,18 @@ ACKNEXT_API_BLOCK
 		return bmp;
 	}
 
+	BITMAP * bmap_createpixel(COLOR color)
+	{
+		BITMAP * bmp = bmap_createblack(1, 1, GL_RGBA32F);
+		glTextureSubImage2D(
+			bmp->object,
+			0,
+			0, 0, 1, 1,
+			GL_RGBA, GL_FLOAT,
+			&color);
+		return bmp;
+	}
+
 	BITMAP * bmap_load(char const * fileName)
 	{
 		SDL_RWops *rwops = PHYSFSRWOPS_openRead(fileName);

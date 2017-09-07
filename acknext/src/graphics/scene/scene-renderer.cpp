@@ -200,9 +200,9 @@ ACKNEXT_API_BLOCK
 				currentShader->fArc = tan(0.5 * DEG_TO_RAD * camera->arc);
 
 				// shader < mtl < model < mesh < ent
-				shader_setUniforms(&currentShader->api(), demote(model));
-				shader_setUniforms(&currentShader->api(), mesh);
-				shader_setUniforms(&currentShader->api(), ent);
+				shader_setUniforms(&currentShader->api(), demote(model), false);
+				shader_setUniforms(&currentShader->api(), mesh, false);
+				shader_setUniforms(&currentShader->api(), ent, false);
 
 				opengl_drawMesh(mesh);
 			}
