@@ -1,5 +1,6 @@
 #include "bitmap.hpp"
 
+#include <assert.h>
 #include <SDL2/SDL_image.h>
 
 Bitmap::Bitmap(GLenum type, GLenum format)
@@ -7,6 +8,7 @@ Bitmap::Bitmap(GLenum type, GLenum format)
 	api().target = type;
 	api().format = format;
 	glCreateTextures(api().target, 1, &api().object);
+	assert(api().object);
 }
 
 Bitmap::~Bitmap()

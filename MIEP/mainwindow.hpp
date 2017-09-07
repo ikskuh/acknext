@@ -33,7 +33,11 @@ private:
 
 private:
 	Ui::MainWindow *ui;
-	QOpenGLWidget * con;
+	static QOpenGLWidget * con;
+
+public:
+	static void makeCurrent() { con->makeCurrent(); }
+	static void doneCurrent() { con->doneCurrent(); }
 };
 
 #endif // MAINWINDOW_HPP

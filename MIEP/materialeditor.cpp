@@ -4,6 +4,9 @@
 #include <QGraphicsScene>
 #include <QSlider>
 #include <QMessageBox>
+#include <QFileDialog>
+
+#include "mainwindow.hpp"
 
 static float map(float v, float srcMin, float srcMax, float dstMin, float dstMax)
 {
@@ -21,6 +24,14 @@ MaterialEditor::MaterialEditor(MATERIAL * material, QWidget *parent) :
 	emissionScene = new QGraphicsScene(this);
 
 	ui->setupUi(this);
+
+	connect(
+		ui->albedo, &AckColorSelector::colorChanged,
+		this, &MaterialEditor::on_albedo_colorChanged);
+	connect(
+		ui->emission, &AckColorSelector::colorChanged,
+		this, &MaterialEditor::on_emission_colorChanged);
+
 	this->initGui();
 }
 
@@ -35,6 +46,9 @@ void MaterialEditor::initGui()
 	ui->normalMap->setScene(normalScene);
 	ui->attributeMap->setScene(attributeScene);
 	ui->emissionMap->setScene(emissionScene);
+
+	ui->albedo->setColor(mtl->albedo);
+	ui->emission->setColor(mtl->emission);
 
 	bmapToImage(ui->albedoMap, mtl->albedoTexture);
 	bmapToImage(ui->normalMap, mtl->normalTexture);
@@ -65,13 +79,46 @@ void MaterialEditor::clearTexture(ImageView *target, BITMAP *&ptr)
 
 bool MaterialEditor::changeTexture(ImageView *target, BITMAP *&ptr)
 {
-	QMessageBox::warning(this, this->windowTitle(), "texture change not implemented yet!");
-	return false;
+	QString fileName = QFileDialog::getOpenFileName(
+		this,
+		tr("Select a texture file"),
+		QString(),
+		tr("Texture Files (*.png *.jpg *.bmp)"));
+	if(fileName.isNull()) {
+		return false;
+	}
+	QImage source(fileName);
+	QImage fitting = source.convertToFormat(QImage::Format_ARGB32);
+
+	MainWindow::makeCurrent();
+
+	if(ptr != nullptr) {
+		bmap_remove(ptr);
+	}
+
+	engine_log("Setup texture: %d×%d", fitting.width(), fitting.height());
+
+	ptr = bmap_create(GL_TEXTURE_2D, GL_RGBA8);
+	const_cast<void*&>(ptr->pixels) = malloc(4 * fitting.width() * fitting.height());
+	memcpy(ptr->pixels, fitting.bits(), 4 * fitting.width() * fitting.height());
+
+	bmap_set(
+		ptr,
+		fitting.width(), fitting.height(),
+		GL_BGRA, GL_UNSIGNED_BYTE,
+		ptr->pixels);
+
+	bmapToImage(target, ptr);
+
+	MainWindow::doneCurrent();
+
+	return true;
 }
 
 void MaterialEditor::on_changeAlbedoMap_clicked()
 {
 	if(this->changeTexture(ui->albedoMap, mtl->albedoTexture)) {
+		engine_log("%p", mtl->albedoTexture);
 		emit this->hasChanged();
 	}
 }
@@ -136,5 +183,18 @@ void MaterialEditor::on_metallic_valueChanged(int value)
 void MaterialEditor::on_fresnell_valueChanged(int value)
 {
 	mtl->fresnell = map(ui->fresnell->value(), 0, 100, 0, 100);
+	emit this->hasChanged();
+}
+
+
+void MaterialEditor::on_albedo_colorChanged(COLOR newColor)
+{
+	mtl->albedo = newColor;
+	emit this->hasChanged();
+}
+
+void MaterialEditor::on_emission_colorChanged(COLOR newColor)
+{
+	mtl->emission = newColor;
 	emit this->hasChanged();
 }

@@ -13,6 +13,8 @@
 
 #include "materialeditor.hpp"
 
+QOpenGLWidget * MainWindow::con = nullptr;
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -20,6 +22,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->setupUi(this);
 
 	this->on_actionSetMode(0);
+
+	con = ui->centralWidget;
 }
 
 MainWindow::~MainWindow()

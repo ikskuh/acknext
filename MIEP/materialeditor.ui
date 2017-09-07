@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>282</width>
+    <width>288</width>
     <height>605</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>120</width>
+    <height>89</height>
+   </size>
   </property>
   <property name="floating">
    <bool>true</bool>
@@ -48,8 +54,8 @@
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>-159</y>
-         <width>266</width>
+         <y>0</y>
+         <width>272</width>
          <height>743</height>
         </rect>
        </property>

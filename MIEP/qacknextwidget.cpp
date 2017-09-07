@@ -42,6 +42,8 @@ void QAcknextWidget::initializeGL()
 	sun->direction = (VECTOR){ -10, 30, 20 };
 	vec_normalize(&sun->direction, 1.0);
 
+	LIGHT * ambi = light_create(AMBIENTLIGHT);
+	ambi->color = (COLOR){0.3,0.3,0.3,1.0};
 
 	camera->position.z = 64;
 

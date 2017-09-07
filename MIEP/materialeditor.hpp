@@ -50,6 +50,10 @@ private slots:
 	void on_fresnell_valueChanged(int value);
 
 private:
+	void on_albedo_colorChanged(COLOR newColor);
+	void on_emission_colorChanged(COLOR newColor);
+
+private:
 	void initGui();
 
 	void bmapToImage(ImageView * target, BITMAP const * src);
