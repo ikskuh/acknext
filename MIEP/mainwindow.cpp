@@ -13,6 +13,7 @@
 
 #include "materialeditor.hpp"
 #include "boneeditor.hpp"
+#include "meshlist.hpp"
 
 QOpenGLWidget * MainWindow::con = nullptr;
 
@@ -63,6 +64,13 @@ void MainWindow::on_actionOpen_triggered()
 			}
 		}
 
+		{
+			auto meshed = new MeshList(model);
+			connect(
+				meshed, SIGNAL(hasChanged()),
+				ui->centralWidget, SLOT(update()));
+			this->addDockWidget(Qt::LeftDockWidgetArea, meshed);
+		}
 		{
 			auto boned = new BoneEditor(model);
 			connect(

@@ -3,5 +3,11 @@
         <file>icons/content-save.png</file>
         <file>icons/folder-open.png</file>
         <file>icons/settings.png</file>
+        <file>icons/delete.png</file>
+        <file>icons/eye-off.png</file>
+        <file>icons/eye-on.png</file>
+        <file>icons/eyedropper.png</file>
+        <file>icons/material.png</file>
+        <file>icons/screwdriver.png</file>
     </qresource>
 </RCC>

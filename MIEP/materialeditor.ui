@@ -74,7 +74,7 @@
          <x>0</x>
          <y>0</y>
          <width>234</width>
-         <height>1063</height>
+         <height>584</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -123,17 +123,17 @@
              </property>
             </widget>
            </item>
+           <item row="2" column="1">
+            <widget class="QSlider" name="roughness">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
            <item row="3" column="0">
             <widget class="QLabel" name="label_4">
              <property name="text">
               <string>Metallic</string>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="0">
-            <widget class="QLabel" name="label_5">
-             <property name="text">
-              <string>Fresnell</string>
              </property>
             </widget>
            </item>
@@ -144,10 +144,10 @@
              </property>
             </widget>
            </item>
-           <item row="2" column="1">
-            <widget class="QSlider" name="roughness">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+           <item row="4" column="0">
+            <widget class="QLabel" name="label_5">
+             <property name="text">
+              <string>Fresnell</string>
              </property>
             </widget>
            </item>
@@ -168,187 +168,183 @@
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="groupBox_2">
-          <property name="title">
-           <string>Albedo Map</string>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_3">
-           <item>
-            <widget class="ImageView" name="albedoMap">
-             <property name="minimumSize">
-              <size>
-               <width>150</width>
-               <height>150</height>
-              </size>
-             </property>
-             <property name="interactive">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout">
-             <item>
-              <widget class="QPushButton" name="changeAlbedoMap">
-               <property name="toolTip">
-                <string>Change this texture…</string>
-               </property>
-               <property name="text">
-                <string>Change…</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="clearAlbedoMap">
-               <property name="toolTip">
-                <string>Remove this texture</string>
-               </property>
-               <property name="text">
-                <string>Clear</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="groupBox_3">
-          <property name="title">
-           <string>Normal Map</string>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_4">
-           <item>
-            <widget class="ImageView" name="normalMap">
-             <property name="minimumSize">
-              <size>
-               <width>150</width>
-               <height>150</height>
-              </size>
-             </property>
-             <property name="interactive">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_2">
-             <item>
-              <widget class="QPushButton" name="changeNormalMap">
-               <property name="toolTip">
-                <string>Change this texture…</string>
-               </property>
-               <property name="text">
-                <string>Change…</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="clearNormalMap">
-               <property name="toolTip">
-                <string>Remove this texture</string>
-               </property>
-               <property name="text">
-                <string>Clear</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="groupBox_5">
-          <property name="title">
-           <string>Attribute Map</string>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_5">
-           <item>
-            <widget class="ImageView" name="attributeMap">
-             <property name="minimumSize">
-              <size>
-               <width>150</width>
-               <height>150</height>
-              </size>
-             </property>
-             <property name="interactive">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_3">
-             <item>
-              <widget class="QPushButton" name="changeAttributeMap">
-               <property name="toolTip">
-                <string>Change this texture…</string>
-               </property>
-               <property name="text">
-                <string>Change…</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="clearAttributeMap">
-               <property name="toolTip">
-                <string>Remove this texture</string>
-               </property>
-               <property name="text">
-                <string>Clear</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="groupBox_4">
-          <property name="title">
-           <string>Emission Map</string>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_6">
-           <item>
-            <widget class="ImageView" name="emissionMap">
-             <property name="minimumSize">
-              <size>
-               <width>150</width>
-               <height>150</height>
-              </size>
-             </property>
-             <property name="interactive">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_4">
-             <item>
-              <widget class="QPushButton" name="changeEmissionMap">
-               <property name="toolTip">
-                <string>Change this texture…</string>
-               </property>
-               <property name="text">
-                <string>Change…</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="clearEmissionMap">
-               <property name="toolTip">
-                <string>Remove this texture</string>
-               </property>
-               <property name="text">
-                <string>Clear</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-          </layout>
+         <widget class="QToolBox" name="toolBox_2">
+          <widget class="QWidget" name="toolBox_2Page1" native="true">
+           <attribute name="label">
+            <string>Albedo Map</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_3">
+            <item>
+             <widget class="ImageView" name="albedoMap">
+              <property name="minimumSize">
+               <size>
+                <width>150</width>
+                <height>150</height>
+               </size>
+              </property>
+              <property name="interactive">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout">
+              <item>
+               <widget class="QPushButton" name="changeAlbedoMap">
+                <property name="toolTip">
+                 <string>Change this texture…</string>
+                </property>
+                <property name="text">
+                 <string>Change…</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="clearAlbedoMap">
+                <property name="toolTip">
+                 <string>Remove this texture</string>
+                </property>
+                <property name="text">
+                 <string>Clear</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="page">
+           <attribute name="label">
+            <string>Normal Map</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <item>
+             <widget class="ImageView" name="normalMap">
+              <property name="minimumSize">
+               <size>
+                <width>150</width>
+                <height>150</height>
+               </size>
+              </property>
+              <property name="interactive">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <item>
+               <widget class="QPushButton" name="changeNormalMap">
+                <property name="toolTip">
+                 <string>Change this texture…</string>
+                </property>
+                <property name="text">
+                 <string>Change…</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="clearNormalMap">
+                <property name="toolTip">
+                 <string>Remove this texture</string>
+                </property>
+                <property name="text">
+                 <string>Clear</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="page_2">
+           <attribute name="label">
+            <string>Attribute Map</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_7">
+            <item>
+             <widget class="ImageView" name="attributeMap">
+              <property name="minimumSize">
+               <size>
+                <width>150</width>
+                <height>150</height>
+               </size>
+              </property>
+              <property name="interactive">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <item>
+               <widget class="QPushButton" name="changeAttributeMap">
+                <property name="toolTip">
+                 <string>Change this texture…</string>
+                </property>
+                <property name="text">
+                 <string>Change…</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="clearAttributeMap">
+                <property name="toolTip">
+                 <string>Remove this texture</string>
+                </property>
+                <property name="text">
+                 <string>Clear</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="page_3">
+           <attribute name="label">
+            <string>Emission Map</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_5">
+            <item>
+             <widget class="ImageView" name="emissionMap">
+              <property name="minimumSize">
+               <size>
+                <width>150</width>
+                <height>150</height>
+               </size>
+              </property>
+              <property name="interactive">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_4">
+              <item>
+               <widget class="QPushButton" name="changeEmissionMap">
+                <property name="toolTip">
+                 <string>Change this texture…</string>
+                </property>
+                <property name="text">
+                 <string>Change…</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="clearEmissionMap">
+                <property name="toolTip">
+                 <string>Remove this texture</string>
+                </property>
+                <property name="text">
+                 <string>Clear</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
          </widget>
         </item>
        </layout>

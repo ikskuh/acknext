@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset>
+    <contributor>
+      <author>Blender User</author>
+      <authoring_tool>Blender 2.78.0 commit date:2017-02-24, commit time:14:33, hash:e92f2352830</authoring_tool>
+    </contributor>
+    <created>2017-09-07T22:41:32</created>
+    <modified>2017-09-07T22:41:32</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_cameras>
+    <camera id="Camera-camera" name="Camera.001">
+      <optics>
+        <technique_common>
+          <perspective>
+            <xfov sid="xfov">61.43188</xfov>
+            <aspect_ratio>1.777778</aspect_ratio>
+            <znear sid="znear">0.1</znear>
+            <zfar sid="zfar">100</zfar>
+          </perspective>
+        </technique_common>
+      </optics>
+      <extra>
+        <technique profile="blender">
+          <YF_dofdist>0</YF_dofdist>
+          <shiftx>0</shiftx>
+          <shifty>0</shifty>
+        </technique>
+      </extra>
+    </camera>
+  </library_cameras>
+  <library_lights>
+    <light id="Sun-light" name="Sun">
+      <technique_common>
+        <directional>
+          <color sid="color">1 1 1</color>
+        </directional>
+      </technique_common>
+      <extra>
+        <technique profile="blender">
+          <adapt_thresh>0.000999987</adapt_thresh>
+          <area_shape>0</area_shape>
+          <area_size>20</area_size>
+          <area_sizey>0.1</area_sizey>
+          <area_sizez>0.1</area_sizez>
+          <atm_distance_factor>1</atm_distance_factor>
+          <atm_extinction_factor>1</atm_extinction_factor>
+          <atm_turbidity>2</atm_turbidity>
+          <att1>0</att1>
+          <att2>1</att2>
+          <backscattered_light>1</backscattered_light>
+          <bias>1</bias>
+          <blue>1</blue>
+          <buffers>1</buffers>
+          <bufflag>0</bufflag>
+          <bufsize>512</bufsize>
+          <buftype>2</buftype>
+          <clipend>40</clipend>
+          <clipsta>0.5</clipsta>
+          <compressthresh>0.04999995</compressthresh>
+          <dist sid="blender_dist">25</dist>
+          <energy sid="blender_energy">1</energy>
+          <falloff_type>2</falloff_type>
+          <filtertype>0</filtertype>
+          <flag>0</flag>
+          <gamma sid="blender_gamma">1</gamma>
+          <green>1</green>
+          <halo_intensity sid="blnder_halo_intensity">1</halo_intensity>
+          <horizon_brightness>1</horizon_brightness>
+          <mode>8193</mode>
+          <ray_samp>12</ray_samp>
+          <ray_samp_method>1</ray_samp_method>
+          <ray_samp_type>0</ray_samp_type>
+          <ray_sampy>1</ray_sampy>
+          <ray_sampz>1</ray_sampz>
+          <red>1</red>
+          <samp>3</samp>
+          <shadhalostep>0</shadhalostep>
+          <shadow_b sid="blender_shadow_b">0</shadow_b>
+          <shadow_g sid="blender_shadow_g">0</shadow_g>
+          <shadow_r sid="blender_shadow_r">0</shadow_r>
+          <sky_colorspace>2</sky_colorspace>
+          <sky_exposure>1</sky_exposure>
+          <skyblendfac>1</skyblendfac>
+          <skyblendtype>1</skyblendtype>
+          <soft>3</soft>
+          <spotblend>0.15</spotblend>
+          <spotsize>45</spotsize>
+          <spread>1</spread>
+          <sun_brightness>1</sun_brightness>
+          <sun_effect_type>0</sun_effect_type>
+          <sun_intensity>1</sun_intensity>
+          <sun_size>1</sun_size>
+          <type>1</type>
+        </technique>
+      </extra>
+    </light>
+  </library_lights>
+  <library_images/>
+  <library_effects>
+    <effect id="Material_001-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <phong>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color sid="ambient">0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color sid="diffuse">0.64 0.0147851 0.0147851 1</color>
+            </diffuse>
+            <specular>
+              <color sid="specular">0.5 0.5 0.5 1</color>
+            </specular>
+            <shininess>
+              <float sid="shininess">10</float>
+            </shininess>
+            <index_of_refraction>
+              <float sid="index_of_refraction">1</float>
+            </index_of_refraction>
+          </phong>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_materials>
+    <material id="Material_001-material" name="Material_001">
+      <instance_effect url="#Material_001-effect"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="Beauty-mesh" name="Beauty">
+      <mesh>
+        <source id="Beauty-mesh-positions">
+          <float_array id="Beauty-mesh-positions-array" count="75">-1 -1 -1 -1.251956 -1.503071 1.478903 -1 1 -1 -1.251957 0.4969294 3.001006 1 -1 -1 0.7480436 -1.503071 2.241228 1 1 -1 1 1 0.8178821 2.375141 1.108093 0.6959633 2.555182 1.593699 1.153629 3.395815 2.410707 1.373268 4.183358 2.739694 1.002112 3.646798 0.6442504 -1.218756 2.704566 0.03744971 -1.056526 1.977197 0.6491288 -0.4747041 2.324375 0.6924657 0.1984879 2.368201 0.8909253 0.4159843 2.368201 5.540925 0.4159843 -0.9198447 4.178971 0.4159843 -2.281798 0.8909251 0.4159842 -0.9198447 -2.397121 0.4159843 2.368202 -3.759074 0.4159843 5.656248 -2.39712 0.4159843 7.018201 0.8909254 0.4159843 5.656248 4.178971 0.4159843</float_array>
+          <technique_common>
+            <accessor source="#Beauty-mesh-positions-array" count="25" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Beauty-mesh-normals">
+          <float_array id="Beauty-mesh-normals-array" count="69">-0.9948744 0 -0.1011193 0 1 0 1 0 -1.31152e-7 0 -0.9800226 -0.1988865 0 0 -1 -0.2902556 -0.5795415 0.7615008 -0.613234 -0.3429098 -0.7115877 0.2757576 -0.7315119 0.6235769 0.7929053 0.4253739 -0.4363008 0.500034 -0.7854068 0.3648317 0.9527615 -0.07613623 -0.2940217 0.6586236 -0.7284128 0.1887585 0.3788308 -0.3603426 0.8524321 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 -0.997402 0.0436266 -0.05732429 -0.1067295 0.9873302 0.1174219 0.9957892 -0.06166023 0.06783723 0.05672436 -0.9872362 -0.1488193</float_array>
+          <technique_common>
+            <accessor source="#Beauty-mesh-normals-array" count="23" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Beauty-mesh-map-0">
+          <float_array id="Beauty-mesh-map-0-array" count="156">0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.215284 0.8121261 0.2159503 0.9318882 0.0645188 0.9325664 0.215284 0.8121261 0.0645188 0.9325664 0.06536781 0.8121261 0.215284 0.8121261 0.06536781 0.8121261 0.0645188 0.6916859 0.215284 0.8121261 0.0645188 0.6916859 0.215284 0.6912995 0.215284 0.8121261 0.215284 0.6912995 0.3660492 0.6916859 0.215284 0.8121261 0.3660492 0.6916859 0.3678654 0.8121261 0.215284 0.8121261 0.3678654 0.8121261 0.3660492 0.9325663 0.215284 0.8121261 0.3660492 0.9325663 0.2159503 0.9318882 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0</float_array>
+          <technique_common>
+            <accessor source="#Beauty-mesh-map-0-array" count="78" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Beauty-mesh-vertices">
+          <input semantic="POSITION" source="#Beauty-mesh-positions"/>
+        </vertices>
+        <polylist material="Material_001-material" count="26">
+          <input semantic="VERTEX" source="#Beauty-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Beauty-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Beauty-mesh-map-0" offset="2" set="0"/>
+          <vcount>3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 </vcount>
+          <p>1 0 0 2 0 1 0 0 2 2 1 3 7 1 4 6 1 5 7 2 6 4 2 7 6 2 8 4 3 9 1 3 10 0 3 11 6 4 12 0 4 13 2 4 14 1 5 15 5 5 16 3 5 17 7 6 18 5 6 19 3 6 20 11 7 21 14 7 22 12 7 23 8 8 24 15 8 25 14 8 26 14 9 27 11 9 28 10 9 29 8 10 30 14 10 31 9 10 32 9 11 33 14 11 34 10 11 35 14 12 36 13 12 37 12 12 38 16 13 39 17 13 40 18 13 41 16 14 42 18 14 43 19 14 44 16 15 45 19 15 46 20 15 47 16 16 48 20 16 49 21 16 50 16 17 51 21 17 52 22 17 53 16 16 54 22 16 55 23 16 56 16 16 57 23 16 58 24 16 59 16 18 60 24 18 61 17 18 62 1 19 63 3 19 64 2 19 65 2 20 66 3 20 67 7 20 68 7 21 69 5 21 70 4 21 71 4 22 72 5 22 73 1 22 74 6 4 75 4 4 76 0 4 77</p>
+        </polylist>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_controllers>
+    <controller id="Knochenkram_Beauty-skin" name="Knochenkram">
+      <skin source="#Beauty-mesh">
+        <bind_shape_matrix>1 0 0 -0.5631879 0 1 0 -1.80518 0 0 1 0.6178501 0 0 0 1</bind_shape_matrix>
+        <source id="Knochenkram_Beauty-skin-joints">
+          <Name_array id="Knochenkram_Beauty-skin-joints-array" count="4">Eck_B Eck_A Root Dingens</Name_array>
+          <technique_common>
+            <accessor source="#Knochenkram_Beauty-skin-joints-array" count="4" stride="1">
+              <param name="JOINT" type="name"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Knochenkram_Beauty-skin-bind_poses">
+          <float_array id="Knochenkram_Beauty-skin-bind_poses-array" count="64">-0.4693827 -0.7474676 -0.4700767 -1.042056 0.5230997 -0.6642817 0.5339449 -1.881883 -0.7113695 0.004727363 0.7028023 -1.862226 0 0 0 1 0.7651772 0.6197592 0.1743633 1.568712 -0.4546278 0.3283663 0.8279424 -1.223683 0.4558697 -0.7127934 0.5330183 -2.03396 0 0 0 1 0.9999982 0 0.0018996 0.8037092 -0.0018996 0 0.9999982 0.1197874 0 -1 0 -1.875479 0 0 0 1 0.9392153 -0.3421452 -0.02847993 0.1397638 -0.02515965 -0.1513195 0.9881647 -1.172346 -0.3424054 -0.927383 -0.1507298 -1.88261 0 0 0 1</float_array>
+          <technique_common>
+            <accessor source="#Knochenkram_Beauty-skin-bind_poses-array" count="4" stride="16">
+              <param name="TRANSFORM" type="float4x4"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Knochenkram_Beauty-skin-weights">
+          <float_array id="Knochenkram_Beauty-skin-weights-array" count="14">1 0.9999997 3.57386e-7 0 1 1 1 0.9999159 8.41022e-5 1 9.43005e-4 0.999057 1 1</float_array>
+          <technique_common>
+            <accessor source="#Knochenkram_Beauty-skin-weights-array" count="14" stride="1">
+              <param name="WEIGHT" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <joints>
+          <input semantic="JOINT" source="#Knochenkram_Beauty-skin-joints"/>
+          <input semantic="INV_BIND_MATRIX" source="#Knochenkram_Beauty-skin-bind_poses"/>
+        </joints>
+        <vertex_weights count="25">
+          <input semantic="JOINT" source="#Knochenkram_Beauty-skin-joints" offset="0"/>
+          <input semantic="WEIGHT" source="#Knochenkram_Beauty-skin-weights" offset="1"/>
+          <vcount>1 3 1 1 1 2 1 2 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 </vcount>
+          <v>2 0 0 1 1 2 3 3 2 4 1 5 2 6 0 7 1 8 2 9 1 10 3 11 1 12 1 13</v>
+        </vertex_weights>
+      </skin>
+    </controller>
+  </library_controllers>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="Knochenkram" name="Knochenkram" type="NODE">
+        <matrix sid="transform">1 0 0 -0.3532947 0 1 0 -1.875479 0 0 1 -0.121314 0 0 0 1</matrix>
+        <node id="Root" name="Root" sid="Root" type="JOINT">
+          <matrix sid="transform">0.9999982 -0.001899656 -6.18166e-8 -0.4501855 -6.18035e-8 0 -1 0 0.001899656 0.9999982 -3.25326e-8 0 0 0 0 1</matrix>
+          <node id="Dingens" name="Dingens" sid="Dingens" type="JOINT">
+            <matrix sid="transform">0.9391597 -0.02328242 -0.3426911 0 -0.03026411 0.9882107 -0.1500791 1.000002 0.3421452 0.1513194 0.9273829 1.77636e-15 0 0 0 1</matrix>
+            <node id="Eck_A" name="Eck A" sid="Eck_A" type="JOINT">
+              <matrix sid="transform">0.5016528 -0.5629224 0.6568584 2.98023e-8 0.05926649 0.7798937 0.6230998 0.9563848 -0.8630366 -0.2736501 0.4245982 1.49012e-8 0 0 0 1</matrix>
+            </node>
+            <node id="Eck_B" name="Eck B" sid="Eck_B" type="JOINT">
+              <matrix sid="transform">-0.1717212 0.7033771 -0.6897625 2.98023e-8 -0.3395973 0.614983 0.7116669 0.9563848 0.9247624 0.3564498 0.1332594 1.49012e-8 0 0 0 1</matrix>
+            </node>
+          </node>
+        </node>
+      </node>
+      <node id="Beauty" name="Beauty" type="NODE">
+        <translate sid="location">0 0 0</translate>
+        <rotate sid="rotationZ">0 0 1 0</rotate>
+        <rotate sid="rotationY">0 1 0 0</rotate>
+        <rotate sid="rotationX">1 0 0 0</rotate>
+        <scale sid="scale">1 1 1</scale>
+        <instance_controller url="#Knochenkram_Beauty-skin">
+          <skeleton>#Root</skeleton>
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Material_001-material" target="#Material_001-material"/>
+            </technique_common>
+          </bind_material>
+        </instance_controller>
+      </node>
+      <node id="Sun" name="Sun" type="NODE">
+        <matrix sid="transform">0.940062 0.2172551 0.2628378 3.044967 -0.2992891 0.8950584 0.3306003 5.004755 -0.1634306 -0.3894493 0.9064324 7.473901 0 0 0 1</matrix>
+        <instance_light url="#Sun-light"/>
+      </node>
+      <node id="Camera" name="Camera" type="NODE">
+        <matrix sid="transform">0.6896963 -0.3290021 0.64504 8.859304 0.724084 0.3190478 -0.6114824 -7.588722 -0.004619614 0.8888003 0.4582712 5.883159 0 0 0 1</matrix>
+        <instance_camera url="#Camera-camera"/>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene"/>
+  </scene>
+</COLLADA>

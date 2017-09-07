@@ -42,7 +42,9 @@ SOURCES += \
     ackcolorselector.cpp \
     imageview.cpp \
     boneeditor.cpp \
-    bonetreemodel.cpp
+    bonetreemodel.cpp \
+    meshlist.cpp \
+    meshlistmodel.cpp
 
 HEADERS += \
         mainwindow.hpp \
@@ -52,13 +54,16 @@ HEADERS += \
     ackcolorselector.hpp \
     imageview.hpp \
     boneeditor.hpp \
-    bonetreemodel.hpp
+    bonetreemodel.hpp \
+    meshlist.hpp \
+    meshlistmodel.hpp
 
 FORMS += \
         mainwindow.ui \
     materialeditor.ui \
     ackcolorselector.ui \
-    boneeditor.ui
+    boneeditor.ui \
+    meshlist.ui
 
 RESOURCES += \
     ../resource/ackui.qrc

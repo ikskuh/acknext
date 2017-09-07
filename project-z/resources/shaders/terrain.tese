@@ -8,10 +8,10 @@ uniform mat4 matProj;
 
 out vec3 position;
 out vec2 uv0;
-
 out float distance;
 
 uniform sampler2D texHeightmap;
+uniform sampler2D texNormalMap;
 
 vec4 interpolate(in vec4 v0, in vec4 v1, in vec4 v2, in vec4 v3)
 {
