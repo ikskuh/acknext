@@ -6,13 +6,13 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>288</width>
+    <width>250</width>
     <height>605</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>120</width>
+    <width>250</width>
     <height>89</height>
    </size>
   </property>
@@ -23,6 +23,18 @@
    <string>&amp;Material</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>0</width>
+     <height>0</height>
+    </size>
+   </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <property name="spacing">
      <number>0</number>
@@ -41,6 +53,12 @@
     </property>
     <item>
      <widget class="QScrollArea" name="scrollArea">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
+      </property>
       <property name="verticalScrollBarPolicy">
        <enum>Qt::ScrollBarAlwaysOn</enum>
       </property>
@@ -55,8 +73,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>272</width>
-         <height>743</height>
+         <width>234</width>
+         <height>1063</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -157,6 +175,12 @@
           <layout class="QVBoxLayout" name="verticalLayout_3">
            <item>
             <widget class="ImageView" name="albedoMap">
+             <property name="minimumSize">
+              <size>
+               <width>150</width>
+               <height>150</height>
+              </size>
+             </property>
              <property name="interactive">
               <bool>false</bool>
              </property>
@@ -197,6 +221,12 @@
           <layout class="QVBoxLayout" name="verticalLayout_4">
            <item>
             <widget class="ImageView" name="normalMap">
+             <property name="minimumSize">
+              <size>
+               <width>150</width>
+               <height>150</height>
+              </size>
+             </property>
              <property name="interactive">
               <bool>false</bool>
              </property>
@@ -237,6 +267,12 @@
           <layout class="QVBoxLayout" name="verticalLayout_5">
            <item>
             <widget class="ImageView" name="attributeMap">
+             <property name="minimumSize">
+              <size>
+               <width>150</width>
+               <height>150</height>
+              </size>
+             </property>
              <property name="interactive">
               <bool>false</bool>
              </property>
@@ -277,6 +313,12 @@
           <layout class="QVBoxLayout" name="verticalLayout_6">
            <item>
             <widget class="ImageView" name="emissionMap">
+             <property name="minimumSize">
+              <size>
+               <width>150</width>
+               <height>150</height>
+              </size>
+             </property>
              <property name="interactive">
               <bool>false</bool>
              </property>

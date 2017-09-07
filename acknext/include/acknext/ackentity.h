@@ -15,6 +15,7 @@ typedef struct
 	MATERIAL * material;
 
 	EVENT * removed;
+	ENTITYFLAGS flags;
 } ENTITY;
 
 ACKFUN ENTITY * ent_create(

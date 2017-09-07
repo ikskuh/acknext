@@ -100,7 +100,7 @@ void QAcknextWidget::paintGL()
 	draw_line3d(vector(0,0,0), vector(0,100,0), &COLOR_GREEN);
 	draw_line3d(vector(0,0,0), vector(0,0,100), &COLOR_BLUE);
 
-	if(this->model()) {
+	if(this->mShowSkeleton && this->model()) {
 		this->drawBones();
 	}
 
@@ -140,6 +140,6 @@ void QAcknextWidget::mouseMoveEvent(QMouseEvent *event)
 
 void QAcknextWidget::wheelEvent(QWheelEvent *event)
 {
-	vec_normalize(&camera->position, vec_length(&camera->position) + event->delta() / 120);
+	vec_normalize(&camera->position, maxv(1, vec_length(&camera->position) + event->delta() / 120));
 	this->update();
 }

@@ -40,7 +40,9 @@ SOURCES += \
     daaang.cpp \
     materialeditor.cpp \
     ackcolorselector.cpp \
-    imageview.cpp
+    imageview.cpp \
+    boneeditor.cpp \
+    bonetreemodel.cpp
 
 HEADERS += \
         mainwindow.hpp \
@@ -48,12 +50,15 @@ HEADERS += \
     daaang.hpp \
     materialeditor.hpp \
     ackcolorselector.hpp \
-    imageview.hpp
+    imageview.hpp \
+    boneeditor.hpp \
+    bonetreemodel.hpp
 
 FORMS += \
         mainwindow.ui \
     materialeditor.ui \
-    ackcolorselector.ui
+    ackcolorselector.ui \
+    boneeditor.ui
 
 RESOURCES += \
     ../resource/ackui.qrc

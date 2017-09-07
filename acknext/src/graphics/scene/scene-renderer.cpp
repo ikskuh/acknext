@@ -82,9 +82,10 @@ ACKNEXT_API_BLOCK
 		for(ENTITY * ent = ent_next(nullptr); ent != nullptr; ent = ent_next(ent))
 		{
 			// Entity * entity = promote<Entity>(ent);
-			if(ent->model == nullptr) {
+			if(ent->model == nullptr)
 				continue;
-			}
+			if(!(ent->flags & VISIBLE))
+				continue;
 			// TODO: Filter entity by mask bits
 
 			MATRIX matWorld;

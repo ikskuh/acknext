@@ -12,6 +12,7 @@ private:
 	VIEW * mView;
 	LIGHT * mSun;
 	QPoint mPrevPos;
+	bool mShowSkeleton;
 public:
 	explicit QAcknextWidget(QWidget *parent = nullptr);
 	~QAcknextWidget();
@@ -31,6 +32,15 @@ public:
 	void setModel(MODEL * model);
 
 	MODEL * model() const { return this->mModelDisplay->model; }
+
+	void setDisplayMode(bool mesh, bool skeleton) {
+		this->mModelDisplay->flags = (this->mModelDisplay->flags & ~VISIBLE) | (mesh?VISIBLE:0);
+		this->mShowSkeleton = skeleton;
+	}
+
+	bool displaysMesh() { return this->mModelDisplay->flags & VISIBLE; }
+
+	bool displaysSkeleton() { return this->mShowSkeleton; }
 
 private:
 	void drawBones();

@@ -21,6 +21,7 @@ Entity::Entity() :
 
 	vec_fill(&api().scale, 1);
 	quat_id(&api().rotation);
+	api().flags |= VISIBLE;
 }
 
 Entity::~Entity()

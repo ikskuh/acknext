@@ -24,3 +24,7 @@ flags.SHADERFLAGS =
 	"LINKED",
 	"DOUBLESIDED",
 }
+flags.ENTITYFLAGS = 
+{
+	"Visible",
+}

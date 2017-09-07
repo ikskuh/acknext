@@ -12,6 +12,7 @@
 #include "daaang.hpp"
 
 #include "materialeditor.hpp"
+#include "boneeditor.hpp"
 
 QOpenGLWidget * MainWindow::con = nullptr;
 
@@ -62,6 +63,13 @@ void MainWindow::on_actionOpen_triggered()
 			}
 		}
 
+		{
+			auto boned = new BoneEditor(model);
+			connect(
+				boned, SIGNAL(hasChanged()),
+				ui->centralWidget, SLOT(update()));
+			this->addDockWidget(Qt::LeftDockWidgetArea, boned);
+		}
 
 	} else {
 		QMessageBox::critical(

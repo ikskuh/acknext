@@ -25,7 +25,7 @@ typedef struct
 typedef struct
 {
 	uint8_t parent;
-	char name[16];
+	char name[64];
 	// VECTOR offset;
 	// QUATERNION rotation;
 	MATRIX transform;
