@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>739</width>
-    <height>584</height>
+    <height>443</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -67,7 +67,11 @@
    <addaction name="actionScene_View"/>
    <addaction name="actionLight_View"/>
    <addaction name="actionNormal_View"/>
+   <addaction name="separator"/>
    <addaction name="actionWireframe"/>
+   <addaction name="separator"/>
+   <addaction name="actionShow_Mesh"/>
+   <addaction name="actionShow_Skelton"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="fileToolbar">
@@ -158,11 +162,45 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="../resource/ackui.qrc">
+     <normaloff>:/icons/wireframe.png</normaloff>:/icons/wireframe.png</iconset>
+   </property>
    <property name="text">
     <string>Wireframe</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+4</string>
+   </property>
+  </action>
+  <action name="actionShow_Mesh">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resource/ackui.qrc">
+     <normaloff>:/icons/cube.png</normaloff>:/icons/cube.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show Mesh</string>
+   </property>
+  </action>
+  <action name="actionShow_Skelton">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resource/ackui.qrc">
+     <normaloff>:/icons/skeleton.png</normaloff>:/icons/skeleton.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show Skelton</string>
    </property>
   </action>
  </widget>

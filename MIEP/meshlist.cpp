@@ -25,15 +25,42 @@ void MeshList::setupGui()
 
 	ui->list->setModel(this->meshlist);
 
+	connect(
+		ui->list->selectionModel(), &QItemSelectionModel::currentChanged,
+		this, &MeshList::on_list_selectionChanged);
+
 	ui->showMaterial->setEnabled(false);
 	ui->toggleMeshVis->setEnabled(false);
 	ui->openTools->setEnabled(false);
 	ui->deleteMesh->setEnabled(false);
 }
 
+
+void MeshList::selectIndex(int i)
+{
+	auto en = (i >= 0);
+	ui->showMaterial->setEnabled(en);
+	ui->deleteMesh->setEnabled(en);
+	ui->openTools->setEnabled(en);
+	ui->toggleMeshVis->setEnabled(en);
+}
+
+void MeshList::on_list_selectionChanged(const QModelIndex & current, const QModelIndex & previous)
+{
+	if(current.isValid())
+		this->selectIndex(current.row());
+	else
+		this->selectIndex(-1);
+}
+
 void MeshList::on_showMaterial_clicked()
 {
-
+	auto selmod = ui->list->selectionModel();
+	auto list = selmod->selectedIndexes();
+	if(list.size() > 0) {
+		auto index = list.first();
+		emit materialEditorRequested(index.row());
+	}
 }
 
 void MeshList::on_toggleMeshVis_clicked()
@@ -53,5 +80,7 @@ void MeshList::on_deleteMesh_clicked()
 
 void MeshList::on_list_activated(const QModelIndex &index)
 {
-    engine_log("Selected %d", index.row());
+	if(index.isValid()) {
+		emit materialEditorRequested(index.row());
+	}
 }

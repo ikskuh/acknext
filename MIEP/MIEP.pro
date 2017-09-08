@@ -44,7 +44,8 @@ SOURCES += \
     boneeditor.cpp \
     bonetreemodel.cpp \
     meshlist.cpp \
-    meshlistmodel.cpp
+    meshlistmodel.cpp \
+    animationviewer.cpp
 
 HEADERS += \
         mainwindow.hpp \
@@ -56,14 +57,16 @@ HEADERS += \
     boneeditor.hpp \
     bonetreemodel.hpp \
     meshlist.hpp \
-    meshlistmodel.hpp
+    meshlistmodel.hpp \
+    animationviewer.hpp
 
 FORMS += \
         mainwindow.ui \
     materialeditor.ui \
     ackcolorselector.ui \
     boneeditor.ui \
-    meshlist.ui
+    meshlist.ui \
+    animationviewer.ui
 
 RESOURCES += \
     ../resource/ackui.qrc

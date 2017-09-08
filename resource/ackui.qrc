@@ -9,5 +9,15 @@
         <file>icons/eyedropper.png</file>
         <file>icons/material.png</file>
         <file>icons/screwdriver.png</file>
+        <file>icons/play.png</file>
+        <file>icons/rewind.png</file>
+        <file>icons/pause.png</file>
+        <file>icons/stop.png</file>
+        <file>icons/skeleton.png</file>
+        <file>icons/wireframe.png</file>
+        <file>icons/cube-outline.png</file>
+        <file>icons/cube-unfolded.png</file>
+        <file>icons/cube.png</file>
+        <file>icons/light.png</file>
     </qresource>
 </RCC>

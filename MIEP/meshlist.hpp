@@ -22,6 +22,8 @@ public:
 signals:
 	Q_SIGNAL void hasChanged();
 
+	Q_SIGNAL void materialEditorRequested(int materialIndex);
+
 private slots:
 	void on_showMaterial_clicked();
 
@@ -33,8 +35,12 @@ private slots:
 
 	void on_list_activated(const QModelIndex &index);
 
+	void on_list_selectionChanged(const QModelIndex & current, const QModelIndex & previous);
+
 private:
 	void setupGui();
+
+	void selectIndex(int i);
 
 private:
 	Ui::MeshList *ui;

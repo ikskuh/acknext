@@ -19,6 +19,10 @@ QOpenGLWidget * MainWindow::con = nullptr;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
+    meshWidget(nullptr),
+    sceneWidget(nullptr),
+    animationWidget(nullptr),
+    materialWidgets(),
     ui(new Ui::MainWindow)
 {
 	ui->setupUi(this);
@@ -30,7 +34,80 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+	this->cleanupModel();
 	delete ui;
+}
+
+void MainWindow::openModel(MODEL * model)
+{
+	this->cleanupModel();
+
+	con->makeCurrent();
+	ui->centralWidget->setModel(model);
+
+	this->materialWidgets.resize(model->meshCount);
+
+	if(!strcmp(model->bones[0].name, "")) {
+		strcpy(model->bones[0].name, "Root");
+	}
+
+	for(int i = 0; i < model->meshCount; i++)
+	{
+		if(!model->materials[i]) {
+			model->materials[i] = mtl_create();
+		}
+
+		this->materialWidgets[i] = new MaterialEditor(model->materials[i]);
+		this->materialWidgets[i]->setWindowTitle(tr("Material ") + QString::number(i));
+		this->materialWidgets[i]->hide();
+		connect(
+			this->materialWidgets[i], SIGNAL(hasChanged()),
+			ui->centralWidget, SLOT(update()));
+		this->addDockWidget(Qt::RightDockWidgetArea, this->materialWidgets[i]);
+	}
+
+	this->meshWidget = new MeshList(model);
+	connect(
+		this->meshWidget, SIGNAL(hasChanged()),
+		ui->centralWidget, SLOT(update()));
+	connect(
+		this->meshWidget, &MeshList::materialEditorRequested,
+		this, &MainWindow::showMaterialEditor);
+	this->addDockWidget(Qt::LeftDockWidgetArea, this->meshWidget);
+
+	this->sceneWidget = new BoneEditor(model);
+	connect(
+		this->sceneWidget, SIGNAL(hasChanged()),
+		ui->centralWidget, SLOT(update()));
+	this->addDockWidget(Qt::LeftDockWidgetArea, this->sceneWidget);
+
+	this->animationWidget = new AnimationViewer(model);
+	connect(
+		this->animationWidget, SIGNAL(hasChanged()),
+		ui->centralWidget, SLOT(update()));
+	this->addDockWidget(Qt::LeftDockWidgetArea, this->animationWidget);
+}
+
+void MainWindow::cleanupModel()
+{
+	if(ui->centralWidget->model() == nullptr)
+		return;
+	con->makeCurrent();
+	delete this->meshWidget;
+	delete this->sceneWidget;
+	delete this->animationWidget;
+	for(auto * ptr : this->materialWidgets)
+		delete ptr;
+	this->materialWidgets.clear();
+	model_remove(ui->centralWidget->model());
+	ui->centralWidget->setModel(nullptr);
+}
+
+void MainWindow::showMaterialEditor(int i)
+{
+	if(i >= 0 && i < this->materialWidgets.size()) {
+		this->materialWidgets[i]->show();
+	}
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -46,39 +123,7 @@ void MainWindow::on_actionOpen_triggered()
 
 	MODEL * model = model_load(fileName.toUtf8().data());
 	if(model != nullptr) {
-		if(ui->centralWidget->model() != nullptr)
-		{
-			model_remove(ui->centralWidget->model());
-		}
-		ui->centralWidget->setModel(model);
-
-		for(int i = 0; i < model->meshCount; i++)
-		{
-			if(model->materials[i]) {
-				auto dock = new MaterialEditor(model->materials[i]);
-				dock->setWindowTitle(tr("Material ") + QString::number(i));
-				connect(
-					dock, SIGNAL(hasChanged()),
-					ui->centralWidget, SLOT(update()));
-				this->addDockWidget(Qt::RightDockWidgetArea, dock);
-			}
-		}
-
-		{
-			auto meshed = new MeshList(model);
-			connect(
-				meshed, SIGNAL(hasChanged()),
-				ui->centralWidget, SLOT(update()));
-			this->addDockWidget(Qt::LeftDockWidgetArea, meshed);
-		}
-		{
-			auto boned = new BoneEditor(model);
-			connect(
-				boned, SIGNAL(hasChanged()),
-				ui->centralWidget, SLOT(update()));
-			this->addDockWidget(Qt::LeftDockWidgetArea, boned);
-		}
-
+		this->openModel(model);
 	} else {
 		QMessageBox::critical(
 			this,
@@ -117,5 +162,23 @@ void MainWindow::on_actionSetMode(int mode)
 void MainWindow::on_actionWireframe_triggered()
 {
 	opengl_wireFrame = this->ui->actionWireframe->isChecked();
+	ui->centralWidget->update();
+}
+
+void MainWindow::on_actionShow_Mesh_triggered(bool checked)
+{
+	Q_UNUSED(checked);
+    ui->centralWidget->setDisplayMode(
+		ui->actionShow_Mesh->isChecked(),
+		ui->actionShow_Skelton->isChecked());
+	ui->centralWidget->update();
+}
+
+void MainWindow::on_actionShow_Skelton_triggered(bool checked)
+{
+	Q_UNUSED(checked);
+	ui->centralWidget->setDisplayMode(
+		ui->actionShow_Mesh->isChecked(),
+		ui->actionShow_Skelton->isChecked());
 	ui->centralWidget->update();
 }
