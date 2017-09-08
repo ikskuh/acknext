@@ -13,6 +13,8 @@
 #include <assimp/IOSystem.hpp>
 #include <assimp/IOStream.hpp>
 
+#include "../../extensions/extension.hpp"
+
 static std::unordered_map<std::string, MODEL*> modelCache;
 
 static inline VECTOR ass_to_ack(const aiVector3D & vec)
@@ -246,6 +248,8 @@ ACKNEXT_API_BLOCK
 
 	MODEL * model_load(const char *fileName)
 	{
+		return Extension::load<MODEL>(file_open_read(fileName));
+
 		using namespace Assimp;
 
 		if(fileName == nullptr) {

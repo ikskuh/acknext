@@ -24,7 +24,8 @@ INCLUDEPATH += $$PWD/../acknext/include
 SOURCES += default.c \
     main.c \
     ../l3dt/heightfield.c \
-    ../l3dt/attributefield.c
+    ../l3dt/attributefield.c \
+    terrainmodule.c
 
 DISTFILES += \
     resources/shaders/terrain.vert \
@@ -33,5 +34,6 @@ DISTFILES += \
     resources/shaders/terrain.frag
 
 HEADERS += \
-    ../l3dt/l3dt.h
+    ../l3dt/l3dt.h \
+    terrainmodule.h
 

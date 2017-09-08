@@ -6,6 +6,28 @@
 #include <GL/gl3w.h>
 #include "ackenum.h"
 
+typedef enum ACKTYPE
+{
+	TYPE_INVALID = 0,
+	TYPE_MODEL = 1,
+	TYPE_SHADER = 2,
+	TYPE_MATERIAL = 3,
+	TYPE_SOUND = 4,
+	TYPE_MUSIC = 5,
+	TYPE_HULL = 6,
+	TYPE_BLOB = 7,
+	TYPE_BITMAP = 8,
+	TYPE_BUFFER = 9,
+	TYPE_MESH = 10,
+	TYPE_VIEW = 11,
+	TYPE_LIGHT = 12,
+} ACKTYPE;
+
+typedef struct ACKGUID
+{
+	uint8_t id[16];
+} __attribute__((packed)) ACKGUID;
+
 ACKFUN int engine_main(void (*main)(), int argc, char ** argv);
 
 ACKFUN bool engine_open(int argc, char ** argv);

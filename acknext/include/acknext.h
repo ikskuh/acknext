@@ -5,11 +5,11 @@
 #include "acknext/config.h"
 
 // Structures and functions
+#include "acknext/core.h"
 #include "acknext/event.h"
 #include "acknext/view.h"
 #include "acknext/ackmath.h"
 #include "acknext/input.h"
-#include "acknext/core.h"
 #include "acknext/core-graphics.h"
 #include "acknext/blob.h"
 #include "acknext/opengl.h"

@@ -108,7 +108,10 @@ HEADERS += \
     src/audio/sound.hpp \
     include/acknext/acksound.h \
     src/virtfs/resourcemanager.hpp \
-    src/graphics/opengl/uniformconfig.h
+    src/graphics/opengl/uniformconfig.h \
+    include/acknext/extension.h \
+    include/acknext/serialization.h \
+    src/extensions/extension.hpp
 
 SOURCES += \
     src/graphics/opengl/buffer.cpp \
@@ -155,7 +158,9 @@ SOURCES += \
     src/math/color.cpp \
     src/graphics/opengl/programuniform.cpp \
     src/core/blob_compression.c \
-    src/core/engineobject.cpp
+    src/core/engineobject.cpp \
+    src/extensions/extension.cpp \
+    src/virtfs/serialization.cpp
 
 RESOURCES += \
     $$PWD/../resource/builtin.qrc
