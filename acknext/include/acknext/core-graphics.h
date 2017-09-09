@@ -5,6 +5,7 @@
 #include "ackmath.h"
 #include "ackenum.h"
 #include "ackdef.h"
+#include "filesys.h"
 
 #include <GL/gl3w.h>
 
@@ -54,6 +55,10 @@ ACKFUN BITMAP * bmap_createblack(int width, int height, GLenum format);
 ACKFUN BITMAP * bmap_createpixel(COLOR color);
 
 ACKFUN BITMAP * bmap_load(char const * fileName);
+
+ACKFUN BITMAP * bmap_read(ACKFILE * file);
+
+ACKFUN void bmap_write(ACKFILE * file, BITMAP * bitmap);
 
 ACKFUN void bmap_set(
 	BITMAP * bitmap,

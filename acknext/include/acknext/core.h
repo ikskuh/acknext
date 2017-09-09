@@ -61,4 +61,11 @@ ACKFUN void obj_setvar(void * obj, char const * name, GLenum type, ...);
 
 ACKFUN void obj_listvar(void const * obj);
 
+// TODO: Implement
+ACKFUN ACKGUID guid_create();
+
+ACKFUN ACKGUID guid_parse(char const * text);
+
+ACKFUN bool guid_compare(ACKGUID const * a, ACKGUID const * b);
+
 #endif // _ACKNEXT_CORE_H_

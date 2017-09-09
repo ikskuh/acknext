@@ -14,6 +14,8 @@ namespace Ui {
 	class MainWindow;
 }
 
+class ModelLoader;
+
 class MainWindow : public QMainWindow
 {
 	Q_OBJECT
@@ -22,9 +24,12 @@ private:
 	BoneEditor * sceneWidget;
 	AnimationViewer * animationWidget;
 	QVector<MaterialEditor*> materialWidgets;
+	ModelLoader * mLoader;
 public:
 	explicit MainWindow(QWidget *parent = 0);
 	~MainWindow();
+
+	ModelLoader * loader() const { return this->mLoader; }
 
 private slots:
 	void on_actionOpen_triggered();
@@ -40,6 +45,10 @@ private slots:
 	void on_actionShow_Mesh_triggered(bool checked);
 
 	void on_actionShow_Skelton_triggered(bool checked);
+
+	void on_actionSave_triggered();
+
+	void on_actionImport_model_triggered();
 
 private:
 	void on_actionSetMode(int mode);

@@ -195,6 +195,9 @@ void terrainmodule_init()
 {
 	ext_register("Acknext Terrain Module", &terraX);
 
+	ACKGUID b = guid_parse("5507c27d 37B7 4623 b363 ed273e7ba962");
+	if(guid_compare(&terrainguid, &b)) beep();
+
 	shdTerrain = shader_create();
 	{
 		shader_addFileSource(shdTerrain, VERTEXSHADER, "shaders/terrain.vert");

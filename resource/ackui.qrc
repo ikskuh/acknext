@@ -19,5 +19,6 @@
         <file>icons/cube-unfolded.png</file>
         <file>icons/cube.png</file>
         <file>icons/light.png</file>
+        <file>icons/file-import.png</file>
     </qresource>
 </RCC>

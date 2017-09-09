@@ -160,7 +160,9 @@ SOURCES += \
     src/core/blob_compression.c \
     src/core/engineobject.cpp \
     src/extensions/extension.cpp \
-    src/virtfs/serialization.cpp
+    src/virtfs/serialization.cpp \
+    src/core/guid.cpp \
+    src/serialization/serializers.cpp
 
 RESOURCES += \
     $$PWD/../resource/builtin.qrc

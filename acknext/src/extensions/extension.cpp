@@ -3,8 +3,6 @@
 #include <assert.h>
 #include <acknext/serialization.h>
 
-static const uint32_t ACKNEXT_MAGIC = 0xCC41E367;
-
 std::list<Extension> Extension::extensions;
 
 Extension::Extension(std::string const & name, EXTENSION * ext) :
@@ -12,6 +10,14 @@ Extension::Extension(std::string const & name, EXTENSION * ext) :
     ext(ext)
 {
 	assert(ext != nullptr);
+}
+
+void Extension::writeHeader(ACKFILE * file, ACKTYPE type, ACKGUID const & guid)
+{
+	file_write(file, "ACKNEXT", 8);
+	file_write(file, &ACKNEXT_MAGIC, 4);
+	file_write_uint32(file, type);
+	file_write_guid(file, guid);
 }
 
 void * Extension::load(ACKFILE * file, ACKTYPE refType)

@@ -7,6 +7,8 @@
 #include <list>
 #include <string>
 
+static const uint32_t ACKNEXT_MAGIC = 0xCC41E367;
+
 class Extension
 {
 	friend bool ext_register(const char *name, EXTENSION *extension);
@@ -22,6 +24,8 @@ private:
 	Extension(std::string const & name, EXTENSION * ext);
 	~Extension() = default;
 public:
+
+	static void writeHeader(ACKFILE * file, ACKTYPE type, ACKGUID const & guid);
 
 	static void * load(ACKFILE * file, ACKTYPE type);
 

@@ -49,6 +49,8 @@
      <string>Fi&amp;le</string>
     </property>
     <addaction name="actionOpen"/>
+    <addaction name="actionImport_model"/>
+    <addaction name="separator"/>
     <addaction name="actionSave"/>
     <addaction name="separator"/>
     <addaction name="actionOptions"/>
@@ -62,7 +64,7 @@
     <enum>TopToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
-    <bool>false</bool>
+    <bool>true</bool>
    </attribute>
    <addaction name="actionScene_View"/>
    <addaction name="actionLight_View"/>
@@ -85,6 +87,8 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionOpen"/>
+   <addaction name="actionImport_model"/>
+   <addaction name="separator"/>
    <addaction name="actionSave"/>
   </widget>
   <action name="actionOpen">
@@ -201,6 +205,18 @@
    </property>
    <property name="text">
     <string>Show Skelton</string>
+   </property>
+  </action>
+  <action name="actionImport_model">
+   <property name="icon">
+    <iconset resource="../resource/ackui.qrc">
+     <normaloff>:/icons/file-import.png</normaloff>:/icons/file-import.png</iconset>
+   </property>
+   <property name="text">
+    <string>Import model…</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+O</string>
    </property>
   </action>
  </widget>

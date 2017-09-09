@@ -114,6 +114,10 @@ ACKFUN MODEL * model_load(char const * fileName);
 
 ACKFUN MODEL * model_get(char const * fileName); // uses caching
 
+ACKFUN void model_write(ACKFILE * file, MODEL const * model);
+
+ACKFUN MODEL * model_read(ACKFILE * file);
+
 ACKFUN void model_remove(MODEL * model); // only created or loaded ones
 
 ACKFUN MODEL * model_create(int numMeshes, int numBones, int numAnimations);
@@ -140,11 +144,20 @@ ACKFUN void render_scene_with_camera(CAMERA * camera);
 // mesh api:
 ACKFUN MESH * mesh_create(GLenum primitiveType, BUFFER * vertexBuffer, BUFFER * indexBuffer);
 
+ACKFUN MESH * mesh_read(ACKFILE * file);
+
+ACKFUN void mesh_write(ACKFILE * file, MESH const * mesh);
+
 ACKFUN void mesh_remove(MESH * mesh);
 
 // material api:
 
 ACKFUN MATERIAL * mtl_create();
+
+ACKFUN MATERIAL * mtl_read(ACKFILE * file);
+
+ACKFUN void mtl_write(ACKFILE * file, MATERIAL const * mtl);
+
 ACKFUN void mtl_remove(MATERIAL * mtl);
 
 // light api:

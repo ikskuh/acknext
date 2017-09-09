@@ -31,6 +31,9 @@ else:unix: LIBS += -L$$OUT_PWD/../acknext/ -lacknext
 INCLUDEPATH += $$PWD/../acknext
 DEPENDPATH += $$PWD/../acknext
 
+unix: CONFIG += link_pkgconfig
+unix: PKGCONFIG += assimp
+
 INCLUDEPATH += $$PWD/../acknext/include
 
 SOURCES += \
@@ -45,7 +48,9 @@ SOURCES += \
     bonetreemodel.cpp \
     meshlist.cpp \
     meshlistmodel.cpp \
-    animationviewer.cpp
+    animationviewer.cpp \
+    modelloader.cpp \
+    modelsaver.cpp
 
 HEADERS += \
         mainwindow.hpp \
@@ -58,7 +63,9 @@ HEADERS += \
     bonetreemodel.hpp \
     meshlist.hpp \
     meshlistmodel.hpp \
-    animationviewer.hpp
+    animationviewer.hpp \
+    modelloader.hpp \
+    modelsaver.hpp
 
 FORMS += \
         mainwindow.ui \

@@ -3,6 +3,9 @@
 #include <assert.h>
 #include <SDL2/SDL_image.h>
 
+#include "extensions/extension.hpp"
+#include <acknext/serialization.h>
+
 Bitmap::Bitmap(GLenum type, GLenum format)
 {
 	api().target = type;

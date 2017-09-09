@@ -15,6 +15,9 @@
 #include "boneeditor.hpp"
 #include "meshlist.hpp"
 
+#include "modelloader.hpp"
+#include "modelsaver.hpp"
+
 QOpenGLWidget * MainWindow::con = nullptr;
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -25,6 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
     materialWidgets(),
     ui(new Ui::MainWindow)
 {
+	this->mLoader = new ModelLoader(this);
 	ui->setupUi(this);
 
 	this->on_actionSetMode(0);
@@ -114,14 +118,17 @@ void MainWindow::on_actionOpen_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(
 		this,
-		"Open model file...");
+		tr("Open model file..."),
+        QString(),
+		tr("Model Files (*.amd)"));
 	if(fileName.isNull()) {
 		return;
 	}
 
 	ui->centralWidget->makeCurrent();
 
-	MODEL * model = model_load(fileName.toUtf8().data());
+	auto name = fileName.toStdString();
+	MODEL * model = model_load(name.c_str());
 	if(model != nullptr) {
 		this->openModel(model);
 	} else {
@@ -181,4 +188,47 @@ void MainWindow::on_actionShow_Skelton_triggered(bool checked)
 		ui->actionShow_Mesh->isChecked(),
 		ui->actionShow_Skelton->isChecked());
 	ui->centralWidget->update();
+}
+
+void MainWindow::on_actionSave_triggered()
+{
+	QString fileName = QFileDialog::getSaveFileName(
+		this,
+		tr("Open model file..."),
+		QString(),
+		tr("Model Files (*.amd)"));
+	if(fileName.isNull()) {
+		return;
+	}
+
+	auto str = QFileInfo(fileName).fileName().toStdString();
+
+	ACKFILE * file = file_open_write(str.c_str());
+	ModelSaver::write(file, ui->centralWidget->model());
+	file_close(file);
+}
+
+void MainWindow::on_actionImport_model_triggered()
+{
+
+	QString fileName = QFileDialog::getOpenFileName(
+		this,
+		"Open model file...");
+	if(fileName.isNull()) {
+		return;
+	}
+
+	ui->centralWidget->makeCurrent();
+
+	MODEL * model = loader()->load(fileName);
+	if(model != nullptr) {
+		this->openModel(model);
+	} else {
+		QMessageBox::critical(
+			this,
+			this->windowTitle(),
+			tr("Failed to open file: %1").arg(engine_lasterror_text));
+	}
+
+	ui->centralWidget->doneCurrent();
 }
