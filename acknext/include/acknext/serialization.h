@@ -42,4 +42,6 @@ ACKFUN char * file_read_string(ACKFILE * file, int length); // returns malloc'ed
 // maxLength = 0 → dynamic length
 ACKFUN void file_write_string(ACKFILE * file, char const * text, int maxLength);
 
+ACKFUN void file_write_symlink(ACKFILE * file, char const * referencedFile, bool useCaching);
+
 #endif // _ACKNEXT_SERIALIZATION_H_

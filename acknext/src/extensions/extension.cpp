@@ -5,6 +5,14 @@
 
 std::list<Extension> Extension::extensions;
 
+static const ACKGUID guidSymlink =
+{{
+	0x6f, 0xb9, 0xe9, 0xd6,
+	0x87, 0x86, 0x49, 0xf0,
+	0x9d, 0x6d, 0x39, 0x16,
+	0xa7, 0xba, 0x9c, 0x41
+}};
+
 Extension::Extension(std::string const & name, EXTENSION * ext) :
     name(name),
     ext(ext)
@@ -32,6 +40,28 @@ void * Extension::load(ACKFILE * file, ACKTYPE refType)
 
 	ACKTYPE type = (ACKTYPE)file_read_uint32(file);
 	ACKGUID guid = file_read_guid(file);
+
+	if(guid_compare(&guid, &guidSymlink))
+	{
+		// whee, special case!
+		bool allowCaching  = file_read_uint8(file);
+		char * subfileName = file_read_string(file, 0);
+
+		void * object = nullptr;
+
+		ACKFILE * subfile = file_open_read(subfileName);
+		engine_log("Loading symlink: %s ^ %d → %p",
+			subfileName,
+			allowCaching,
+		    subfile);
+		if(subfile) {
+			object = Extension::load(subfile, refType);
+		} else {
+			engine_seterror(ERR_INVALIDARGUMENT, "Could not load referenced file '%s'.", subfileName);
+		}
+		free(subfileName);
+		return object;
+	}
 
 	if(refType != type) {
 		engine_seterror(ERR_INVALIDOPERATION, "The file does not match the requested type!");
@@ -85,6 +115,14 @@ ACKNEXT_API_BLOCK
 		}
 		Extension::extensions.emplace_back(name, extension);
 		return true;
+	}
+
+
+	void file_write_symlink(ACKFILE * file, char const * referencedFile, bool useCaching)
+	{
+		Extension::writeHeader(file, TYPE_SYMLINK, guidSymlink);
+		file_write_uint8(file, useCaching ? 1 : 0);
+		file_write_string(file, referencedFile, 0);
 	}
 }
 

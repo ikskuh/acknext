@@ -1,5 +1,6 @@
 #include <engine.hpp>
 #include <assert.h>
+#include <acknext/extension.h>
 #include <acknext/serialization.h>
 
 #include "../graphics/core/glenum-translator.hpp"
@@ -44,7 +45,6 @@ static ACKGUID const guidShader =
 	 0xa2, 0xc6, 0x5a, 0xb5,
 	 0x52, 0x2c, 0x28, 0x43
 }};
-
 
 ACKNEXT_API_BLOCK
 {

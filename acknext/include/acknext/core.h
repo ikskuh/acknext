@@ -8,6 +8,7 @@
 
 typedef enum ACKTYPE
 {
+	TYPE_SYMLINK = -1,
 	TYPE_INVALID = 0,
 	TYPE_MODEL = 1,
 	TYPE_SHADER = 2,
