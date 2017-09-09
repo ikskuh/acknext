@@ -232,3 +232,8 @@ void MainWindow::on_actionImport_model_triggered()
 
 	ui->centralWidget->doneCurrent();
 }
+
+void MainWindow::on_actionExit_triggered()
+{
+    this->close();
+}

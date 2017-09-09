@@ -162,6 +162,7 @@ static MODEL * terrain_load(ACKFILE * file, ACKGUID const * guid)
 			bmap_remove(source);
 		}
 		glGenerateTextureMipmap(materials->object);
+
 		/*
 		glTextureParameterf(
 			materials->object,

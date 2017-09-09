@@ -118,7 +118,6 @@ bool MaterialEditor::changeTexture(ImageView *target, BITMAP *&ptr)
 void MaterialEditor::on_changeAlbedoMap_clicked()
 {
 	if(this->changeTexture(ui->albedoMap, mtl->albedoTexture)) {
-		engine_log("%p", mtl->albedoTexture);
 		emit this->hasChanged();
 	}
 }

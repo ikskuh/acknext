@@ -22,7 +22,7 @@ void AckColorSelector::setColor(COLOR color)
 {
 	this->mColor = color;
 
-	QColor qcol = QColor::fromRgbF(color.red, color.green, color.blue, color.alpha);
+	QColor qcol = QColor::fromRgbF(color.red, color.green, color.blue, 1.0);
 
 	QPalette palette = ui->preview->palette();
 	palette.setColor( ui->preview->backgroundRole(), qcol );

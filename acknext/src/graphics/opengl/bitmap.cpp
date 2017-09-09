@@ -68,7 +68,7 @@ ACKNEXT_API_BLOCK
 			engine_setsdlerror();
 			return nullptr;
 		}
-		SDL_Surface * converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ABGR8888, 0);
+		SDL_Surface * converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888, 0);
 		if(converted == nullptr) {
 			engine_setsdlerror();
 			SDL_FreeSurface(surface);
@@ -83,7 +83,7 @@ ACKNEXT_API_BLOCK
 		bmp->pixels = malloc(4 * surface->w * surface->h);
 		memcpy(bmp->pixels, surface->pixels, 4 * surface->w * surface->h);
 
-		bmap_set(bmp, surface->w, surface->h, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+		bmap_set(bmp, surface->w, surface->h, GL_BGRA, GL_UNSIGNED_BYTE, surface->pixels);
 		SDL_UnlockSurface(surface);
 
 		SDL_FreeSurface(surface);

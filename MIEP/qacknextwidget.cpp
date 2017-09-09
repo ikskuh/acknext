@@ -131,8 +131,6 @@ void QAcknextWidget::mouseMoveEvent(QMouseEvent *event)
 	vec_set(&camera->position, vector(0, 0, dist));
 	vec_rotate(&camera->position, &camera->rotation);
 
-	engine_log("%f %f %f", camera->position.x, camera->position.y, camera->position.z);
-
 	// this->mModelDisplay->rotation = qx;
 
 	this->update();

@@ -1,5 +1,5 @@
 #include "resourcemanager.hpp"
-
+#include <acknext/extension.h>
 #include <physfs.h>
 
 struct dummy;
@@ -7,6 +7,8 @@ struct dummy;
 extern dummy _binary_resource_zip_start;
 extern dummy _binary_resource_zip_end;
 // extern unsigned char _binary_resource_zip_size;
+
+extern EXTENSION acknextDefaultSerializers;
 
 void ResourceManager::initialize()
 {
@@ -19,6 +21,8 @@ void ResourceManager::initialize()
 		"resource.zip",
 		"/builtin",
 		1);
+
+	ext_register("ACKNEXT SYSTEM", &acknextDefaultSerializers);
 }
 
 void ResourceManager::shutdown()

@@ -50,6 +50,8 @@ private slots:
 
 	void on_actionImport_model_triggered();
 
+	void on_actionExit_triggered();
+
 private:
 	void on_actionSetMode(int mode);
 
