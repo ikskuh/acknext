@@ -4,9 +4,11 @@
 #include "config.h"
 #include <stdint.h>
 
-// Maybe change this later, but for
-// now this is sufficient
-typedef struct PHYSFS_File ACKFILE;
+#include "blob.h"
+
+// ACKFILE is opaque pointer to outer space, but
+// inner space does have knowledge
+typedef struct ackfile ACKFILE;
 
 ACKFUN void filesys_addResource(char const * resource, char const * path);
 
@@ -15,6 +17,8 @@ ACKFUN ACKFILE * file_open_read(char const * name);
 ACKFUN ACKFILE * file_open_write(char const * name);
 
 ACKFUN ACKFILE * file_open_append(char const * name);
+
+ACKFUN ACKFILE * file_open_blob(BLOB * blob, bool allowResize);
 
 ACKFUN int64_t file_read(ACKFILE *file, void *buffer, uint32_t size);
 

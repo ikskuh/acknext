@@ -1,4 +1,4 @@
-#ifndef _ACKNEXT_LOB_H
+#ifndef _ACKNEXT_BLOB_H
 #define _ACKNEXT_BLOB_H
 
 #include "config.h"
@@ -11,6 +11,10 @@ typedef struct
 } BLOB;
 
 ACKFUN BLOB * blob_create(size_t size);
+
+// Creates a BLOB view onto a given portion of memory
+// TODO: Implement
+ACKFUN BLOB * blob_createAlias(void * target, size_t size);
 
 ACKFUN BLOB * blob_load(char const * fileName);
 

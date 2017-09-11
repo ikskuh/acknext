@@ -7,7 +7,6 @@
 
 Config engine_config;
 
-
 Config::Config()
 {
     resolution = { 1280, 720 };
@@ -18,6 +17,7 @@ Config::Config()
     title = "Acknext Engine";
 	organization = "teamretro";
 	application = "acknext";
+	useVirtualFileSystem = true;
 }
 
 static DOTCONF_CB(op_title);

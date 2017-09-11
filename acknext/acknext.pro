@@ -162,7 +162,8 @@ SOURCES += \
     src/virtfs/serialization.cpp \
     src/core/guid.cpp \
     src/serialization/serializers.cpp \
-    src/graphics/core/glenum-translator.cpp
+    src/graphics/core/glenum-translator.cpp \
+    src/virtfs/ackfile.cpp
 
 RESOURCES += \
     $$PWD/../resource/builtin.qrc

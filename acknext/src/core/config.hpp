@@ -31,6 +31,8 @@ struct Config
 	SIZE resolution;
 
 	std::string organization, application;
+
+	bool useVirtualFileSystem;
 };
 
 extern Config engine_config;
