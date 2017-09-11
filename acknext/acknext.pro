@@ -17,9 +17,7 @@ LIBS += -lphysfs
 
 DEFINES += _ACKNEXT_INTERNAL_
 
-QMAKE_CFLAGS   += -g -rdynamic
-QMAKE_CXXFLAGS += -g -rdynamic
-QMAKE_LFLAGS   += -g -rdynamic
+include($$PWD/../common.pri)
 
 # LIBS           += $$quote($$PWD/../resource/resource.o)
 
@@ -177,3 +175,6 @@ custom_rcc.commands = make -C $$PWD/../resource/ qmake OUTFILE=`pwd`/${QMAKE_FIL
 custom_rcc.depend_command = make -C $$PWD/../resource/ depends
 custom_rcc.input = RESOURCES
 QMAKE_EXTRA_COMPILERS += custom_rcc
+
+DISTFILES += \
+    acknext.pri

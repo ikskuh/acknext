@@ -62,7 +62,7 @@ void tree()
 		off.x = center.x + (rand() / (float)RAND_MAX) * 2*radius - radius;
 		off.z = center.z + (rand() / (float)RAND_MAX) * 2*radius - radius;
 		// off.y = l3hf_get(hf, off.x, off.z) - 0.2;
-		ent_create("/trees/baum.obj", &off, NULL);
+		ent_create("/models/tree.amd", &off, NULL);
 		task_yield();
 	}
 }
@@ -81,7 +81,7 @@ void gamemain()
 	view_create((RENDERCALL)render_scene_with_camera, camera);
 	task_defer((ENTRYPOINT)debug_tools, NULL);
 	event_attach(on_escape, (EVENTHANDLER)engine_shutdown);
-	filesys_addResource("/home/felix/projects/acknext/project-z/resources/", "/");
+	filesys_addResource("/home/felix/projects/acknext/prototypes/project-z/resources/", "/");
 
 	event_attach(on_s, storepos);
 

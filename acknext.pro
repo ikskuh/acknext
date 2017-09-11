@@ -4,11 +4,9 @@ CONFIG += ordered
 
 SUBDIRS += \
     acknext \
-	demo-c \
-	shadertest \
-    mtlconv \
-    MIEP \
-    project-z
+    tools \
+	prototypes \
+    addons
 
 HEADERS += \
     documentation/src/groups.h \

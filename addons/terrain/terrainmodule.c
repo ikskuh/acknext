@@ -7,7 +7,7 @@
 #include <acknext/extension.h>
 #include <acknext/serialization.h>
 
-#include "../l3dt/l3dt.h"
+#include "l3dt/l3dt.h"
 
 static const ACKGUID terrainguid = {{
 	0x55, 0x07, 0xC2, 0x7D,
@@ -157,7 +157,7 @@ static MODEL * terrain_load(ACKFILE * file, ACKGUID const * guid)
 				0,
 				0, 0, maps[i].index,
 				1024, 1024, 1,
-				GL_RGBA, GL_UNSIGNED_BYTE,
+				GL_BGRA, GL_UNSIGNED_BYTE,
 				source->pixels);
 			bmap_remove(source);
 		}
