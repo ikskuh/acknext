@@ -36,4 +36,5 @@ flags.CONFIGFLAGS =
 	"Diagnostic",
 	"Custom_Video",
 	"VFS_Use_Cwd",
+	"Silent_Fail"
 }

@@ -201,7 +201,7 @@ void MainWindow::on_actionSave_triggered()
 		return;
 	}
 
-	auto str = QFileInfo(fileName).fileName().toStdString();
+	auto str = fileName.toStdString();
 
 	ACKFILE * file = file_open_write(str.c_str());
 	ModelSaver::write(file, ui->centralWidget->model());
@@ -210,7 +210,6 @@ void MainWindow::on_actionSave_triggered()
 
 void MainWindow::on_actionImport_model_triggered()
 {
-
 	QString fileName = QFileDialog::getOpenFileName(
 		this,
 		"Open model file...");

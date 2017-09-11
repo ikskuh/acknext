@@ -10,6 +10,7 @@
 #define DIAGNOSTIC (1<<3)
 #define CUSTOM_VIDEO (1<<4)
 #define VFS_USE_CWD (1<<5)
+#define SILENT_FAIL (1<<6)
 #define VISIBLE (1<<0)
 #define GLIDE (1<<0)
 #define NOMOVE (1<<1)

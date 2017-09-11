@@ -211,6 +211,13 @@ private:
 	}
 };
 
+static bool loadFromVFS(char const * fileName)
+{
+	if(strncmp(fileName, "/builtin/", 8) == 0)
+		return true;
+	return (engine_config.flags & USE_VFS);
+}
+
 ACKNEXT_API_BLOCK
 {
 	ACKFILE * file_open_blob(BLOB * blob, bool allowResize)
@@ -222,7 +229,7 @@ ACKNEXT_API_BLOCK
 	ACKFILE * file_open_read(char const * fileName)
 	{
 		ARG_NOTNULL(fileName,nullptr);
-		if(engine_config.flags & USE_VFS) {
+		if(loadFromVFS(fileName)) {
 			PHYSFS_File * handle = PHYSFS_openRead(fileName);
 			if(!handle)
 				return nullptr;
@@ -231,7 +238,7 @@ ACKNEXT_API_BLOCK
 		} else {
 			FILE * handle = fopen(fileName, "rb");
 			if(!handle) {
-				engine_seterror(ERR_FILESYSTEM, "The file '%s' could not be found!");
+				engine_seterror(ERR_FILESYSTEM, "The file '%s' could not be found!", fileName);
 				return nullptr;
 			}
 			else
@@ -242,7 +249,7 @@ ACKNEXT_API_BLOCK
 	ACKFILE * file_open_write(char const * fileName)
 	{
 		ARG_NOTNULL(fileName,nullptr);
-		if(engine_config.flags & USE_VFS) {
+		if(loadFromVFS(fileName)) {
 			PHYSFS_File * handle = PHYSFS_openWrite(fileName);
 			if(!handle)
 				return nullptr;
@@ -262,7 +269,7 @@ ACKNEXT_API_BLOCK
 	ACKFILE * file_open_append(char const * fileName)
 	{
 		ARG_NOTNULL(fileName,nullptr);
-		if(engine_config.flags & USE_VFS) {
+		if(loadFromVFS(fileName)) {
 			PHYSFS_File * handle = PHYSFS_openAppend(fileName);
 			if(!handle)
 				return nullptr;
