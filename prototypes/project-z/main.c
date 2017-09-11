@@ -8,12 +8,8 @@
 
 #include <assert.h>
 
-#include "terrainmodule.h"
-
-void debug_tools();
-
-extern var debug_movement;
-extern var debug_speedup;
+#include <default.h>
+#include <terrainmodule.h>
 
 void storepos()
 {
@@ -67,27 +63,22 @@ void tree()
 	}
 }
 
-extern bool debug_camera_movement_enabled;
-
 void gamemain()
 {
 	GLfloat fLargest;
 	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest);
 	engine_log("max anisotropy: %f", fLargest);
 
-	debug_speedup = 500;
-
 	view_create((RENDERCALL)render_scene_with_camera, camera);
-	task_defer((ENTRYPOINT)debug_tools, NULL);
-	event_attach(on_escape, (EVENTHANDLER)engine_shutdown);
 	filesys_addResource("/home/felix/projects/acknext/prototypes/project-z/resources/", "/");
 
 	event_attach(on_s, storepos);
-
 	event_attach(on_t, tree);
 	event_attach(on_l, funnylight);
 
 	terrainmodule_init();
+	default_init();
+	default_speedup = 500;
 
 	{
 		ACKFILE * file = file_open_read("camera.dat");
@@ -119,7 +110,7 @@ void gamemain()
 			engine_log("%f ms / %f FPS", 1000.0 * time_step, 1.0 / time_step);
 		}
 
-		if(debug_camera_movement_enabled == false)
+		if(!default_camera_movement_enabled)
 		{
 			pan -= 0.3 * mickey.x;
 			tilt = clamp(tilt - 0.3 * mickey.y, -80, 85);
@@ -140,9 +131,4 @@ void gamemain()
 		task_yield();
 	}
 
-}
-
-int main(int argc, char *argv[])
-{
-	return engine_main(gamemain, argc, argv);
 }

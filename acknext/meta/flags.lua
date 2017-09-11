@@ -28,3 +28,12 @@ flags.ENTITYFLAGS =
 {
 	"Visible",
 }
+flags.CONFIGFLAGS = 
+{
+	"Use_VFS",
+	"Fullscreen",
+	"Desktop",
+	"Diagnostic",
+	"Custom_Video",
+	"VFS_Use_Cwd",
+}

@@ -1,4 +1,6 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    terrain
+    terrain \
+    ackmain \
+    default

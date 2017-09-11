@@ -17,12 +17,6 @@ using std::chrono::high_resolution_clock;
 // This clock point is used for frame time calculations
 static high_resolution_clock::time_point lastFrameTime;
 
-struct
-{
-	int no_sdl;
-	int diag;
-} options;
-
 struct engine engine;
 
 bool engine_shutdown_requested = false;
@@ -47,9 +41,9 @@ ACKNEXT_API_BLOCK
 	char ** engine_argv = { };
 	int engine_argc = 0;
 
-	int engine_main(void (*main)(), int argc, char ** argv)
+	int engine_main(void (*main)())
 	{
-		if(engine_open(argc, argv) == false)
+		if(engine_open() == false)
 	    {
 			fprintf(stderr, "Failed to initialize engine: %s\n", engine_lasterror_text);
 	        return 1;
@@ -66,117 +60,69 @@ ACKNEXT_API_BLOCK
 		return 0;
 	}
 
-	bool engine_open(int argc, char ** argv)
+	bool engine_open()
 	{
 		startupTime = std::chrono::steady_clock::now();
 
+		if(engine_config.argv0 == NULL)
+		{
+			engine_log("ERROR: engine_config.argv0 IS NOT SET. SET THIS TO argv[0] PRIOR TO CALLING engine_open or engine_main!");
+			exit(-1);
+		}
+
 		engine_log("Begin initalizing engine.");
 
-		engine_argv = argv;
-		engine_argc = argc;
+		// engine_config.load("acknext.cfg");
 
-		engine_config.load("acknext.cfg");
-
-		// Parse arguments
+		if (engine_config.flags & DIAGNOSTIC)
 		{
-			static struct option long_options[] =
-			{
-				/* These options set a flag. */
-			{ "diag",    no_argument,       &options.diag, 1},
-			/* These options don’t set a flag.
-						  We distinguish them by their indices. */
-			// {"diag",    no_argument,       0, 'd'},
-			{ "config",  required_argument, 0, 'c'},
-			{ "no-sdl", no_argument, &options.no_sdl, 'X' },
-			{0, 0, 0, 0}
-		};
-			while (1)
-			{
-				/* getopt_long stores the option index here. */
-				int option_index = 0;
-				int c = getopt_long (argc, argv, "Xdc:",
-				                     long_options, &option_index);
-
-				/* Detect the end of the options. */
-				if (c == -1)
-					break;
-
-				switch (c)
-				{
-					case 0:
-						/* If this option set a flag, do nothing else now. */
-						if (long_options[option_index].flag != 0)
-							break;
-						printf ("option %s", long_options[option_index].name);
-						if (optarg)
-							printf (" with arg %s", optarg);
-						printf ("\n");
-						break;
-
-					case 'd':
-						options.diag = 1;
-						break;
-					case 'X':
-						options.no_sdl = 1;
-						break;
-					case 'c': {
-						engine_config.load(optarg);
-						break;
-					}
-					case '?': break;
-					default:
-						abort ();
-				}
-			}
-
-			if (options.diag) {
-				if(logfile == nullptr) {
-					logfile = fopen("acklog.txt", "w");
-					if(logfile == nullptr) {
-						engine_log("Failed to open acklog.txt!");
-					}
-				}
-			}
-
-			for(int i = optind; i < argc; i++)
-			{
-				engine_config.sourceFiles.emplace_back(argv[i]);
+			logfile = fopen("acklog.txt", "w");
+			if(logfile == nullptr) {
+				engine_log("Failed to open acklog.txt!");
 			}
 		}
 
-		engine_log("Initialize virtual file system...");
 		{
-			PHYSFS_init(argv[0]);
+			engine_log("Initialize virtual file system...");
 
-			PHYSFS_setSaneConfig (
-				engine_config.organization.c_str(),
-				engine_config.application.c_str(),
-				"ARP",    // scan for default archive
-				0,        // no cd
-				0);       // filesys > pack
+			if(!(engine_config.flags & USE_VFS))
+			{
+				engine_log("Note: virtual file system is disabled, but required by the engine, so a minimal setup will be done for /builtin.");
+			}
 
-			char buffer[256];
-			PHYSFS_mount(getcwd(buffer,256),NULL,0);
+			PHYSFS_init(engine_config.argv0);
+
+			if(engine_config.flags & USE_VFS)
+			{
+				PHYSFS_setSaneConfig (
+					engine_config.organization,
+					engine_config.application,
+					"ARP",    // scan for default archive
+					0,        // no cd
+					0);       // filesys > pack
+			}
+			else
+			{
+				// We could set up something here, but
+				// actually, we don't.
+			}
 
 			engine_log("app dir:  %s", PHYSFS_getBaseDir());
 			engine_log("save dir: %s", PHYSFS_getWriteDir());
-			engine_log("work dir: %s", buffer);
+
+			if(engine_config.flags & VFS_USE_CWD)
+			{
+				char buffer[256];
+				PHYSFS_mount(getcwd(buffer,256), NULL, 0);
+
+				engine_log("work dir: %s", buffer);
+			}
 		}
 
 		engine_log("Initialize builtin resources...");
 		ResourceManager::initialize();
 
-		// if(compiler_init() == false) {
-		// 	return false;
-		// }
-
-		// for(auto & str : engine_config.sourceFiles) {
-		// 	if(compiler_add(str.c_str()) == false) {
-		// 		return false;
-		// 	}
-		// }
-
-		if(options.no_sdl == 0)
+		if(!(engine_config.flags & CUSTOM_VIDEO))
 		{
 			engine_log("Initialize SDL2...");
 			SDL_CHECKED(SDL_Init(SDL_INIT_EVERYTHING), false)
@@ -188,18 +134,19 @@ ACKNEXT_API_BLOCK
 
 			{ // Create window and initialize SDL
 				auto flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_MOUSE_FOCUS;
-				if(engine_config.fullscreen == FullscreenType::Fullscreen) {
-					flags |= SDL_WINDOW_FULLSCREEN;
-				}
-				else if(engine_config.fullscreen == FullscreenType::DesktopFullscreen) {
-					flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+				if(engine_config.flags & FULLSCREEN) {
+					if(engine_config.flags & DESKTOP) {
+						flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+					} else {
+						flags |= SDL_WINDOW_FULLSCREEN;
+					}
 				}
 
 				engine.window = SDL_CreateWindow(
-				            engine_config.title.c_str(),
-				            SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-				            engine_config.resolution.width, engine_config.resolution.height,
-				            flags);
+					engine_config.windowTitle,
+					SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+					engine_config.resolution.width, engine_config.resolution.height,
+					flags);
 				if(engine.window == nullptr)
 				{
 					engine_setsdlerror();
@@ -267,7 +214,7 @@ ACKNEXT_API_BLOCK
 	        total_time = timePoint.count();
 	    }
 
-		if(options.no_sdl == 0)
+		if(!(engine_config.flags & CUSTOM_VIDEO))
 		{
 			InputManager::beginFrame();
 
@@ -354,7 +301,7 @@ ACKNEXT_API_BLOCK
 		engine_log("Shutting down renderer...");
 		render_shutdown();
 
-		if(!options.no_sdl)
+		if(!(engine_config.flags & CUSTOM_VIDEO))
 		{
 			engine_log("Destroy GL context.");
 			SDL_GL_DeleteContext(engine.context);

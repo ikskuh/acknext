@@ -24,19 +24,15 @@ QAcknextWidget::~QAcknextWidget()
 
 void QAcknextWidget::initializeGL()
 {
-	auto string = QCoreApplication::applicationFilePath().toUtf8();
-	char * argv[] = {
-		string.data(),
-		"--no-sdl",
+	engine_config.flags |= CUSTOM_VIDEO;
+	engine_config.flags &= ~USE_VFS;
+	engine_config.application = "Team Retro";
+	engine_config.application = "AckMIEP";
+	engine_config.resolution = (SIZE) {
+		this->width(),
+		this->height()
 	};
-
-	engine_open(2, argv);
-
-	engine_resize(this->width(), this->height());
-
-	filesys_addResource("/", "/");
-
-	filesys_addResource("/home/felix/projects/acknext/scripts", "/demo");
+	engine_open();
 
 	LIGHT * sun = light_create(SUNLIGHT);
 	sun->direction = (VECTOR){ 0, -1, 0 };

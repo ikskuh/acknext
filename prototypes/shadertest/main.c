@@ -5,6 +5,7 @@
 #include <string.h>
 #include <GL/gl3w.h>
 #include <math.h>
+#include <default.c>
 
 void debug_tools();
 
@@ -148,8 +149,7 @@ void gamemain()
 		//*/
 	}
 
-	task_defer(debug_tools, NULL);
-	event_attach(on_escape, engine_shutdown);
+	default_init();
 
 	event_attach(on_kp_plus, up);
 	event_attach(on_kp_minus, down);
@@ -197,10 +197,5 @@ void gamemain()
 		drawlines(model);
 		task_yield();
 	}
-}
-
-int main(int argc, char *argv[])
-{
-	return engine_main(gamemain, argc, argv);
 }
 

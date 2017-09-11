@@ -2,8 +2,7 @@
 #include <acknext.h>
 #include <stdlib.h>
 #include <stdio.h>
-
-void debug_tools();
+#include <default.h>
 
 VECTOR cursor3d;
 
@@ -37,11 +36,6 @@ void rotor(ENTITY * ent)
 		if(key_r) quat_mult(&ent->rotation, euler(45 * time_step, 30 * time_step, 15 * time_step));
 		task_yield();
 	}
-}
-
-void quit()
-{
-	engine_shutdown();
 }
 
 LIGHT * selectedLight = NULL;
@@ -111,6 +105,7 @@ void torchwood(LIGHT * light)
 
 void gamemain()
 {
+	default_init();
 	view_create((void*)render_scene_with_camera, camera);
 
 	ENTITY * ent = ent_create("mtltest/dungeon.obj", vector(0, 0, 0), NULL);
@@ -125,11 +120,6 @@ void gamemain()
 	ent->material->fresnell = 25.0;
 
 	task_yield();
-
-	// run debug tools, first in the frame
-	task_defer(debug_tools, NULL)->priority = -10;
-
-	event_attach(on_escape, quit);
 
 	LIGHT * playerAura = light_create(POINTLIGHT);
 	playerAura->color = *color_hex(0xffde96);
@@ -172,10 +162,3 @@ void gamemain()
 		task_yield();
 	}
 }
-
-
-int main(int argc, char *argv[])
-{
-	return engine_main(gamemain, argc, argv);
-}
-

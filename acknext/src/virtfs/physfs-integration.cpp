@@ -7,7 +7,7 @@ ACKNEXT_API_BLOCK
 {
 	void filesys_addResource(char const * resource, char const * path)
 	{
-		if(!engine_config.useVirtualFileSystem) {
+		if(!(engine_config.flags & USE_VFS)) {
 			engine_seterror(ERR_INVALIDOPERATION, "acknext was not configured to use the virtual file system.");
 			return;
 		}

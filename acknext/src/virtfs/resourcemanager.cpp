@@ -18,7 +18,7 @@ void ResourceManager::initialize()
 		start,
 		length,
 		nullptr,
-		"resource.zip",
+		"mem://resource.zip",
 		"/builtin",
 		1);
 

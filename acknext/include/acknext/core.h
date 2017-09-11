@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <GL/gl3w.h>
 #include "ackenum.h"
+#include "ackdef.h"
 
 typedef enum ACKTYPE
 {
@@ -29,9 +30,24 @@ typedef struct ACKGUID
 	uint8_t id[16];
 } __attribute__((packed)) ACKGUID;
 
-ACKFUN int engine_main(void (*main)(), int argc, char ** argv);
+typedef struct
+{
+	char const * argv0; // must be set by program main!
 
-ACKFUN bool engine_open(int argc, char ** argv);
+	char const * organization;
+	char const * application;
+
+	char const * windowTitle;
+	SIZE resolution;
+
+	CONFIGFLAGS flags;
+} ACKCONFIG;
+
+extern ACKCONFIG engine_config;
+
+ACKFUN int engine_main(void (*main)());
+
+ACKFUN bool engine_open();
 
 ACKFUN void engine_resize(int width, int height);
 

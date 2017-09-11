@@ -222,7 +222,7 @@ ACKNEXT_API_BLOCK
 	ACKFILE * file_open_read(char const * fileName)
 	{
 		ARG_NOTNULL(fileName,nullptr);
-		if(engine_config.useVirtualFileSystem) {
+		if(engine_config.flags & USE_VFS) {
 			PHYSFS_File * handle = PHYSFS_openRead(fileName);
 			if(!handle)
 				return nullptr;
@@ -242,7 +242,7 @@ ACKNEXT_API_BLOCK
 	ACKFILE * file_open_write(char const * fileName)
 	{
 		ARG_NOTNULL(fileName,nullptr);
-		if(engine_config.useVirtualFileSystem) {
+		if(engine_config.flags & USE_VFS) {
 			PHYSFS_File * handle = PHYSFS_openWrite(fileName);
 			if(!handle)
 				return nullptr;
@@ -262,7 +262,7 @@ ACKNEXT_API_BLOCK
 	ACKFILE * file_open_append(char const * fileName)
 	{
 		ARG_NOTNULL(fileName,nullptr);
-		if(engine_config.useVirtualFileSystem) {
+		if(engine_config.flags & USE_VFS) {
 			PHYSFS_File * handle = PHYSFS_openAppend(fileName);
 			if(!handle)
 				return nullptr;
