@@ -71,7 +71,6 @@ extern bool debug_camera_movement_enabled;
 
 void gamemain()
 {
-
 	GLfloat fLargest;
 	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest);
 	engine_log("max anisotropy: %f", fLargest);

@@ -57,8 +57,14 @@ int main(int argc, char ** argv)
 		}
 	}
 
+	if (optind == argc) {
+		fprintf(stdout, "usage: %s target [-o output] infile\n", argv[0]);
+		fprintf(stdout, "target may be one of: texture\n");
+		exit(EXIT_FAILURE);
+	}
+
 	if ((optind + 1) >= argc) {
-		fprintf(stderr, "Expected target and input file\n");
+		fprintf(stderr, "Missing 'infile' parameter!\n");
 		exit(EXIT_FAILURE);
 	}
 

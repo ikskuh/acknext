@@ -29,9 +29,6 @@ static ACKTYPE canLoad(ACKGUID const * guid)
 
 static MODEL * terrain_load(ACKFILE * file, ACKGUID const * guid)
 {
-
-
-
 	BLOB * packed = blob_load("/terrain/GrassyMountains_HF.hfz");
 	BLOB * unpacked = blob_inflate(packed);
 
