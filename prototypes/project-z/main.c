@@ -10,6 +10,7 @@
 
 #include <default.h>
 #include <terrainmodule.h>
+#include <ackcef.h>
 
 void storepos()
 {
@@ -63,6 +64,14 @@ void tree()
 	}
 }
 
+VIEW * cefview;
+
+void outsider()
+{
+	ackcef_refresh(cefview);
+	// ackcef_exec(cefview, "callMe('hej!')");
+}
+
 void gamemain()
 {
 	GLfloat fLargest;
@@ -71,6 +80,12 @@ void gamemain()
 
 	view_create((RENDERCALL)render_scene_with_camera, camera);
 	filesys_addResource("/home/felix/projects/acknext/prototypes/project-z/resources/", "/");
+
+	cefview = ackcef_createView();
+
+	ackcef_navigate(cefview, "ack:///fungui.htm");
+
+	event_attach(on_k, outsider);
 
 	event_attach(on_s, storepos);
 	event_attach(on_t, tree);
@@ -130,5 +145,14 @@ void gamemain()
 		}
 		task_yield();
 	}
+}
 
+int main(int argc, char ** argv)
+{
+	// May not return!
+	ackcef_init(argc, argv);
+
+	assert(argc >= 1);
+	engine_config.argv0 = argv[0];
+	return engine_main(gamemain);
 }

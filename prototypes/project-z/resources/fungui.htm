@@ -1,0 +1,46 @@
+<?doctype html?>
+<html>
+	<head>
+		<style type="text/css">
+			html {
+				background-color: transparent;
+			}
+		</style>
+		<script type="text/javascript">
+			var counter = 0;
+			function changeSomething()
+			{
+				counter += 1;
+				document.getElementById("cnt").innerText = String(counter);
+			}
+			
+			// In JavaScript register the callback function.
+			function callMe(args)
+			{
+				document.getElementById('result').innerText = JSON.stringify(args);
+			}
+		</script>
+	</head>
+	<body>
+		<h1>This is a title tag</h1>
+		<p>And this is a paragraph</p>
+		<ul>
+			<li>List item 1
+			<li>List item 2
+			<li>List item 3
+		</ul>
+		
+		<button onclick="changeSomething()">
+			Lick me!
+		</button>
+		
+		<p>Numbers licked: <span id="cnt">0</span></p>
+		
+		<img style="max-width: 250px;" src="http://i0.kym-cdn.com/entries/icons/original/000/001/030/DButt.jpg" />
+		
+		<p id="result">IPC Test</p>
+		
+		<img style="max-width: 250px;" src="ack:///textures/TexturesCom_Grass0169_1_seamless_S.jpg" />
+		
+	</body>
+</html>

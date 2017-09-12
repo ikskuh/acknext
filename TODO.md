@@ -3,7 +3,9 @@
 - Instancing of ENTITY
 	`int ent_addInstance(...)`
 	`void ent_setInstance(VECTOR*,QUAT*,VECTOR*)
-- MODEL animation
+- MODEL
+	- Animation
+	- LOD for Meshes
 - Collider API
 	- Allow exposition of raw dGeomIDs for
 	  easier hacking
@@ -12,9 +14,8 @@
 	- dear imgui integration
 	- Minimal engine ui (Panels)
 - Terrain System
-	- Add "terrain compiler" for
-	  preprocessing terrain into
-		custom model format
+	- Add "terrain compiler" for preprocessing terrain
+		into custom model format
 - Tools
 	- Create texture compiler
 	- Create model "compiler"

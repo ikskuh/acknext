@@ -44,3 +44,4 @@ CMakeLists.txt.user
 documentation/xml/
 scripts/share/
 bin/*
+scripts/cef.log

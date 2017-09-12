@@ -2,19 +2,14 @@ TEMPLATE = subdirs
 
 CONFIG += ordered
 
+# The order here is important!
 SUBDIRS += \
-    acknext \
-    tools \
-	prototypes \
-    addons
+    acknext \  # Engine is first
+    addons \   # Then comes the list of addons
+    tools \    # After that, the tools are built
+	prototypes # And finally, the prototypes
 
 HEADERS += \
     documentation/src/groups.h \
     documentation/src/mainpage.h
-
-DISTFILES += \
-    resource/shaders/lighting.glsl \
-    resource/shaders/gamma.glsl \
-    resource/shaders/acklights.glsl \
-    resource/shaders/fog.glsl
 
