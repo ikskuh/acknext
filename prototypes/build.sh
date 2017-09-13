@@ -21,6 +21,22 @@ for file in $files; do
 			echo atx
 			$rc texture -o "$dst.atx" "$file"
 			;;
+		material)
+			echo amf
+			$rc material -o "$dst.amf" "$file"
+			;;
+		shader)
+			echo asp
+			$rc shader -o "$dst.asp" "$file"
+			;;
+		obj | 3ds | dae | fbx)
+			echo amd
+			$rc model -o "$dst.amd" "$file"
+			;;
+		wav | ogg)
+			echo asn
+			$rc sound -o "$dst.asn" "$file"
+			;;
 	esac
 
 done
