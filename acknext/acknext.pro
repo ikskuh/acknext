@@ -110,7 +110,8 @@ HEADERS += \
     include/acknext/extension.h \
     include/acknext/serialization.h \
     src/extensions/extension.hpp \
-    src/graphics/core/glenum-translator.hpp
+    src/graphics/core/glenum-translator.hpp \
+    include/acknext/acff.h
 
 SOURCES += \
     src/graphics/opengl/buffer.cpp \

@@ -2,49 +2,10 @@
 #include <assert.h>
 #include <acknext/extension.h>
 #include <acknext/serialization.h>
+#include <acknext/acff.h>
 
 #include "../graphics/core/glenum-translator.hpp"
 #include "../extensions/extension.hpp"
-
-static ACKGUID const guidModel =
-{{
-     0xc4, 0xa6, 0x7f, 0xe0,
-	 0x82, 0x74, 0x43, 0x90,
-	 0x8e, 0xd6, 0x50, 0x61,
-	 0x0b, 0x0a, 0x54, 0xf8
-}};
-
-static ACKGUID const guidMaterial =
-{{
-     0x32, 0x4c, 0x67, 0x80,
-	 0x82, 0xb0, 0x47, 0x3d,
-	 0xa0, 0xa9, 0xe0, 0xa3,
-	 0x4f, 0x6b, 0xee, 0xa2
-}};
-
-static ACKGUID const guidBitmap =
-{{
-     0xb4, 0x0f, 0x64, 0x26,
-	 0x2d, 0x6c, 0x44, 0xb3,
-	 0xbd, 0x3d, 0x62, 0x9f,
-	 0xaa, 0x5a, 0xef, 0xe7
-}};
-
-static ACKGUID const guidMesh =
-{{
-		0xce, 0xb9, 0xe2, 0x22,
-		0xc8, 0x03, 0x43, 0xac,
-		0x81, 0xa9, 0x14, 0x9a,
-		0x32, 0xc5, 0xf3, 0x9b
-}};
-
-static ACKGUID const guidShader =
-{{
-     0xd2, 0x47, 0xfb, 0xc8,
-	 0x7a, 0x2a, 0x45, 0x21,
-	 0xa2, 0xc6, 0x5a, 0xb5,
-	 0x52, 0x2c, 0x28, 0x43
-}};
 
 ACKNEXT_API_BLOCK
 {
@@ -55,7 +16,7 @@ ACKNEXT_API_BLOCK
 
 	void model_write(ACKFILE * file, MODEL const * model)
 	{
-		Extension::writeHeader(file, TYPE_MODEL, guidModel);
+		Extension::writeHeader(file, TYPE_MODEL, acff_guidModel);
 
 		file_write_uint32(file, model->boneCount);
 		file_write_uint32(file, model->meshCount);
@@ -93,7 +54,7 @@ ACKNEXT_API_BLOCK
 
 	void mesh_write(ACKFILE * file, MESH const * mesh)
 	{
-		Extension::writeHeader(file, TYPE_MESH, guidMesh);
+		Extension::writeHeader(file, TYPE_MESH, acff_guidMesh);
 
 		int indexCount = 0;
 		int vertexCount = 0;
@@ -137,7 +98,7 @@ ACKNEXT_API_BLOCK
 
 	void mtl_write(ACKFILE * file, MATERIAL const * mtl)
 	{
-		Extension::writeHeader(file, TYPE_MATERIAL, guidMaterial);
+		Extension::writeHeader(file, TYPE_MATERIAL, acff_guidMaterial);
 
 		file_write_color(file, mtl->albedo);
 		file_write_color(file, mtl->emission);
@@ -179,7 +140,7 @@ ACKNEXT_API_BLOCK
 
 		auto const id = bitmap->object;
 
-		Extension::writeHeader(file, TYPE_BITMAP, guidBitmap);
+		Extension::writeHeader(file, TYPE_BITMAP, acff_guidBitmap);
 
 		int width, height, depth;
 		int rs, gs, bs, as;
@@ -279,7 +240,7 @@ ACKNEXT_API_BLOCK
 
 MODEL * loadModel(ACKFILE * file, ACKGUID const * guid)
 {
-	assert(guid_compare(guid, &guidModel));
+	assert(guid_compare(guid, &acff_guidModel));
 
 	uint32_t boneCount = file_read_uint32(file);
 	uint32_t meshCount = file_read_uint32(file);
@@ -310,7 +271,7 @@ MODEL * loadModel(ACKFILE * file, ACKGUID const * guid)
 
 static MESH * loadMesh(ACKFILE * file, ACKGUID const * guid)
 {
-	assert(guid_compare(guid, &guidMesh));
+	assert(guid_compare(guid, &acff_guidMesh));
 
 	GLenum primitiveType = file_read_uint32(file);
 	uint32_t indexCount  = file_read_uint32(file);
@@ -355,7 +316,7 @@ static MESH * loadMesh(ACKFILE * file, ACKGUID const * guid)
 
 static MATERIAL * loadMaterial(ACKFILE * file, ACKGUID const * guid)
 {
-	assert(guid_compare(guid, &guidMaterial));
+	assert(guid_compare(guid, &acff_guidMaterial));
 
 	MATERIAL * result = mtl_create();
 
@@ -389,7 +350,7 @@ static int getNumMimaps(int width, int height, int depth)
 
 static BITMAP * loadBitmap(ACKFILE * file, ACKGUID const * guid)
 {
-	assert(guid_compare(guid, &guidBitmap));
+	assert(guid_compare(guid, &acff_guidBitmap));
 
 	GLenum target = file_read_uint32(file);
 	GLenum format = file_read_uint32(file);
@@ -474,11 +435,11 @@ EXTENSION acknextDefaultSerializers =
 {
 	canLoad : [](ACKGUID const * guid)
     {
-		if(guid_compare(guid, &guidBitmap)) return TYPE_BITMAP;
-        if(guid_compare(guid, &guidMaterial)) return TYPE_MATERIAL;
-        if(guid_compare(guid, &guidMesh)) return TYPE_MESH;
-        if(guid_compare(guid, &guidModel)) return TYPE_MODEL;
-        if(guid_compare(guid, &guidShader)) return TYPE_SHADER;
+		if(guid_compare(guid, &acff_guidBitmap)) return TYPE_BITMAP;
+        if(guid_compare(guid, &acff_guidMaterial)) return TYPE_MATERIAL;
+        if(guid_compare(guid, &acff_guidMesh)) return TYPE_MESH;
+        if(guid_compare(guid, &acff_guidModel)) return TYPE_MODEL;
+        if(guid_compare(guid, &acff_guidShader)) return TYPE_SHADER;
         return TYPE_INVALID;
     },
     loadModel : &::loadModel,

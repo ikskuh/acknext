@@ -5,14 +5,28 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <libgen.h>
+#include <unistd.h>
+#include <acknext.h>
 
 bool useAbsolutePaths = false;
 
-int process_texture(char const * infile, char const * outfile);
+int process_texture(char const * infile, ACKFILE * outfile);
+int process_material(char const * infile, ACKFILE * outfile);
+
+struct
+{
+	char const * name;
+	int (*process)(char const*,ACKFILE*);
+	char const * extension;
+} targets[] = {
+	{ "texture",  process_texture,  ".atx" },
+	{ "material", process_material, ".amf" },
+	{ NULL, NULL, NULL }
+};
 
 char * make_default(char const * infile, char const * extension)
 {
-	char * outfile = malloc(strlen(infile) + strlen(extension) + 1);
+	char * outfile = (char*)malloc(strlen(infile) + strlen(extension) + 1);
 	strcpy(outfile, infile);
 
 	if(!useAbsolutePaths) {
@@ -28,18 +42,11 @@ char * make_default(char const * infile, char const * extension)
 	return outfile;
 }
 
-struct
-{
-	char const * name;
-	int (*process)(char const*,char const *);
-	char const * extension;
-} targets[] = {
-	{ "texture", process_texture, ".atx" },
-	{ NULL, NULL, NULL }
-};
-
 int main(int argc, char ** argv)
 {
+	engine_config.argv0 = argv[0];
+	engine_config.flags &= ~USE_VFS;
+
 	int opt;
 	char * outfile = NULL;
 	while ((opt = getopt(argc, argv, "Ro:")) != -1) {
@@ -76,7 +83,22 @@ int main(int argc, char ** argv)
 		if(strcmp(target, targets[i].name) == 0) {
 			if(!outfile)
 				outfile = make_default(infile, targets[i].extension);
-			return (targets[i].process)(infile, outfile);
+
+			printf("%s → %s", targets[i].name, outfile);
+
+			ACKFILE * fptr = file_open_write(outfile);
+			if(fptr == nullptr) {
+				fprintf(stderr, "Failed to create '%s'!", outfile);
+				exit(EXIT_FAILURE);
+			}
+
+			int success = (targets[i].process)(infile, fptr);
+
+			file_close(fptr);
+
+			if(success != EXIT_SUCCESS)
+				unlink(outfile);
+			return success;
 		}
 	}
 

@@ -159,7 +159,6 @@ void gamemain()
 
 	model = load_bonestructure("/home/felix/projects/acknext/scripts/wuson.x");
 
-
 	ENTITY * ent = ent_create("wuson.x", vector(0,0,0), NULL);
 
 	ent->model->materials[0]->albedoTexture = bmap_load("texture.png");

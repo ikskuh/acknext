@@ -7,8 +7,6 @@
 #include <list>
 #include <string>
 
-static const uint32_t ACKNEXT_MAGIC = 0xCC41E367;
-
 class Extension
 {
 	friend bool ext_register(const char *name, EXTENSION *extension);

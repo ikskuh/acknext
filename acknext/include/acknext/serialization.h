@@ -1,3 +1,9 @@
+/**
+ * This is not a core incude file!
+ *
+ * It's contents are not required by a normal user but are shared between
+ * tools that are written with or for acknext.
+ */
 #ifndef _ACKNEXT_SERIALIZATION_H_
 #define _ACKNEXT_SERIALIZATION_H_
 

@@ -1,9 +1,13 @@
 #include <acknext.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include <cef_app.h>
 #include <cef_client.h>
 #include <wrapper/cef_helpers.h>
 #include <cef_task.h>
+#pragma GCC diagnostic pop
+
 #include <functional>
 
 struct RenderHandler : public CefRenderHandler
@@ -370,8 +374,8 @@ static SHADER * shader;
 static VERTEX mkvtx(int x, int y)
 {
 	VERTEX vtx;
-	vtx.position = (VECTOR) { 2*x - 1, 2*y - 1, 0 };
-	vtx.texcoord0 = (UVCOORD) { x, 1-y };
+	vtx.position = (VECTOR) { 2*float(x) - 1, 2*float(y) - 1, 0 };
+	vtx.texcoord0 = (UVCOORD) { float(x), 1-float(y) };
 	return vtx;
 }
 

@@ -4,8 +4,12 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 SOURCES += \
-    main.c \
-    process-texture.c
+    process-material.cpp \
+    process-texture.cpp \
+    main.cpp
 
 include($$PWD/../../common.pri)
 include($$PWD/../../acknext/acknext.pri)
+
+HEADERS += \
+    json.hpp

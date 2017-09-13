@@ -2,16 +2,9 @@
 
 #include <assert.h>
 #include <acknext/serialization.h>
+#include <acknext/acff.h>
 
 std::list<Extension> Extension::extensions;
-
-static const ACKGUID guidSymlink =
-{{
-	0x6f, 0xb9, 0xe9, 0xd6,
-	0x87, 0x86, 0x49, 0xf0,
-	0x9d, 0x6d, 0x39, 0x16,
-	0xa7, 0xba, 0x9c, 0x41
-}};
 
 Extension::Extension(std::string const & name, EXTENSION * ext) :
     name(name),
@@ -22,10 +15,7 @@ Extension::Extension(std::string const & name, EXTENSION * ext) :
 
 void Extension::writeHeader(ACKFILE * file, ACKTYPE type, ACKGUID const & guid)
 {
-	file_write(file, "ACKNEXT", 8);
-	file_write(file, &ACKNEXT_MAGIC, 4);
-	file_write_uint32(file, type);
-	file_write_guid(file, guid);
+	file_write_header(file, type, guid);
 }
 
 void * Extension::load(ACKFILE * file, ACKTYPE refType)
@@ -35,13 +25,13 @@ void * Extension::load(ACKFILE * file, ACKTYPE refType)
 	}
 	if(!file_read_signature(file, "ACKNEXT", 8))
 		return nullptr;
-	if(!file_read_signature(file, &ACKNEXT_MAGIC, sizeof(ACKNEXT_MAGIC)))
+	if(!file_read_signature(file, &ACFF_MAGIC, sizeof(ACFF_MAGIC)))
 		return nullptr;
 
 	ACKTYPE type = (ACKTYPE)file_read_uint32(file);
 	ACKGUID guid = file_read_guid(file);
 
-	if(guid_compare(&guid, &guidSymlink))
+	if(guid_compare(&guid, &acff_guidSymlink))
 	{
 		// whee, special case!
 		bool allowCaching  = file_read_uint8(file);
@@ -120,9 +110,17 @@ ACKNEXT_API_BLOCK
 
 	void file_write_symlink(ACKFILE * file, char const * referencedFile, bool useCaching)
 	{
-		Extension::writeHeader(file, TYPE_SYMLINK, guidSymlink);
+		Extension::writeHeader(file, TYPE_SYMLINK, acff_guidSymlink);
 		file_write_uint8(file, useCaching ? 1 : 0);
 		file_write_string(file, referencedFile, 0);
+	}
+
+	void file_write_header(ACKFILE *file, ACKTYPE type, ACKGUID guid)
+	{
+		file_write(file, "ACKNEXT", 8);
+		file_write(file, &ACFF_MAGIC, 4);
+		file_write_uint32(file, type);
+		file_write_guid(file, guid);
 	}
 }
 
