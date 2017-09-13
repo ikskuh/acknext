@@ -2,6 +2,7 @@
 #include <zlib.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include <GL/gl3w.h>
 
 #include <stdlib.h>
@@ -68,8 +69,15 @@ VIEW * cefview;
 
 void outsider()
 {
-	ackcef_refresh(cefview);
-	// ackcef_exec(cefview, "callMe('hej!')");
+	char buffer[128];
+
+	sprintf(buffer,
+		"update(%.2f,%.2f,%.2f)",
+		camera->position.x,
+		camera->position.y,
+		camera->position.z);
+
+	ackcef_exec(cefview, buffer);
 }
 
 void gamemain()
@@ -85,7 +93,12 @@ void gamemain()
 
 	ackcef_navigate(cefview, "ack:///fungui.htm");
 
-	event_attach(on_k, outsider);
+	while(!ackcef_ready(cefview))
+	{
+		task_yield();
+	}
+
+	ackcef_exec(cefview, "initialize()");
 
 	event_attach(on_s, storepos);
 	event_attach(on_t, tree);
@@ -143,6 +156,7 @@ void gamemain()
 
 			// camera->position.y = l3hf_get(hf, camera->position.x, camera->position.z) + 1.8;
 		}
+		outsider();
 		task_yield();
 	}
 }

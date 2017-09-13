@@ -9,6 +9,8 @@ ACKFUN VIEW * ackcef_createView();
 
 ACKFUN void ackcef_navigate(VIEW * view, char const * url);
 
+ACKFUN bool ackcef_ready(VIEW * view);
+
 ACKFUN void ackcef_exec(VIEW * view, char const * js);
 
 ACKFUN void ackcef_refresh(VIEW * view);

@@ -2,7 +2,9 @@
 
 #include <cef_app.h>
 #include <cef_client.h>
-#include <cef_render_handler.h>
+#include <wrapper/cef_helpers.h>
+#include <cef_task.h>
+#include <functional>
 
 struct RenderHandler : public CefRenderHandler
 {
@@ -285,6 +287,7 @@ ACKFUN void ackcef_init(int argc, char ** argv)
 	settings.no_sandbox = true;
 	settings.windowless_rendering_enabled = true;
 	settings.remote_debugging_port = 8090;
+	settings.single_process = true;
 	// settings.file_access_from_file_urls_allowed = true;
 	// settings.universal_access_from_file_urls_allowed = true;
 
@@ -486,6 +489,13 @@ ACKFUN VIEW * ackcef_createView()
 	return view->view;
 }
 
+ACKFUN bool ackcef_ready(VIEW * _view)
+{
+	if(!_view) return false;
+	auto * view = (AckCefView *)_view->context;
+
+	return !view->browser->IsLoading();
+}
 
 
 ACKFUN void ackcef_navigate(VIEW * _view, char const * url)
