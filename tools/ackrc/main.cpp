@@ -84,8 +84,6 @@ int main(int argc, char ** argv)
 			if(!outfile)
 				outfile = make_default(infile, targets[i].extension);
 
-			printf("%s → %s", targets[i].name, outfile);
-
 			ACKFILE * fptr = file_open_write(outfile);
 			if(fptr == nullptr) {
 				fprintf(stderr, "Failed to create '%s'!", outfile);

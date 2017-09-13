@@ -8,17 +8,6 @@
 #include "json.hpp"
 #include <fstream>
 
-static const uint32_t ACKNEXT_MAGIC = 0xCC41E367;
-
-static ACKGUID const guidMaterial =
-{{
-     0xb4, 0x0f, 0x64, 0x26,
-	 0x2d, 0x6c, 0x44, 0xb3,
-	 0xbd, 0x3d, 0x62, 0x9f,
-	 0xaa, 0x5a, 0xef, 0xe7
-}};
-
-
 int process_material(char const * infile, ACKFILE * outfile)
 {
 	using namespace nlohmann;
