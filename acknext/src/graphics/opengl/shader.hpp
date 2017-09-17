@@ -3,6 +3,8 @@
 
 #include <engine.hpp>
 #include <vector>
+#include <map>
+#include <string>
 #include <functional>
 
 template<typename T>
@@ -32,6 +34,7 @@ class Shader : public EngineObject<SHADER>
 public:
 	std::vector<UNIFORM> uniforms;
 	std::vector<GLuint> shaders;
+	mutable std::map<std::string, UNIFORM*> uniformsByName;
 #define _UNIFORM(xname, xtype, value, _rtype) UniformProxy<_rtype> xname;
 #include "uniformconfig.h"
 #undef _UNIFORM

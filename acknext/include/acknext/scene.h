@@ -8,6 +8,24 @@
 #include "core-graphics.h"
 #include "view.h"
 
+#define LOD0		(1<<0)
+#define LOD1		(1<<1)
+#define LOD2		(1<<2)
+#define LOD3		(1<<3)
+#define LOD4		(1<<4)
+#define LOD5		(1<<5)
+#define LOD6		(1<<6)
+#define LOD7		(1<<7)
+#define LOD8		(1<<8)
+#define LOD9		(1<<9)
+#define LOD10		(1<<10)
+#define LOD11		(1<<11)
+#define LOD12		(1<<12)
+#define LOD13		(1<<13)
+#define LOD14		(1<<14)
+#define LOD15		(1<<15)
+#define DOUBLESIDED (1<<16)
+
 // Plain type, has no backend
 typedef struct
 {
@@ -51,6 +69,8 @@ typedef struct
 	GLenum ACKCONST primitiveType;
 	BUFFER * vertexBuffer;
 	BUFFER * indexBuffer;
+	AABB boundingBox;
+	uint32_t lodMask; // lower 16 bits: lod stage, upper 16 bits: render flags!
 } MESH;
 
 // requires backend
@@ -62,7 +82,7 @@ typedef struct
 
 typedef struct
 {
-	// counts have a minimum of 1
+	// counts have a minimum of 1, except for animation count
 	int ACKCONST meshCount;
 	int ACKCONST animationCount;
 	int ACKCONST boneCount;
@@ -72,6 +92,9 @@ typedef struct
 	MATERIAL  * /*ACKCONST*/ * ACKCONST materials;  // assigned by model_create or model_reshape
 	ANIMATION * /*ACKCONST*/ * ACKCONST animations; // assigned by model_create or model_reshape
 	BONE bones[ACKNEXT_MAX_BONES];    // 0 is root/default bone
+
+	AABB ACKCONST boundingBox;
+	uint minimumLOD; // (if(lod > minimumLOD) discard; // Usually 16, so always visible
 } MODEL;
 
 typedef struct
@@ -124,7 +147,11 @@ ACKFUN MODEL * model_create(int numMeshes, int numBones, int numAnimations);
 
 ACKFUN void model_reshape(MODEL * model, int meshC, int matC, int boneC, int animC);
 
+ACKFUN void model_updateBoundingBox(MODEL * model);
+
 // render api:
+ACKVAR var lod_distances[16]; // The distances for each of the 16 LOD stages. Should be strictly monotonically increasing
+
 ACKVAR CAMERA * ACKCONST camera;
 
 ACKVAR COLOR sky_color;
@@ -149,6 +176,8 @@ ACKFUN MESH * mesh_read(ACKFILE * file);
 ACKFUN void mesh_write(ACKFILE * file, MESH const * mesh);
 
 ACKFUN void mesh_remove(MESH * mesh);
+
+ACKFUN void mesh_updateBoundingBox(MESH * mesh);
 
 // material api:
 

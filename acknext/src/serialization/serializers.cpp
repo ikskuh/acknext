@@ -21,6 +21,7 @@ ACKNEXT_API_BLOCK
 		file_write_uint32(file, model->boneCount);
 		file_write_uint32(file, model->meshCount);
 		file_write_uint32(file, model->animationCount);
+		file_write_uint32(file, model->minimumLOD);
 
 		// bones
 		for(int i = 0; i < model->boneCount; i++)
@@ -69,6 +70,7 @@ ACKNEXT_API_BLOCK
 		file_write_uint32(file, mesh->primitiveType);
 		file_write_uint32(file, indexCount);
 		file_write_uint32(file, vertexCount);
+		file_write_uint32(file, mesh->lodMask);
 		if(mesh->indexBuffer)
 		{
 			INDEX * indices = (INDEX*)buffer_map(mesh->indexBuffer, GL_READ_ONLY);
@@ -248,6 +250,8 @@ MODEL * loadModel(ACKFILE * file, ACKGUID const * guid)
 
 	MODEL * result = model_create(meshCount, boneCount, animationCount);
 
+	result->minimumLOD = file_read_uint32(file);
+
 	for(uint i = 0; i < boneCount; i++)
 	{
 		BONE & dst = result->bones[i];
@@ -266,6 +270,8 @@ MODEL * loadModel(ACKFILE * file, ACKGUID const * guid)
 		result->materials[i] = Extension::load<MATERIAL>(file);
 	}
 
+	model_updateBoundingBox(result);
+
 	return result;
 }
 
@@ -276,6 +282,7 @@ static MESH * loadMesh(ACKFILE * file, ACKGUID const * guid)
 	GLenum primitiveType = file_read_uint32(file);
 	uint32_t indexCount  = file_read_uint32(file);
 	uint32_t vertexCount = file_read_uint32(file);
+	uint32_t lodmask     = file_read_uint32(file);
 
 	BUFFER * vertexBuffer = nullptr;
 	BUFFER * indexBuffer = nullptr;
@@ -311,7 +318,10 @@ static MESH * loadMesh(ACKFILE * file, ACKGUID const * guid)
 		buffer_unmap(vertexBuffer);
 	}
 
-	return mesh_create(primitiveType, vertexBuffer, indexBuffer);
+	MESH * result = mesh_create(primitiveType, vertexBuffer, indexBuffer);
+	mesh_updateBoundingBox(result);
+	result->lodMask = lodmask;
+	return result;
 }
 
 static MATERIAL * loadMaterial(ACKFILE * file, ACKGUID const * guid)

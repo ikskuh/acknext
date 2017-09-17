@@ -22,7 +22,6 @@ flags.SHADERFLAGS =
 {
 	"TESSELATION",
 	"LINKED",
-	"DOUBLESIDED",
 }
 flags.ENTITYFLAGS = 
 {

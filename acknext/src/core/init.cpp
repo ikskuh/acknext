@@ -41,6 +41,8 @@ ACKNEXT_API_BLOCK
 	char ** engine_argv = { };
 	int engine_argc = 0;
 
+	ENGINESTATS engine_stats;
+
 	int engine_main(void (*main)())
 	{
 		if(engine_open() == false)

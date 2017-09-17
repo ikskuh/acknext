@@ -161,6 +161,8 @@ void render_init()
 
 void render_frame()
 {
+	engine_stats.drawcalls = 0;
+
 	std::sort(
 		View::all.begin(),
 		View::all.end(),

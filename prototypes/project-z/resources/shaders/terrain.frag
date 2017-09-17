@@ -1,6 +1,5 @@
 #version 330
 #define LIGHT_LIMIT 16
-#pragma acknext include "Hallo, Welt!"
 
 in vec3 position;
 in vec2 uv0;

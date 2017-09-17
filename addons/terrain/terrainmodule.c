@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
+#include <float.h>
 
 #include <acknext/extension.h>
 #include <acknext/serialization.h>
@@ -17,7 +18,6 @@ static const ACKGUID terrainguid = {{
 }};
 
 static SHADER * shdTerrain;
-
 
 static ACKTYPE canLoad(ACKGUID const * guid)
 {
@@ -68,9 +68,9 @@ static MODEL * terrain_load(ACKFILE * file, ACKGUID const * guid)
 			INDEX * face = &indices[4 * (y * tilesX + x)];
 			int base = stride * y + delta * x;
 			face[0] = base + 0;
-			face[1] = base + delta;
+			face[1] = base + stride;
 			face[2] = base + stride + delta;
-			face[3] = base + stride;
+			face[3] = base + delta;
 		}
 	}
 
@@ -85,6 +85,11 @@ static MODEL * terrain_load(ACKFILE * file, ACKGUID const * guid)
 		mesh_setvar(mesh, "texHeightmap", GL_SAMPLER_2D, heightmapTexture);
 		mesh_setvar(mesh, "fTerrainScale", GL_FLOAT, hf->horizontalScale);
 		mesh_setvar(mesh, "texNormalMap", GL_SAMPLER_2D, bmpNM);
+
+		mesh->boundingBox = (AABB){
+		    minimum: { 1, 1, 1 },
+		    maximum: { -1, -1, -1 },
+		};
 	}
 
 	MODEL * model = model_create(1, 0, 0);
@@ -108,6 +113,11 @@ static MODEL * terrain_load(ACKFILE * file, ACKGUID const * guid)
 
 		shader_setvar(model->materials[0], "texLargeScaleColor", GL_SAMPLER_2D, bmpLSC);
 		shader_setvar(model->materials[0], "texDetail", GL_SAMPLER_2D, bmpDetail);
+
+		*((AABB*)&model->boundingBox) = (AABB){
+			minimum: { 1, 1, 1 },
+			maximum: { -1, -1, -1 },
+		};
 	}
 
 	packed = blob_load("/terrain/GrassyMountains_AM.amf.gz");
@@ -125,6 +135,8 @@ static MODEL * terrain_load(ACKFILE * file, ACKGUID const * guid)
 		GL_RG_INTEGER, GL_UNSIGNED_BYTE,
 		am->data);
 	shader_setvar(model->materials[0], "texTerrainMaterial", GL_UNSIGNED_INT_SAMPLER_2D, amtexture);
+
+	l3af_free(am);
 
 	BITMAP * materials = bmap_create(GL_TEXTURE_2D_ARRAY, GL_RGBA8);
 	{
@@ -168,12 +180,27 @@ static MODEL * terrain_load(ACKFILE * file, ACKGUID const * guid)
 		shader_setvar(model->materials[0], "texTerrainMaterials", GL_SAMPLER_2D_ARRAY, materials);
 	}
 
+	obj_setvar(model, "terrain-data", ACK_POINTER, hf);
+
 	return model;
 }
 
+float terrain_getheight(MODEL * terrain, float x, float z)
+{
+	if(terrain == NULL) {
+		engine_seterror(ERR_INVALIDARGUMENT, "terrain was NULL!");
+		return 0.0;
+	}
 
+	GLenum type;
+	L3Heightfield * const * hfptr = obj_getvar(terrain, "terrain-data", &type);
+	if(type != ACK_POINTER) {
+		engine_seterror(ERR_INVALIDARGUMENT, "terrain model was not a terrain!");
+		return 0.0;
+	}
 
-
+	return l3hf_get(*hfptr, x, z);
+}
 
 
 

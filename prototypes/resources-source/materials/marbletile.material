@@ -1,0 +1,11 @@
+{
+	"type": "acknext-material",
+	"metalness": 1.0,
+	"roughness": 1.0,
+	"fresnell": 1.0,
+	"textures": {
+		"albedo": "/textures/marbletile_albedo.atx",
+		"normal": "/textures/marbletile_normal.atx",
+		"attribute": "/textures/marbletile_attributes.atx"
+	}
+}

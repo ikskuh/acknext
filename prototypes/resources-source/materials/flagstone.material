@@ -1,0 +1,11 @@
+{
+	"type": "acknext-material",
+	"metalness": 1.0,
+	"roughness": 1.0,
+	"fresnell": 1.0,
+	"textures": {
+		"albedo": "/textures/flagstone_albedo.atx",
+		"normal": "/textures/flagstone_normal.atx",
+		"attribute": "/textures/flagstone_attributes.atx"
+	}
+}

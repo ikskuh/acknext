@@ -7,6 +7,10 @@
 int main(int argc, char *argv[])
 {
 	engine_config.argv0 = argv[0];
+	engine_config.flags |= CUSTOM_VIDEO;
+	engine_config.flags &= ~USE_VFS;
+	engine_config.application = "Team Retro";
+	engine_config.application = "AckMIEP";
 
 	QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
 	QApplication a(argc, argv);

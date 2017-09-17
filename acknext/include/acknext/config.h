@@ -35,4 +35,6 @@
 #define ACKNEXT_MAX_CONTACTS     32
 #define ACKNEXT_MAX_BONES        256
 
+typedef unsigned int uint;
+
 #endif // _ACKNEXT_CONFIG_H_

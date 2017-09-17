@@ -63,6 +63,12 @@ typedef union UBYTE4
 	struct { uint8_t x, y, z, w; };
 } UBYTE4;
 
+typedef struct AABB
+{
+	VECTOR minimum;
+	VECTOR maximum;
+} AABB;
+
 ACKVAR VECTOR ACKCONST nullvector;
 
 // var Api:

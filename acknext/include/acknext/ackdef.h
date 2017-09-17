@@ -16,7 +16,6 @@
 #define NOMOVE (1<<1)
 #define TESSELATION (1<<0)
 #define LINKED (1<<1)
-#define DOUBLESIDED (1<<2)
 #define CLEAR_DEPTH (1<<0)
 #define CLEAR_COLOR (1<<1)
 #define CLEAR_STENCIL (1<<2)

@@ -24,10 +24,6 @@ QAcknextWidget::~QAcknextWidget()
 
 void QAcknextWidget::initializeGL()
 {
-	engine_config.flags |= CUSTOM_VIDEO;
-	engine_config.flags &= ~USE_VFS;
-	engine_config.application = "Team Retro";
-	engine_config.application = "AckMIEP";
 	engine_config.resolution = (SIZE) {
 		this->width(),
 		this->height()

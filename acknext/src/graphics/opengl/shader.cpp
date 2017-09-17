@@ -159,6 +159,8 @@ ACKNEXT_API_BLOCK
 				uni->block = -1; // No block by default
 				uni->location = glGetUniformLocation(program, uni->name);
 
+				shader->uniformsByName.emplace(uni->name, uni);
+
 	#define _UNIFORM(xname, xtype, value, _rtype) \
 				do { \
 					if(strcmp(uni->name, #xname) == 0) { \
@@ -294,6 +296,7 @@ ACKNEXT_API_BLOCK
 		if(cnt < 0) {
 			return nullptr;
 		}
+		return promote<Shader>(shader)->uniformsByName[name];
 		for(int i = 0; i < cnt; i++)
 		{
 			UNIFORM const * uni = shader_getUniform(shader, i);
@@ -323,7 +326,7 @@ ACKNEXT_API_BLOCK
 		const GLuint pgm = shader->object;
 		for(auto const & prop : dummy->properties)
 		{
-			UNIFORM const * uni = shader_getUniformByName(shader, prop.first.c_str());
+			UNIFORM const * uni = sh->uniformsByName[prop.first];
 			if(uni == nullptr) {
 				continue;
 			}

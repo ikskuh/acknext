@@ -5,4 +5,6 @@
 
 void terrainmodule_init();
 
+float terrain_getheight(MODEL * terrain, float x, float z);
+
 #endif // TERRAINMODULE_H

@@ -22,11 +22,12 @@ union Value
 	bool bools[4];
 	MATRIX matrices[4];
 	BITMAP * texture;
+	void * pointer;
 };
 
 struct Property
 {
-	Property() = default;
+	Property() : type(GL_NONE) { }
 
 	explicit Property(GLenum type, Value const & value);
 

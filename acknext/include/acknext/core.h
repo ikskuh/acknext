@@ -43,7 +43,14 @@ typedef struct
 	CONFIGFLAGS flags;
 } ACKCONFIG;
 
-extern ACKCONFIG engine_config;
+typedef struct
+{
+	int drawcalls;
+} ENGINESTATS;
+
+ACKVAR ACKCONFIG engine_config;
+
+ACKVAR ENGINESTATS engine_stats;
 
 ACKFUN int engine_main(void (*main)());
 
@@ -74,7 +81,12 @@ ACKVAR int ACKCONST engine_argc;
 #define bmap_setvar   obj_setvar
 #define mesh_setvar   obj_setvar
 
+#define ACK_POINTER   0xA001
+// #define ACK_STRING    0xA002
+
 ACKFUN void obj_setvar(void * obj, char const * name, GLenum type, ...);
+
+ACKFUN void const * obj_getvar(void * obj, char const * name, GLenum * type);
 
 ACKFUN void obj_listvar(void const * obj);
 

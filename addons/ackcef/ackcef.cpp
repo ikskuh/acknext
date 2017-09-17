@@ -33,7 +33,7 @@ public:
 		SIZE size;
 		view_to_bounds(view, nullptr, &size);
         rect = CefRect(0, 0, size.width, size.height);
-		engine_log("size: (%d×%d)", rect.width, rect.height);
+		// engine_log("size: (%d×%d)", rect.width, rect.height);
         return true;
     }
 
@@ -51,7 +51,7 @@ public:
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glBindTexture(GL_TEXTURE_2D, 0);
 
-		engine_log("Update texture (%d×%d)", width, height);
+		// engine_log("Update texture (%d×%d)", width, height);
 
         // Ogre::HardwarePixelBufferSharedPtr texBuf = m_renderTexture->getBuffer();
         // texBuf->lock(Ogre::HardwareBuffer::HBL_DISCARD);
@@ -459,6 +459,9 @@ static void cef_renderframe(void * ctx)
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
+
+	glDisable(GL_CULL_FACE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	opengl_setShader(shader);
 	opengl_setIndexBuffer(nullptr);

@@ -115,10 +115,10 @@ int process_material(char const * infile, ACKFILE * outfile)
 		else
 			assert(textures["normal"].is_null());
 
-		if(textures["attributes"].is_string())
-			attributeTexture = textures["attributes"];
+		if(textures["attribute"].is_string())
+			attributeTexture = textures["attribute"];
 		else
-			assert(textures["attributes"].is_null());
+			assert(textures["attribute"].is_null());
 
 		if(textures["emission"].is_string())
 			emissionTexture = textures["emission"];

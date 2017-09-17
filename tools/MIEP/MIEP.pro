@@ -34,7 +34,6 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     qacknextwidget.cpp \
-    daaang.cpp \
     materialeditor.cpp \
     ackcolorselector.cpp \
     imageview.cpp \
@@ -44,12 +43,12 @@ SOURCES += \
     meshlistmodel.cpp \
     animationviewer.cpp \
     modelloader.cpp \
-    modelsaver.cpp
+    modelsaver.cpp \
+    bitmaskeditor.cpp
 
 HEADERS += \
         mainwindow.hpp \
     qacknextwidget.hpp \
-    daaang.hpp \
     materialeditor.hpp \
     ackcolorselector.hpp \
     imageview.hpp \
@@ -59,7 +58,8 @@ HEADERS += \
     meshlistmodel.hpp \
     animationviewer.hpp \
     modelloader.hpp \
-    modelsaver.hpp
+    modelsaver.hpp \
+    bitmaskeditor.hpp
 
 FORMS += \
         mainwindow.ui \
@@ -67,7 +67,8 @@ FORMS += \
     ackcolorselector.ui \
     boneeditor.ui \
     meshlist.ui \
-    animationviewer.ui
+    animationviewer.ui \
+    bitmaskeditor.ui
 
 RESOURCES += \
     ../../resource/ackui.qrc

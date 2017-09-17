@@ -19,46 +19,13 @@
 				padding: 0.5em;
 			}
 		</style>
-		<script type="text/javascript">
-			var counter = 0;
-			function changeSomething()
-			{
-				counter += 1;
-				document.getElementById("cnt").innerText = String(counter);
-			}
-			
-			// In JavaScript register the callback function.
-			function callMe(args)
-			{
-				if(myint !== undefined) {
-					args = myint;
-				}
-				document.getElementById('result').innerText = JSON.stringify(args);
-			}
-		</script>
 	</head>
 	<body>
-		<h1>This is a title tag</h1>
-		<p>And this is a paragraph</p>
-		<ul>
-			<li>List item 1
-			<li>List item 2
-			<li>List item 3
-		</ul>
-		
-		<button onclick="changeSomething()">
-			Lick me!
-		</button>
-		
-		<p>Numbers licked: <span id="cnt">0</span></p>
-		
-		<img style="max-width: 250px;" src="http://i0.kym-cdn.com/entries/icons/original/000/001/030/DButt.jpg" />
-		
-		<p id="result">IPC Test</p>
-		
-		<img style="max-width: 250px;" src="ack:///textures/TexturesCom_Grass0169_1_seamless_S.jpg" />
-		
 		<div class="camInfo"><pre>
+Frame Rate:       <span id="fps">0</span> FPS
+Frame Time:       <span id="time">0</span> ms
+Entities:         <span id="num">0</span>
+Drawcalls:        <span id="calls">0</span>
 Terrain Size:     2048×2048
 Camera Elevation: <span id="camh">0</span> m a.s.l.
 Max. Tesselation: 64
@@ -69,10 +36,14 @@ Max. Tesselation: 64
 			{
 				// rdy
 			}
-			function update(x,y,z)
+			function update(height,frametime,num,calls)
 			{
 				var camh = document.getElementById("camh");
-				camh.innerText = y;
+				camh.innerText = String(height);
+				document.getElementById("fps").innerText = String((1.0 / frametime).toFixed(2));
+				document.getElementById("time").innerText = String((1000 * frametime).toFixed(2));
+				document.getElementById("num").innerText = String(num);
+				document.getElementById("calls").innerText = String(calls);
 			}
 		</script>
 	</body>

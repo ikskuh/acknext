@@ -9,7 +9,5 @@ SUBDIRS += \
     tools \    # After that, the tools are built
 	prototypes # And finally, the prototypes
 
-HEADERS += \
-    documentation/src/groups.h \
-    documentation/src/mainpage.h
-
+prototypes.depends = acknext addons
+tools.depends = acknext addons

@@ -100,6 +100,6 @@ int main(int argc, char ** argv)
 		}
 	}
 
-	fprintf(stderr, "Invalid resource target: %s", target);
+	fprintf(stderr, "Invalid resource target: %s\n", target);
 	return EXIT_FAILURE;
 }

@@ -57,6 +57,9 @@ ACKNEXT_API_BLOCK
 		{
 			switch(type)
 			{
+				case ACK_POINTER:
+					value.pointer = va_arg(list, void*);
+					break;
 #define MAKEVECS(_Name, _Type, _Var) \
 				case GL_##_Name: \
 					value._Var[0] = va_arg(list, _Type); \
@@ -93,11 +96,24 @@ ACKNEXT_API_BLOCK
 		va_end(list);
 
 		Dummy * ptr = promote<Dummy>(reinterpret_cast<DUMMY*>(obj));
-		if(ptr == nullptr) {
-			engine_log("obj_setvar received NULL object!");
-			return;
-		}
+		ARG_NOTNULL(obj,);
 		ptr->setProperty(name, Property(type, value));
+	}
+
+	void const * obj_getvar(void * obj, char const * name, GLenum * type)
+	{
+		Dummy * ptr = promote<Dummy>(reinterpret_cast<DUMMY*>(obj));
+		ARG_NOTNULL(obj, nullptr);
+		ARG_NOTNULL(name, nullptr);
+		auto const & prop = ptr->getProperty(name);
+		if(type != nullptr) {
+			*type = prop.type;
+		}
+		if(prop.type == GL_NONE) {
+			engine_seterror(ERR_INVALIDOPERATION, "The property %s does not exist!", name);
+			return nullptr;
+		}
+		return &prop.data;
 	}
 
 	void obj_listvar(void const * obj)

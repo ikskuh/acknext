@@ -9,7 +9,6 @@
 #include <QMdiSubWindow>
 #include <QOpenGLContext>
 #include "qacknextwidget.hpp"
-#include "daaang.hpp"
 
 #include "materialeditor.hpp"
 #include "boneeditor.hpp"

@@ -49,6 +49,9 @@ void funnylight()
 	}
 }
 
+ENTITY * terrain;
+SHADER * shdtree;
+
 void tree()
 {
 	const int radius = 250;
@@ -59,9 +62,14 @@ void tree()
 		VECTOR off;
 		off.x = center.x + (rand() / (float)RAND_MAX) * 2*radius - radius;
 		off.z = center.z + (rand() / (float)RAND_MAX) * 2*radius - radius;
-		// off.y = l3hf_get(hf, off.x, off.z) - 0.2;
-		ent_create("/models/tree.amd", &off, NULL);
-		task_yield();
+		off.y = terrain_getheight(terrain->model, off.x, off.z) - 0.2;
+		ENTITY * tree = ent_create("/models/tree.amd", &off, NULL);
+		if(tree->model) {
+			tree->model->materials[0]->shader = shdtree;
+			tree->model->materials[1]->shader = shdtree;
+		}
+
+		// task_yield();
 	}
 }
 
@@ -69,15 +77,23 @@ VIEW * cefview;
 
 void outsider()
 {
+	static float time_step_over_time = 0;
 	char buffer[128];
 
-	sprintf(buffer,
-		"update(%.2f,%.2f,%.2f)",
-		camera->position.x,
-		camera->position.y,
-		camera->position.z);
+	time_step_over_time = 0.9 * time_step_over_time + 0.1 * time_step;
 
-	ackcef_exec(cefview, buffer);
+	int num = 0;
+	ENTITY * you;
+	for(you = ent_next(NULL); you; you = ent_next(you), num++);
+
+	sprintf(buffer,
+		"update(%.2f,%f,%d,%d)",
+		camera->position.y,
+		time_step_over_time,
+		num,
+		engine_stats.drawcalls);
+
+	// ackcef_exec(cefview, buffer);
 }
 
 void gamemain()
@@ -89,16 +105,42 @@ void gamemain()
 	view_create((RENDERCALL)render_scene_with_camera, camera);
 	filesys_addResource("/home/felix/projects/acknext/prototypes/project-z/resources/", "/");
 
-	cefview = ackcef_createView();
 
-	ackcef_navigate(cefview, "ack:///fungui.htm");
+	shdtree = shader_create();
 
-	while(!ackcef_ready(cefview))
-	{
-		task_yield();
+	if(shader_addFileSource(shdtree, VERTEXSHADER, "/builtin/shaders/object.vert") == false) {
+		abort();
+	}
+	if(shader_addFileSource(shdtree, FRAGMENTSHADER, "/shaders/fastobject.glsl") == false) {
+		abort();
+	}
+	if(shader_addFileSource(shdtree, FRAGMENTSHADER, "/builtin/shaders/lighting.glsl") == false) {
+		abort();
+	}
+	if(shader_addFileSource(shdtree, FRAGMENTSHADER, "/builtin/shaders/gamma.glsl") == false) {
+		abort();
+	}
+	if(shader_addFileSource(shdtree, FRAGMENTSHADER, "/builtin/shaders/ackpbr.glsl") == false) {
+		abort();
+	}
+	if(shader_addFileSource(shdtree, FRAGMENTSHADER, "/builtin/shaders/fog.glsl") == false) {
+		abort();
+	}
+	if(shader_link(shdtree) == false) {
+		abort();
 	}
 
-	ackcef_exec(cefview, "initialize()");
+
+//	cefview = ackcef_createView();
+
+//	ackcef_navigate(cefview, "ack:///fungui.htm");
+
+//	while(!ackcef_ready(cefview))
+//	{
+//		task_yield();
+//	}
+
+//	ackcef_exec(cefview, "initialize()");
 
 	event_attach(on_s, storepos);
 	event_attach(on_t, tree);
@@ -116,7 +158,7 @@ void gamemain()
 		}
 	}
 
-	ent_create("/terrain/GrassyMountains.terrain", vector(0,0,0), NULL);
+	terrain = ent_create("/terrain/GrassyMountains.terrain", vector(0,0,0), NULL);
 
 	LIGHT * sun = light_create(SUNLIGHT);
 	sun->direction = *vec_normalize(vector(0.6, -1, -0.4), 1.0);
@@ -154,7 +196,7 @@ void gamemain()
 			vec_rotate(&mov, euler(pan, 0, 0));
 			vec_add(&camera->position, &mov);
 
-			// camera->position.y = l3hf_get(hf, camera->position.x, camera->position.z) + 1.8;
+			camera->position.y = terrain_getheight(terrain->model, camera->position.x, camera->position.z) + 1.8;
 		}
 		outsider();
 		task_yield();
@@ -164,7 +206,7 @@ void gamemain()
 int main(int argc, char ** argv)
 {
 	// May not return!
-	ackcef_init(argc, argv);
+// 	ackcef_init(argc, argv);
 
 	assert(argc >= 1);
 	engine_config.argv0 = argv[0];

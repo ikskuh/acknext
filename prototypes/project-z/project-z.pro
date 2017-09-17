@@ -17,7 +17,8 @@ DISTFILES += \
     resources/shaders/terrain.vert \
     resources/shaders/terrain.tesc \
     resources/shaders/terrain.tese \
-    resources/shaders/terrain.frag
+    resources/shaders/terrain.frag \
+    resources/shaders/fastobject.glsl
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../addons/terrain/release/ -lterrain

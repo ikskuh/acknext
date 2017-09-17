@@ -3,6 +3,7 @@
 
 #include <QToolButton>
 #include <QListView>
+#include <QLayout>
 
 MeshList::MeshList(MODEL * model, QWidget *parent) :
     QDockWidget(parent),
@@ -29,6 +30,10 @@ void MeshList::setupGui()
 		ui->list->selectionModel(), &QItemSelectionModel::currentChanged,
 		this, &MeshList::on_list_selectionChanged);
 
+	connect(
+		ui->bitmask, &BitMaskEditor::hasChanged,
+		this, &MeshList::hasChanged);
+
 	ui->showMaterial->setEnabled(false);
 	ui->toggleMeshVis->setEnabled(false);
 	ui->openTools->setEnabled(false);
@@ -43,6 +48,8 @@ void MeshList::selectIndex(int i)
 	ui->deleteMesh->setEnabled(en);
 	ui->openTools->setEnabled(en);
 	ui->toggleMeshVis->setEnabled(en);
+
+	this->ui->bitmask->setMesh(this->model->meshes[i]);
 }
 
 void MeshList::on_list_selectionChanged(const QModelIndex & current, const QModelIndex & previous)
