@@ -247,6 +247,7 @@ ACKNEXT_API_BLOCK
 		glClearColor(sky_color.red, sky_color.green, sky_color.blue, sky_color.alpha);
 		glClearDepth(1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glDisable(GL_BLEND);
 
 		// TODO: add current_view for rendering steps
 		MATRIX matView, matProj;

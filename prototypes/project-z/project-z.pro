@@ -18,7 +18,8 @@ DISTFILES += \
     resources/shaders/terrain.tesc \
     resources/shaders/terrain.tese \
     resources/shaders/terrain.frag \
-    resources/shaders/fastobject.glsl
+    resources/shaders/fastobject.frag \
+    resources/shaders/fastobject.vert
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../addons/terrain/release/ -lterrain
@@ -44,8 +45,8 @@ DEPENDPATH += $$PWD/../../addons/ackcef
 LIBS += -L/opt/cef-minimal/Release/ -lcef
 LIBS += -L/opt/cef-minimal/libcef_dll_wrapper -lcef_dll_wrapper
 
-win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../../addons/ackcef/release/libackcef.a
-else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../../addons/ackcef/debug/libackcef.a
-else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../../addons/ackcef/release/ackcef.lib
-else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../../addons/ackcef/debug/ackcef.lib
-else:unix: PRE_TARGETDEPS += $$OUT_PWD/../../addons/ackcef/libackcef.a
+#win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../../addons/ackcef/release/libackcef.a
+#else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../../addons/ackcef/debug/libackcef.a
+#else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../../addons/ackcef/release/ackcef.lib
+#else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../../addons/ackcef/debug/ackcef.lib
+#else:unix: PRE_TARGETDEPS += $$OUT_PWD/../../addons/ackcef/libackcef.a

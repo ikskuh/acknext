@@ -28,6 +28,8 @@ ACKNEXT_API_BLOCK
 	COLOR screen_color = { 0, 0, 0.5, 1.0 };
 }
 
+static GLuint renderTimeQuery;
+
 static void (APIENTRY render_log)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
 
 void render_init()
@@ -156,12 +158,26 @@ void render_init()
 	camera = camera_create();
 	promote<Camera>(::camera)->userCreated = false;
 
+
+	{
+		glCreateQueries(GL_TIME_ELAPSED, 1, &renderTimeQuery);
+
+
+		int num;
+		glGetQueryiv(GL_TIME_ELAPSED, GL_QUERY_COUNTER_BITS, &num);
+		engine_log("Query Resolution: %d", num);
+
+	}
+
 	DebugDrawer::initialize();
 }
 
 void render_frame()
 {
 	engine_stats.drawcalls = 0;
+	engine_stats.gpuTime = 0.0;
+
+	glBeginQuery(GL_TIME_ELAPSED, renderTimeQuery);
 
 	std::sort(
 		View::all.begin(),
@@ -180,10 +196,16 @@ void render_frame()
 		view->draw();
 	}
 
+	glEndQuery(GL_TIME_ELAPSED);
+
 	SDL_GL_SwapWindow(engine.window);
 	glDisable(GL_SCISSOR_TEST);
 
 	DebugDrawer::reset();
+
+	ulong time;
+	glGetQueryObjectui64v(renderTimeQuery, GL_QUERY_RESULT, &time);
+	engine_stats.gpuTime = time / 1000000.0;
 }
 
 void render_shutdown()

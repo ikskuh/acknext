@@ -64,12 +64,13 @@ void tree()
 		off.z = center.z + (rand() / (float)RAND_MAX) * 2*radius - radius;
 		off.y = terrain_getheight(terrain->model, off.x, off.z) - 0.2;
 		ENTITY * tree = ent_create("/models/tree.amd", &off, NULL);
-		if(tree->model) {
-			tree->model->materials[0]->shader = shdtree;
-			tree->model->materials[1]->shader = shdtree;
-		}
-
+		quat_axis_angle(&tree->rotation, vector(0,1,0), 360 * (float)rand() / (float)RAND_MAX);
 		// task_yield();
+		if(key_lshift && tree->model) {
+			for(int i = 0; i < tree->model->meshCount; i++) {
+				tree->model->materials[i]->shader = shdtree;
+			}
+		}
 	}
 }
 
@@ -96,6 +97,13 @@ void outsider()
 	// ackcef_exec(cefview, buffer);
 }
 
+bool nightmode = false;
+
+static void toggle_nightmode()
+{
+	nightmode ^= true;
+}
+
 void gamemain()
 {
 	GLfloat fLargest;
@@ -108,10 +116,12 @@ void gamemain()
 
 	shdtree = shader_create();
 
-	if(shader_addFileSource(shdtree, VERTEXSHADER, "/builtin/shaders/object.vert") == false) {
+//	if(shader_addFileSource(shdtree, VERTEXSHADER, "/builtin/shaders/object.vert") == false) {
+	if(shader_addFileSource(shdtree, VERTEXSHADER, "/shaders/fastobject.vert") == false) {
 		abort();
 	}
-	if(shader_addFileSource(shdtree, FRAGMENTSHADER, "/shaders/fastobject.glsl") == false) {
+//	if(shader_addFileSource(shdtree, FRAGMENTSHADER, "/shaders/fastobject.frag") == false) {
+	if(shader_addFileSource(shdtree, FRAGMENTSHADER, "/builtin/shaders/object.frag") == false) {
 		abort();
 	}
 	if(shader_addFileSource(shdtree, FRAGMENTSHADER, "/builtin/shaders/lighting.glsl") == false) {
@@ -145,6 +155,7 @@ void gamemain()
 	event_attach(on_s, storepos);
 	event_attach(on_t, tree);
 	event_attach(on_l, funnylight);
+	event_attach(on_n, toggle_nightmode);
 
 	terrainmodule_init();
 	default_init();
@@ -171,13 +182,25 @@ void gamemain()
 	var tilt = 0;
 	while(true)
 	{
-		if(key_n) {
+		if(nightmode) {
 			sun->color = COLOR_BLACK;
 		} else {
 			sun->color = *color_hex(0xfffac1);
 		}
+
 		if(key_4) {
-			engine_log("%f ms / %f FPS", 1000.0 * time_step, 1.0 / time_step);
+			static float gpuTime = 0.0;
+			static float frameTime = 0.0;
+
+			gpuTime = 0.9 * gpuTime + 0.1 * engine_stats.gpuTime;
+			frameTime = 0.9 * frameTime + 0.1 * time_step;
+
+			engine_log(
+				"%8.4f ms / %8.4f ms GPU Time / %4d Drawcalls / %8.4f FPS",
+				1000.0 * frameTime,
+				gpuTime,
+				engine_stats.drawcalls,
+				1.0 / frameTime);
 		}
 
 		if(!default_camera_movement_enabled)
@@ -206,7 +229,7 @@ void gamemain()
 int main(int argc, char ** argv)
 {
 	// May not return!
-// 	ackcef_init(argc, argv);
+	//ackcef_init(argc, argv);
 
 	assert(argc >= 1);
 	engine_config.argv0 = argv[0];

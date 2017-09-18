@@ -46,6 +46,7 @@ typedef struct
 typedef struct
 {
 	int drawcalls;
+	float gpuTime; // GPU time in milliseconds for all drawcalls
 } ENGINESTATS;
 
 ACKVAR ACKCONFIG engine_config;
