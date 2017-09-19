@@ -345,7 +345,7 @@ ACKNEXT_API_BLOCK
 				if(call.mesh->lodMask & (1<<lod)) {
 					// And only render it, when the
 					// mesh is actually visible
-					// if(!cull(matWorldViewProj, call.mesh->boundingBox))
+					if(!cull(matWorldViewProj, call.mesh->boundingBox))
 					{
 						drawcalls.push_back(call);
 					}

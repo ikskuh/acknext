@@ -101,6 +101,13 @@ void MeshList::on_openTools_clicked()
 	int indexCount = mesh->indexBuffer->size / sizeof(INDEX);
 	int vertexCount = mesh->vertexBuffer->size / sizeof(VERTEX);
 
+	engine_log(
+		"%d→%d, %d→%d",
+		mesh->vertexBuffer->size,
+		vertexCount,
+		mesh->indexBuffer->size,
+		indexCount);
+
 	for(int i = 0; i < vertexCount; i++) {
 		vertices[i].normal = nullvector;
 	}
@@ -116,11 +123,15 @@ void MeshList::on_openTools_clicked()
 		vb = vertices[b].position;
 		vc = vertices[c].position;
 
-		vec_sub(&va, &vc);
-		vec_sub(&vb, &vc);
+		vec_sub(&vb, &va);
+		vec_sub(&vc, &va);
+
+		vec_normalize(&vb, 1.0);
+		vec_normalize(&vc, 1.0);
 
 		VECTOR normal;
-		vec_cross(&normal, &va, &vb);
+		vec_cross(&normal, &vb, &vc);
+		vec_normalize(&normal, 1.0);
 
 		vec_add(&vertices[a].normal, &normal);
 		vec_add(&vertices[b].normal, &normal);

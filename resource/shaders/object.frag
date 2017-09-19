@@ -22,6 +22,8 @@ uniform vec3 vecAttributes;
 uniform vec3 vecViewPos;
 uniform vec3 vecViewDir;
 
+uniform bool useNormalMapping = false;
+
 out vec4 fragment;
 
 vec3 toLinear(vec3 v);
@@ -58,35 +60,45 @@ uniform int iLightCount;
 
 void main() {
 
-	mat3 mApplyNormal;
-	vec3 polyNormal;
-	if(gl_FrontFacing) {
-		polyNormal = normal;
-		mApplyNormal = mat3(tangent,cotangent,normal);
-	} else {
-		polyNormal = -normal;
-		mApplyNormal = mat3(-tangent,-cotangent,-normal);
-	}
-
 	vec4 cAlbedo = vecAlbedo * vec4(toLinear(color),1) * toLinear(texture(texAlbedo, uv0));
 	vec4 cEmissive = vecEmission * toLinear(texture(texEmission, uv0));
-	vec4 cAttribute = vec4(vecAttributes, 1) * texture(texAttributes, uv0);
-	vec4 cNormalMap = texture(texNormalMap, uv0);
+
 	// cAttribute = [ roughness, metallic, fresnell ]
-
-	cNormalMap.rg = 2.0 * cNormalMap.rg - vec2(1.0);
-	cNormalMap.rgb = normalize(cNormalMap.rgb);
-
-
-	if(!gl_FrontFacing) {
-		cNormalMap.rg = -cNormalMap.rg;
-	}
-
-	vec3 realNormal = mApplyNormal * cNormalMap.rgb;
+	vec4 cAttribute = vec4(vecAttributes, 1) * texture(texAttributes, uv0);
 
 	// Alpha testing
 	if(cAlbedo.a <= 0.5) {
 		discard;
+	}
+
+	vec3 realNormal;
+	if(useNormalMapping) {
+		vec4 cNormalMap = texture(texNormalMap, uv0);
+
+		mat3 mApplyNormal;
+		vec3 polyNormal;
+		if(gl_FrontFacing) {
+			polyNormal = normal;
+			mApplyNormal = mat3(tangent,cotangent,normal);
+		} else {
+			polyNormal = -normal;
+			mApplyNormal = mat3(-tangent,-cotangent,-normal);
+		}
+
+		cNormalMap.rg = 2.0 * cNormalMap.rg - vec2(1.0);
+		cNormalMap.rgb = normalize(cNormalMap.rgb);
+
+		if(!gl_FrontFacing) {
+			cNormalMap.rg = -cNormalMap.rg;
+		}
+
+		realNormal = mApplyNormal * cNormalMap.rgb;
+	} else {
+		if(gl_FrontFacing) {
+			realNormal = normal;
+		} else {
+			realNormal = -normal;
+		}
 	}
 
 	if(iDebugMode == 1) {
