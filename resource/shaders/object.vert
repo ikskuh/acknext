@@ -10,9 +10,14 @@ layout(location = 5) in vec2 vUV1;
 layout(location = 6) in vec4 vBones;
 layout(location = 7) in vec4 vBoneWeight;
 
+layout(location = 8) in mat4 vWorldTransform;
+
 uniform mat4 matWorld;
 uniform mat4 matView;
 uniform mat4 matProj;
+
+uniform bool useInstancing = false;
+uniform bool useBones      = true;
 
 layout(std140) uniform BoneBlock
 {
@@ -24,6 +29,8 @@ out vec2 uv0, uv1;
 
 vec4 applyBoneTransform(vec4 inval)
 {
+	if(useBones == false)
+		return inval;
 	vec4 weights = vBoneWeight;
 	return weights.x * bones[int(vBones.x)] * inval
 		 + weights.y * bones[int(vBones.y)] * inval
@@ -37,10 +44,16 @@ void main() {
 	vec3 mNormal   = applyBoneTransform(vec4(vNormal, 0.0)).xyz;
 	vec3 mTangent  = applyBoneTransform(vec4(vTangent, 0.0)).xyz;
 
-	position = (matWorld * vec4(mPosition, 1)).rgb;
+	mat4 world;
+	if(useInstancing)
+		world = vWorldTransform;
+	else
+		world = matWorld;
+
+	position = (world * vec4(mPosition, 1)).rgb;
 	gl_Position = matProj * matView * vec4(position, 1);
-	normal = normalize(( matWorld * vec4(mNormal, 0.0) ).xyz);
-	tangent = normalize(( matWorld * vec4(mTangent, 0.0) ).xyz);
+	normal = normalize(( world * vec4(mNormal, 0.0) ).xyz);
+	tangent = normalize(( world * vec4(mTangent, 0.0) ).xyz);
 	color = vColor;
 	uv0 = vUV0;
 	uv1 = vUV1;

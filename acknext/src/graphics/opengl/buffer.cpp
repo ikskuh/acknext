@@ -20,7 +20,7 @@ ACKNEXT_API_BLOCK
 		return demote(new Buffer(type));
 	}
 
-	void buffer_set(BUFFER * buffer, size_t size, void * data)
+	void buffer_set(BUFFER * buffer, size_t size, void const * data)
 	{
 		Buffer * buf = promote<Buffer>(buffer);
 		if(buf == nullptr) {
@@ -35,7 +35,7 @@ ACKNEXT_API_BLOCK
 		buffer->size = size;
 	}
 
-	void buffer_update(BUFFER * buffer, size_t offset, size_t size, void * data)
+	void buffer_update(BUFFER * buffer, size_t offset, size_t size, void const * data)
 	{
 		Buffer * buf = promote<Buffer>(buffer);
 		if(buf == nullptr) {

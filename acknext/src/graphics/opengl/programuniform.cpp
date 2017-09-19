@@ -5,6 +5,7 @@
 	call; \
 } \
 
+FUNC(bool, glProgramUniform1i(p, l, v ? GL_TRUE : GL_FALSE))
 FUNC(int, glProgramUniform1i(p, l, v))
 FUNC(float, glProgramUniform1f(p, l, v))
 FUNC(VECTOR2, glProgramUniform2f(p, l, v.x, v.y))

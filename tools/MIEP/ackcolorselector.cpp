@@ -42,10 +42,10 @@ void AckColorSelector::on_showPicker_clicked()
 	qcol = QColorDialog::getColor(qcol, this, tr("Select a color"));
 	if(qcol.isValid()) {
 		this->setColor((COLOR) {
-			qcol.redF(),
-			qcol.greenF(),
-			qcol.blueF(),
-			qcol.alphaF(),
+			float(qcol.redF()),
+			float(qcol.greenF()),
+			float(qcol.blueF()),
+			float(qcol.alphaF()),
 		});
 	}
 }

@@ -66,11 +66,11 @@ void tree()
 		ENTITY * tree = ent_create("/models/tree.amd", &off, NULL);
 		quat_axis_angle(&tree->rotation, vector(0,1,0), 360 * (float)rand() / (float)RAND_MAX);
 		// task_yield();
-		if(key_lshift && tree->model) {
-			for(int i = 0; i < tree->model->meshCount; i++) {
-				tree->model->materials[i]->shader = shdtree;
-			}
-		}
+//		if(tree->model) {
+//			for(int i = 0; i < tree->model->meshCount; i++) {
+//				tree->model->materials[i]->shader = shdtree;
+//			}
+//		}
 	}
 }
 
@@ -178,6 +178,8 @@ void gamemain()
 	LIGHT * ambi = light_create(AMBIENTLIGHT);
 	ambi->color = *color_hex(0x232c33);
 
+	tree();
+
 	var pan = 0;
 	var tilt = 0;
 	while(true)
@@ -195,10 +197,15 @@ void gamemain()
 			gpuTime = 0.9 * gpuTime + 0.1 * engine_stats.gpuTime;
 			frameTime = 0.9 * frameTime + 0.1 * time_step;
 
+			int num = 0;
+			ENTITY * you;
+			for(you = ent_next(NULL); you; you = ent_next(you), num++);
+
 			engine_log(
-				"%8.4f ms / %8.4f ms GPU Time / %4d Drawcalls / %8.4f FPS",
+				"%8.4f ms / %8.4f ms GPU Time / %5d Objects / %5d Drawcalls / %8.4f FPS",
 				1000.0 * frameTime,
 				gpuTime,
+				num,
 				engine_stats.drawcalls,
 				1.0 / frameTime);
 		}

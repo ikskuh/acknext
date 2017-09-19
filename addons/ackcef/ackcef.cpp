@@ -469,7 +469,7 @@ static void cef_renderframe(void * ctx)
 
 	shader_setUniforms(shader, browser->renderHandler->view, true);
 
-	opengl_draw(GL_TRIANGLE_STRIP, 0, 4);
+	opengl_draw(GL_TRIANGLE_STRIP, 0, 4, 1);
 
 	glDisable(GL_BLEND);
 }

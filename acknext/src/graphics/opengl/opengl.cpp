@@ -133,7 +133,8 @@ ACKNEXT_API_BLOCK
 	void opengl_draw(
 		unsigned int primitiveType,
 		unsigned int offset,
-		unsigned int count)
+		unsigned int count,
+		unsigned int instances)
 	{
 		int mode = 0;
 		if(currentIndexBuffer && currentVertexBuffer) {
@@ -143,6 +144,8 @@ ACKNEXT_API_BLOCK
 		} else if(currentVertexBuffer) {
 			mode = 3;
 		}
+
+		engine_stats.drawcalls += 1;
 
 		switch(mode) {
 			case 0:
@@ -154,21 +157,23 @@ ACKNEXT_API_BLOCK
 					engine_seterror(ERR_INVALIDOPERATION, "offset and count index the index buffer outside of its range.");
 					return;
 				}
-				glDrawElements(
+				glDrawElementsInstanced(
 					primitiveType,
 					count,
 					GL_UNSIGNED_INT,
-					(const void *)(sizeof(INDEX) * offset));
+					(const void *)(sizeof(INDEX) * offset),
+					instances);
 				break;
 			case 3:
 				if((offset + count) > (currentVertexBuffer->api().size / sizeof(VERTEX))) {
 					engine_seterror(ERR_INVALIDOPERATION, "offset and count index the vertex buffer outside of its range.");
 					return;
 				}
-				glDrawArrays(
+				glDrawArraysInstanced(
 					primitiveType,
 					offset,
-					count);
+					count,
+					instances);
 				break;
 			default: abort();
 		}
@@ -195,7 +200,7 @@ ACKNEXT_API_BLOCK
 		glBindTextureUnit(slot, texture->api().object);
 	}
 
-	void opengl_drawMesh(MESH const * mesh)
+	GLenum opengl_setMesh(MESH const * mesh, int * _count)
 	{
 		if(mesh == nullptr) {
 			engine_seterror(ERR_INVALIDARGUMENT, "mesh must not be NULL!");
@@ -230,10 +235,22 @@ ACKNEXT_API_BLOCK
 				default: abort();
 			}
 		}
+		if(_count) *_count = count;
+		return type;
+	}
+
+	void opengl_drawMesh(MESH const * mesh)
+	{
+		if(mesh == nullptr) {
+			engine_seterror(ERR_INVALIDARGUMENT, "mesh must not be NULL!");
+		}
+		int count;
+		GLenum type = opengl_setMesh(mesh, &count);
 		opengl_draw(
 			type,
 			0,
-			count);
+			count,
+			1);
 	}
 
 	void opengl_setMaterial(MATERIAL const * material)

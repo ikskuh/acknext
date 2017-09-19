@@ -20,8 +20,9 @@ flags.WARPFLAGS =
 }
 flags.SHADERFLAGS = 
 {
-	"TESSELATION",
-	"LINKED",
+	"Tesselation",
+	"Linked",
+	"Use_Instancing",
 }
 flags.ENTITYFLAGS = 
 {

@@ -38,6 +38,8 @@ private slots:
 	void on_list_selectionChanged(const QModelIndex & current, const QModelIndex & previous);
 
 private:
+	MESH * currentMesh() const;
+
 	void setupGui();
 
 	void selectIndex(int i);

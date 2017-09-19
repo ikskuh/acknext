@@ -19,12 +19,15 @@ ACKFUN void opengl_setLights();
 
 ACKFUN void opengl_setTransform(MATRIX const * matWorld, MATRIX const * matView, MATRIX const * matProj);
 
+ACKFUN GLenum opengl_setMesh(MESH const * mesh, int * _count);
+
 ACKFUN void opengl_drawMesh(MESH const * mesh);
 
 ACKFUN void opengl_draw(
 	unsigned int primitiveType,
 	unsigned int offset,
-	unsigned int count);
+	unsigned int count,
+	unsigned int instances);
 
 ACKFUN void opengl_drawDebug(MATRIX * const matView, MATRIX * const matProj);
 

@@ -78,9 +78,9 @@ ACKFUN BITMAP * bmap_to_mipmap(BITMAP * bitmap);
 
 ACKFUN BUFFER * buffer_create(GLenum type);
 
-ACKFUN void buffer_set(BUFFER * buffer, size_t size, void * data);
+ACKFUN void buffer_set(BUFFER * buffer, size_t size, void const * data);
 
-ACKFUN void buffer_update(BUFFER * buffer, size_t offset, size_t size, void * data);
+ACKFUN void buffer_update(BUFFER * buffer, size_t offset, size_t size, void const * data);
 
 #define READONLY GL_READ_ONLY
 #define WRITEONLY GL_WRITE_ONLY

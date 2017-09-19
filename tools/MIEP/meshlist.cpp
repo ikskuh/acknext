@@ -5,6 +5,8 @@
 #include <QListView>
 #include <QLayout>
 
+#include "mainwindow.hpp"
+
 MeshList::MeshList(MODEL * model, QWidget *parent) :
     QDockWidget(parent),
     model(model),
@@ -40,6 +42,14 @@ void MeshList::setupGui()
 	ui->deleteMesh->setEnabled(false);
 }
 
+MESH * MeshList::currentMesh() const
+{
+	int index = ui->list->selectionModel()->currentIndex().row();
+	if(index >= 0 && index < model->meshCount)
+		return model->meshes[index];
+	else
+		return nullptr;
+}
 
 void MeshList::selectIndex(int i)
 {
@@ -49,7 +59,11 @@ void MeshList::selectIndex(int i)
 	ui->openTools->setEnabled(en);
 	ui->toggleMeshVis->setEnabled(en);
 
-	this->ui->bitmask->setMesh(this->model->meshes[i]);
+	if(en) {
+		this->ui->bitmask->setMesh(this->model->meshes[i]);
+	} else {
+		this->ui->bitmask->setMesh(nullptr);
+	}
 }
 
 void MeshList::on_list_selectionChanged(const QModelIndex & current, const QModelIndex & previous)
@@ -77,7 +91,59 @@ void MeshList::on_toggleMeshVis_clicked()
 
 void MeshList::on_openTools_clicked()
 {
+	MainWindow::makeCurrent();
 
+	MESH * mesh = this->currentMesh();
+	if(!mesh) return;
+
+	VERTEX * vertices = (VERTEX*)buffer_map(mesh->vertexBuffer, READWRITE);
+	INDEX  * indices =  (INDEX*)buffer_map(mesh->indexBuffer, READONLY);
+	int indexCount = mesh->indexBuffer->size / sizeof(INDEX);
+	int vertexCount = mesh->vertexBuffer->size / sizeof(VERTEX);
+
+	for(int i = 0; i < vertexCount; i++) {
+		vertices[i].normal = nullvector;
+	}
+	for(int i = 0; i < indexCount; i += 3) {
+		int a,b,c;
+		VECTOR va,vb,vc;
+
+		a = indices[i + 0];
+		b = indices[i + 1];
+		c = indices[i + 2];
+
+		va = vertices[a].position;
+		vb = vertices[b].position;
+		vc = vertices[c].position;
+
+		vec_sub(&va, &vc);
+		vec_sub(&vb, &vc);
+
+		VECTOR normal;
+		vec_cross(&normal, &va, &vb);
+
+		vec_add(&vertices[a].normal, &normal);
+		vec_add(&vertices[b].normal, &normal);
+		vec_add(&vertices[c].normal, &normal);
+	}
+	for(int i = 0; i < vertexCount; i++) {
+		vec_normalize(&vertices[i].normal, 1.0);
+
+		if(vec_length(&vertices[i].tangent) < 0.5) {
+			VECTOR tangent;
+			vec_cross(&tangent, &vertices[i].normal, vector(0, 1, 0));
+			if(vec_length(&tangent) < 0.5)
+				vec_cross(&tangent, &vertices[i].normal, vector(1, 0, 0));
+			vec_normalize(&tangent, 1.0);
+			vertices[i].tangent = tangent;
+		}
+	}
+
+	buffer_unmap(mesh->vertexBuffer);
+	buffer_unmap(mesh->indexBuffer);
+
+
+	emit this->hasChanged();
 }
 
 void MeshList::on_deleteMesh_clicked()

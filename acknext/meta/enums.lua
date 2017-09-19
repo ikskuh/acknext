@@ -41,6 +41,9 @@ enum.SHADERVAR =
 	"vecFogColor",
 	
 	"iDebugMode",
+	
+	"useInstancing",
+	"useBones",
 }
 
 enum.ERROR = 

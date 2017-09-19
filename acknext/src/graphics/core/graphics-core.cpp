@@ -56,6 +56,11 @@ void render_init()
 	glEnableVertexArrayAttrib(vao, 6);
 	glEnableVertexArrayAttrib(vao, 7);
 
+	glEnableVertexArrayAttrib(vao, 8);
+	glEnableVertexArrayAttrib(vao, 9);
+	glEnableVertexArrayAttrib(vao, 10);
+	glEnableVertexArrayAttrib(vao, 11);
+
 	glVertexArrayAttribFormat(vao,
 		0, // position
 		3,
@@ -105,17 +110,47 @@ void render_init()
 		GL_TRUE,
 		offsetof(VERTEX, boneWeights));
 
-	glVertexArrayAttribBinding(vao, 0, 10);
-	glVertexArrayAttribBinding(vao, 1, 10);
-	glVertexArrayAttribBinding(vao, 2, 10);
-	glVertexArrayAttribBinding(vao, 3, 10);
-	glVertexArrayAttribBinding(vao, 4, 10);
-	glVertexArrayAttribBinding(vao, 5, 10);
-	glVertexArrayAttribBinding(vao, 6, 10);
-	glVertexArrayAttribBinding(vao, 7, 10);
+
+	glVertexArrayAttribFormat(vao,
+		8, // instancing transform
+		4,
+		GL_FLOAT,
+		GL_FALSE,
+		0);
+	glVertexArrayAttribFormat(vao,
+		9, // instancing transform
+		4,
+		GL_FLOAT,
+		GL_FALSE,
+		16);
+	glVertexArrayAttribFormat(vao,
+		10, // instancing transform
+		4,
+		GL_FLOAT,
+		GL_FALSE,
+		32);
+	glVertexArrayAttribFormat(vao,
+		11, // instancing transform
+		4,
+		GL_FLOAT,
+		GL_FALSE,
+		48);
+
+	glVertexArrayAttribBinding(vao,  0, 10);
+	glVertexArrayAttribBinding(vao,  1, 10);
+	glVertexArrayAttribBinding(vao,  2, 10);
+	glVertexArrayAttribBinding(vao,  3, 10);
+	glVertexArrayAttribBinding(vao,  4, 10);
+	glVertexArrayAttribBinding(vao,  5, 10);
+	glVertexArrayAttribBinding(vao,  6, 10);
+	glVertexArrayAttribBinding(vao,  7, 10);
+
+	glVertexArrayAttribBinding(vao,  8, 12);
+	glVertexArrayAttribBinding(vao,  9, 12);
+	glVertexArrayAttribBinding(vao, 10, 12);
+	glVertexArrayAttribBinding(vao, 11, 12);
 
 	glBindVertexArray(vao);
-
 
 	defaultWhiteTexture = bmap_createpixel(COLOR_WHITE);
 	defaultNormalMap = bmap_createpixel((COLOR){0.5, 0.5, 1.0, 1.0});
@@ -145,6 +180,7 @@ void render_init()
 	if(shader_link(defaultShader) == false) {
 		abort();
 	}
+	defaultShader->flags |= USE_INSTANCING;
 
 	opengl_setShader(defaultShader);
 
@@ -157,7 +193,6 @@ void render_init()
 
 	camera = camera_create();
 	promote<Camera>(::camera)->userCreated = false;
-
 
 	{
 		glCreateQueries(GL_TIME_ELAPSED, 1, &renderTimeQuery);
