@@ -62,6 +62,11 @@ ACKNEXT_API_BLOCK
 			return nullptr;
 		}
 
+		char const * ext = strrchr(fileName, '.');
+		if(ext != nullptr) {
+			ext++;
+		}
+
 		SDL_RWops *rwops = SDL_AllocRW();
 		{
 			assert(rwops);
@@ -99,7 +104,11 @@ ACKNEXT_API_BLOCK
 			return nullptr;
 		}
 
-		SDL_Surface * surface = IMG_Load_RW(rwops, 1);
+		SDL_Surface * surface;
+		if(ext)
+			surface = IMG_LoadTyped_RW(rwops, 1, ext);
+		else
+			surface = IMG_Load_RW(rwops, 1);
 		if(surface == nullptr) {
 			engine_setsdlerror();
 			return nullptr;

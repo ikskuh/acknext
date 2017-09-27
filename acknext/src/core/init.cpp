@@ -169,6 +169,10 @@ ACKNEXT_API_BLOCK
 			}
 		}
 
+		if(IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF | IMG_INIT_WEBP) < 0) {
+			engine_log("Failed to initialize SDL_image: %s", IMG_GetError());
+		}
+
 		// engine_log("Initialize collision engine...");
 		// collision_init();
 

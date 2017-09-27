@@ -8,6 +8,8 @@
 #include <assert.h>
 #include <libgen.h>
 
+#include <QFileInfo>
+
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/anim.h>
@@ -331,7 +333,13 @@ MODEL * ModelLoader::load(QString const & _fileName)
 		for(uint i = 0; i < scene->mNumAnimations; i++)
 		{
 			auto const * src = scene->mAnimations[i];
-			ANIMATION * dst = anim_create(src->mName.C_Str(), src->mNumChannels);
+			char name[256];
+			strncpy(name, src->mName.C_Str(), 256);
+			if(strlen(name) == 0) {
+				sprintf(name, "Animation %d", i);
+			}
+
+			ANIMATION * dst = anim_create(name, src->mNumChannels);
 
 			double timeScale = 1.0 / 25.0;
 			if(src->mTicksPerSecond > 0) {
@@ -489,7 +497,12 @@ MATERIAL * ModelLoader::convertMaterial(aiMaterial const * _src, aiScene const *
 			}
 			engine_log("abspath: %s", buffer);
 
-			dst.albedoTexture = bmap_load(buffer);
+			if(QFileInfo(buffer).suffix() == "atx") {
+				// Use ATX texture loader here
+				assert(false);
+			} else {
+				dst.albedoTexture = bmap_load(buffer);
+			}
 		}
 
 		if(dst.albedoTexture == nullptr) {
