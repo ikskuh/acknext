@@ -1,6 +1,8 @@
 #ifndef _ACKNEXT_H_
 #define _ACKNEXT_H_
 
+#include <assert.h>
+
 // Configuration
 #include "acknext/config.h"
 

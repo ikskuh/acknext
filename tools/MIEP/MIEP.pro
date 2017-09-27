@@ -44,7 +44,8 @@ SOURCES += \
     animationviewer.cpp \
     modelloader.cpp \
     modelsaver.cpp \
-    bitmaskeditor.cpp
+    bitmaskeditor.cpp \
+    modelanimationlistmodel.cpp
 
 HEADERS += \
         mainwindow.hpp \
@@ -59,7 +60,8 @@ HEADERS += \
     animationviewer.hpp \
     modelloader.hpp \
     modelsaver.hpp \
-    bitmaskeditor.hpp
+    bitmaskeditor.hpp \
+    modelanimationlistmodel.hpp
 
 FORMS += \
         mainwindow.ui \

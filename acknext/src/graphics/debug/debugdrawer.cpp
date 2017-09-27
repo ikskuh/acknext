@@ -6,17 +6,24 @@ std::vector<VERTEX> DebugDrawer::points;
 BUFFER * DebugDrawer::vertexBuffer;
 MATERIAL * DebugDrawer::material;
 
+SHADER * DebugDrawer::shader;
+
 void DebugDrawer::initialize()
 {
 	vertexBuffer = buffer_create(VERTEXBUFFER);
 	material = mtl_create();
+
+	shader = shader_create();
+	assert(shader_addFileSource(shader, GL_VERTEX_SHADER,   "/builtin/shaders/linedraw.vert"));
+	assert(shader_addFileSource(shader, GL_FRAGMENT_SHADER, "/builtin/shaders/linedraw.frag"));
+	assert(shader_link(shader));
 }
 
 void DebugDrawer::render(MATRIX const & matView, MATRIX const & matProj)
 {
 	opengl_setVertexBuffer(vertexBuffer);
 	opengl_setIndexBuffer(nullptr);
-	opengl_setMaterial(material);
+	opengl_setShader(shader);
 
 	opengl_setTransform(
 		mat_id(nullptr),

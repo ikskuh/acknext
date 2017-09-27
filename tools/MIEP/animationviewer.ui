@@ -46,7 +46,7 @@
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset resource="../resource/ackui.qrc">
+         <iconset resource="../../resource/ackui.qrc">
           <normaloff>:/icons/rewind.png</normaloff>:/icons/rewind.png</iconset>
         </property>
        </widget>
@@ -57,7 +57,7 @@
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset resource="../resource/ackui.qrc">
+         <iconset resource="../../resource/ackui.qrc">
           <normaloff>:/icons/stop.png</normaloff>:/icons/stop.png</iconset>
         </property>
        </widget>
@@ -68,7 +68,7 @@
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset resource="../resource/ackui.qrc">
+         <iconset resource="../../resource/ackui.qrc">
           <normaloff>:/icons/play.png</normaloff>:/icons/play.png</iconset>
         </property>
        </widget>
@@ -92,7 +92,7 @@
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset resource="../resource/ackui.qrc">
+         <iconset resource="../../resource/ackui.qrc">
           <normaloff>:/icons/delete.png</normaloff>:/icons/delete.png</iconset>
         </property>
        </widget>
@@ -130,7 +130,7 @@
   </widget>
  </widget>
  <resources>
-  <include location="../resource/ackui.qrc"/>
+  <include location="../../resource/ackui.qrc"/>
  </resources>
  <connections/>
 </ui>

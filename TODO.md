@@ -14,8 +14,6 @@
 		  Sequenz aus Keyframes (position,rotation,skalierung)
 		- Länge der Animation ist von vornherein festgelegt
 		- Eigenschaften wie "looped" werden vom Programmierer vergeben
-	- LOD for Meshes
-		via LOD-Maske: mesh.visible = mesh.lodmask & (1<<lodstage)
 - Collider API
 	- "Collider Model" in addition to `hull_create` functions
 	  to merge model loading with collider loading
@@ -24,7 +22,6 @@
 		- bone-attached colliders
 		- "colliders between bones"
 - UI stuff
-	- CEF Addon (HTML GUI because it's cool)
 	- dear imgui integration
 	- Minimal engine ui (Panels)
 - Terrain System

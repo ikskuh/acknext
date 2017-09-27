@@ -12,6 +12,7 @@ private:
 
 	static MATERIAL * material;
 	static BUFFER * vertexBuffer;
+	static SHADER * shader;
 
 public:
 	DebugDrawer() = delete;

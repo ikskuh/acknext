@@ -13,6 +13,8 @@
 #include <terrainmodule.h>
 #include <ackcef.h>
 
+static const bool enableCEF = true;
+
 void storepos()
 {
 	if(key_lctrl)
@@ -52,10 +54,8 @@ void funnylight()
 ENTITY * terrain;
 SHADER * shdtree;
 
-void tree()
+void spawn(const int radius, const int count, char const * fileName, float scale)
 {
-	const int radius = 250;
-	const int count = 250;
 	const VECTOR center = camera->position;
 	for(int i = 0; i < count; i++)
 	{
@@ -63,15 +63,20 @@ void tree()
 		off.x = center.x + (rand() / (float)RAND_MAX) * 2*radius - radius;
 		off.z = center.z + (rand() / (float)RAND_MAX) * 2*radius - radius;
 		off.y = terrain_getheight(terrain->model, off.x, off.z) - 0.2;
-		ENTITY * tree = ent_create("/models/tree.amd", &off, NULL);
+		ENTITY * tree = ent_create(fileName, &off, NULL);
 		quat_axis_angle(&tree->rotation, vector(0,1,0), 360 * (float)rand() / (float)RAND_MAX);
-		// task_yield();
-//		if(tree->model) {
-//			for(int i = 0; i < tree->model->meshCount; i++) {
-//				tree->model->materials[i]->shader = shdtree;
-//			}
-//		}
+		vec_fill(&tree->scale, scale);
 	}
+}
+
+void tree()
+{
+	spawn(250, 250, "/models/tree.amd", 1.0);
+}
+
+void grass()
+{
+	spawn(50, 500, "/models/grass.amd", 0.4);
 }
 
 VIEW * cefview;
@@ -94,7 +99,7 @@ void outsider()
 		num,
 		engine_stats.drawcalls);
 
-	// ackcef_exec(cefview, buffer);
+	if(enableCEF) ackcef_exec(cefview, buffer);
 }
 
 bool nightmode = false;
@@ -141,19 +146,23 @@ void gamemain()
 	}
 
 
-//	cefview = ackcef_createView();
+	if(enableCEF)
+	{
+		cefview = ackcef_createView();
 
-//	ackcef_navigate(cefview, "ack:///fungui.htm");
+		ackcef_navigate(cefview, "ack:///fungui.htm");
 
-//	while(!ackcef_ready(cefview))
-//	{
-//		task_yield();
-//	}
+		while(!ackcef_ready(cefview))
+		{
+			task_yield();
+		}
 
-//	ackcef_exec(cefview, "initialize()");
+		ackcef_exec(cefview, "initialize()");
+	}
 
 	event_attach(on_s, storepos);
 	event_attach(on_t, tree);
+	event_attach(on_g, grass);
 	event_attach(on_l, funnylight);
 	event_attach(on_n, toggle_nightmode);
 
@@ -236,7 +245,7 @@ void gamemain()
 int main(int argc, char ** argv)
 {
 	// May not return!
-	//ackcef_init(argc, argv);
+	if(enableCEF) ackcef_init(argc, argv);
 
 	assert(argc >= 1);
 	engine_config.argv0 = argv[0];

@@ -10,6 +10,7 @@
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
+#include <assimp/anim.h>
 #include <assimp/postprocess.h>
 #include <assimp/IOSystem.hpp>
 #include <assimp/IOStream.hpp>
@@ -17,6 +18,11 @@
 static inline VECTOR ass_to_ack(const aiVector3D & vec)
 {
 	return (VECTOR){ vec.x, vec.y, vec.z };
+}
+
+static inline QUATERNION ass_to_ack(const aiQuaternion & vec)
+{
+	return (QUATERNION){ vec.x, vec.y, vec.z, vec.w };
 }
 
 class AckIoStream : public Assimp::IOStream
@@ -227,18 +233,6 @@ MODEL * ModelLoader::load(QString const & _fileName)
 		return nullptr;
 	}
 
-	for(uint i = 0; i < scene->mNumAnimations; i++)
-	{
-		auto anim = scene->mAnimations[i];
-		engine_log("Animation %d: %s", i, anim->mName.C_Str());
-		engine_log("\tDuration: %f ÷ %f", anim->mDuration, anim->mTicksPerSecond);
-		for(uint j = 0; j < anim->mNumChannels; j++)
-		{
-			// auto chan = anim->mChannels[j];
-			// engine_log("\tChannel[%d]: %s", j, chan->mNodeName.C_Str());
-		}
-	}
-
 	int boneCount = 0;
 	{
 		std::stack<aiNode const *> stack;
@@ -414,6 +408,73 @@ MODEL * ModelLoader::load(QString const & _fileName)
 		}
 	}
 
+	if(scene->HasAnimations())
+	{
+		assert(size_t(scene->mNumAnimations) == size_t(model->animationCount));
+		for(uint i = 0; i < scene->mNumAnimations; i++)
+		{
+			auto const * src = scene->mAnimations[i];
+			ANIMATION * dst = anim_create(src->mName.C_Str(), src->mNumChannels);
+
+			dst->duration = src->mDuration;
+
+			for(uint j = 0; j < src->mNumChannels; j++)
+			{
+				auto * const chanSrc = src->mChannels[j];
+
+				int frameCount = std::max(std::max(
+					chanSrc->mNumPositionKeys,
+					chanSrc->mNumRotationKeys),
+					chanSrc->mNumScalingKeys);
+
+				CHANNEL * chanDst = chan_create(frameCount);
+				for(int i = 0; i < frameCount; i++)
+				{
+					if(chanSrc->mNumPositionKeys == uint(frameCount)) {
+						chanDst->frames[i].time = chanSrc->mPositionKeys[i].mTime;
+					}
+					else if(chanSrc->mNumRotationKeys == uint(frameCount)) {
+						chanDst->frames[i].time = chanSrc->mRotationKeys[i].mTime;
+					}
+					else if(chanSrc->mNumScalingKeys == uint(frameCount)) {
+						chanDst->frames[i].time = chanSrc->mScalingKeys[i].mTime;
+					}
+					else {
+						assert(false);
+					}
+				}
+				for(int i = 0; i < frameCount; i++)
+				{
+					FRAME & frame = chanDst->frames[i];
+					for(uint j = 0; j < chanSrc->mNumPositionKeys; j++) {
+						if(chanSrc->mPositionKeys[j].mTime <= frame.time) {
+							frame.position = ass_to_ack(chanSrc->mPositionKeys[j].mValue);
+						} else {
+							break;
+						}
+					}
+					for(uint j = 0; j < chanSrc->mNumRotationKeys; j++) {
+						if(chanSrc->mRotationKeys[j].mTime <= frame.time) {
+							frame.rotation = ass_to_ack(chanSrc->mRotationKeys[j].mValue);
+						} else {
+							break;
+						}
+					}
+					for(uint j = 0; j < chanSrc->mNumScalingKeys; j++) {
+						if(chanSrc->mScalingKeys[j].mTime <= frame.time) {
+							frame.scale = ass_to_ack(chanSrc->mScalingKeys[j].mValue);
+						} else {
+							break;
+						}
+					}
+				}
+				dst->channels[j] = chanDst;
+			}
+
+			model->animations[i] = dst;
+		}
+	}
+
 	return model;
 }
 
@@ -500,221 +561,3 @@ MATERIAL * ModelLoader::convertMaterial(aiMaterial const * _src, aiScene const *
 	}
 	return _dst;
 }
-
-
-/*
-
-	unsigned int flags =
-		  aiProcess_JoinIdenticalVertices
-		| aiProcess_CalcTangentSpace
-	    | aiProcess_GenUVCoords // required for tangent space :(
-		| aiProcess_Triangulate
-		| aiProcess_GenNormals
-		| aiProcess_PreTransformVertices // REMOVE THIS LATER!
-		| aiProcess_LimitBoneWeights
-		| aiProcess_ValidateDataStructure
-		| aiProcess_ImproveCacheLocality
-		| aiProcess_RemoveRedundantMaterials
-		| aiProcess_OptimizeMeshes
-		| aiProcess_OptimizeGraph
-		| aiProcess_FlipUVs
-		;
-
-	aiScene const * scene = importer.ReadFile(fileName,	flags);
-
-	if(scene == nullptr) {
-		engine_seterror(ERR_INVALIDOPERATION, importer.GetErrorString());
-		return nullptr;
-	}
-
-	// The output scene still contains nodes, however there is only a root node
-	// with children, each one referencing only one mesh, and each mesh
-	// referencing one material. For rendering, you can simply render all meshes
-	// in order - you don't need to pay attention to local transformations and
-	// the node hierarchy. Animations are removed during this step. This step
-	// is intended for applications without a scenegraph. The step CAN cause
-	// some problems: if e.g. a mesh of the asset contains normals and another,
-	// using the same material index, does not, they will be brought together,
-	// but the first meshes's part of the normal list is zeroed. However, these
-	// artifacts are rare.
-
-	Model * model = new Model();
-
-	if(scene->HasMaterials())
-	{
-		model->materials.resize(scene->mNumMaterials);
-		for(unsigned int idx = 0; idx < scene->mNumMaterials; idx++)
-		{
-			MATERIAL & dst = model->materials[idx];
-			aiMaterial const & src = *scene->mMaterials[idx];
-
-			memset(&dst, 0, sizeof(MATERIAL));
-			dst.color = (COLOR){1,1,1,1};
-			dst.roughness = 1.0;
-
-			aiColor4D cDiffuse, cEmissive;
-
-			if(src.Get(AI_MATKEY_COLOR_DIFFUSE, cDiffuse) == aiReturn_SUCCESS) {
-				dst.color.red = cDiffuse.r;
-				dst.color.green = cDiffuse.g;
-				dst.color.blue = cDiffuse.b;
-				dst.color.alpha = cDiffuse.a;
-			}
-
-			if(src.Get(AI_MATKEY_COLOR_EMISSIVE, cEmissive) == aiReturn_SUCCESS) {
-				dst.emission.red = cEmissive.r;
-				dst.emission.green = cEmissive.g;
-				dst.emission.blue = cEmissive.b;
-				dst.emission.alpha = cEmissive.a;
-			}
-
-			float fShininess, fReflectivity;
-			if(src.Get(AI_MATKEY_REFLECTIVITY, fReflectivity) == aiReturn_SUCCESS) {
-				dst.metallic = fReflectivity;
-			}
-			if(src.Get(AI_MATKEY_SHININESS, fShininess) == aiReturn_SUCCESS) {
-				dst.roughness = fShininess;
-			}
-
-			aiString path;
-			if(src.GetTexture(aiTextureType_DIFFUSE, 0, &path) == aiReturn_SUCCESS) {
-				engine_log("Texture: %s", path.C_Str());
-
-				if(path.data[0] == '*') {
-					if(!scene->HasTextures()) {
-						engine_log("Model '%s' wants to use internal texture, but has none!", fileName);
-					} else {
-						int index = atoi(path.data + 1);
-						aiTexture * tex = scene->mTextures[index];
-						if(tex->achFormatHint != nullptr) {
-							engine_log("Texture format hint: '%s'", tex->achFormatHint);
-						}
-						dst.colorTexture = bmap_create(GL_TEXTURE_2D, GL_RGBA);
-						bmap_set(
-							dst.colorTexture,
-							tex->mWidth,
-							tex->mHeight,
-							GL_BGRA,
-							GL_UNSIGNED_BYTE,
-							tex->pcData);
-					}
-				} else {
-					dst.colorTexture = bmap_load(path.C_Str());
-				}
-
-				if(dst.colorTexture == nullptr) {
-					engine_seterror(ERR_FILESYSTEM, "Could not load the texture %s", path.C_Str());
-				}
-			}
-		}
-	}
-
-	model->meshes.resize(scene->mNumMeshes);
-	for(unsigned int idx = 0; idx < scene->mNumMeshes; idx++)
-	{
-		MESH * dst = &model->meshes[idx];
-		aiMesh * src = scene->mMeshes[idx];
-
-		if(src->mPrimitiveTypes & ~aiPrimitiveType_TRIANGLE) {
-			engine_log("Invalid primitive type detected: %x", src->mPrimitiveTypes);
-			abort();
-		}
-
-		if(!src->HasNormals()) {
-			engine_log("Mesh is missing normals!");
-			abort();
-		}
-
-		if(!src->HasTangentsAndBitangents()) {
-			engine_log("Mesh is missing normals (tangent/bitangent)q!");
-			abort();
-		}
-
-		dst->indexBuffer = buffer_create(INDEXBUFFER);
-		dst->vertexBuffer = buffer_create(VERTEXBUFFER);
-		dst->material = &model->materials[src->mMaterialIndex];
-
-		{
-			std::vector<VERTEX> vertices(src->mNumVertices);
-			for(unsigned int i = 0; i < src->mNumVertices; i++) {
-				auto const & pos = src->mVertices[i];
-				auto & dst = vertices[i];
-
-				dst.position = ass_to_ack(pos);
-
-				auto const & normal = src->mNormals[i];
-				dst.normal = ass_to_ack(normal);
-
-				auto const & tanget = src->mTangents[i];
-				dst.tangent = ass_to_ack(tanget);
-
-				// Initialize vertex with white color as
-				// default color
-				dst.color = (COLOR){1,1,1,1};
-
-				dst.texcoord0 = (UVCOORD){0,0};
-				dst.texcoord1 = (UVCOORD){0,0};
-				dst.bones = (UBYTE4){ 0, 0, 0, 0 };
-				dst.boneWeights = (UBYTE4){1,0,0,0};
-			}
-
-			if(src->HasTextureCoords(0))
-			{
-				for(unsigned int i = 0; i < src->mNumVertices; i++) {
-					auto const & vec = src->mTextureCoords[0][i];
-					auto & dst = vertices[i];
-					dst.texcoord0.u = vec.x;
-					dst.texcoord0.v = vec.y;
-				}
-			}
-			if(src->HasTextureCoords(1))
-			{
-				for(unsigned int i = 0; i < src->mNumVertices; i++) {
-					auto const & vec = src->mTextureCoords[1][i];
-					auto & dst = vertices[i];
-					dst.texcoord1.u = vec.x;
-					dst.texcoord1.v = vec.y;
-				}
-			}
-			if(src->HasVertexColors(0))
-			{
-				for(unsigned int i = 0; i < src->mNumVertices; i++) {
-					auto const & vec = src->mColors[0][i];
-					auto & dst = vertices[i];
-					dst.color.red = vec.r;
-					dst.color.green = vec.g;
-					dst.color.blue = vec.b;
-					dst.color.alpha = vec.a;
-				}
-			}
-
-			buffer_set(
-				dst->vertexBuffer,
-				3 * src->mNumVertices * sizeof(VERTEX),
-				vertices.data());
-		}
-
-		{
-			std::vector<INDEX> indices(3 * src->mNumFaces);
-			for(unsigned int i = 0; i < src->mNumFaces; i++) {
-				aiFace const & face = src->mFaces[i];
-				for(int j = 0; j < 3; j++) {
-					indices[3 * i + j] = face.mIndices[j];
-				}
-			}
-			buffer_set(
-				dst->indexBuffer,
-				3 * src->mNumFaces * sizeof(INDEX),
-				indices.data());
-		}
-	}
-
-	if(scene->mRootNode->mNumChildren > 0) {
-		engine_log("Models with graph structure are not supported yet!");
-		// TODO: Add node graph to model structure
-		abort();
-	}
-
-	return demote(model);
-}
-*/

@@ -40,22 +40,6 @@ vec3 applyLighting(
 
 vec3 applyFog(vec3 position, vec3 surface);
 
-struct LightSource
-{
-	/*0*/ int type;
-	/*1*/ float intensity;
-	/*2*/ float arc;
-	/*4*/ vec3 position;
-	/*8*/ vec3 direction;
-	/*C*/ vec3 color;
-};
-
-// std140 is necessary for alignment!
-layout(std140) uniform LightBlock
-{
-	LightSource lights[LIGHT_LIMIT];
-};
-
 uniform int iLightCount;
 
 void main() {

@@ -20,5 +20,6 @@
         <file>icons/cube.png</file>
         <file>icons/light.png</file>
         <file>icons/file-import.png</file>
+        <file>icons/show-normal.png</file>
     </qresource>
 </RCC>

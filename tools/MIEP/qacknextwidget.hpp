@@ -13,6 +13,7 @@ private:
 	LIGHT * mSun;
 	QPoint mPrevPos;
 	bool mShowSkeleton;
+	bool mShowNormals;
 public:
 	explicit QAcknextWidget(QWidget *parent = nullptr);
 	~QAcknextWidget();
@@ -33,9 +34,10 @@ public:
 
 	MODEL * model() const { return this->mModelDisplay->model; }
 
-	void setDisplayMode(bool mesh, bool skeleton) {
+	void setDisplayMode(bool mesh, bool skeleton, bool normals) {
 		this->mModelDisplay->flags = (this->mModelDisplay->flags & ~VISIBLE) | (mesh?VISIBLE:0);
 		this->mShowSkeleton = skeleton;
+		this->mShowNormals = normals;
 	}
 
 	bool displaysMesh() { return this->mModelDisplay->flags & VISIBLE; }

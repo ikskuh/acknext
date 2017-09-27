@@ -7,5 +7,7 @@
         <file>shaders/gamma.glsl</file>
         <file>shaders/ackpbr.glsl</file>
         <file>shaders/fog.glsl</file>
+        <file>shaders/linedraw.vert</file>
+        <file>shaders/linedraw.frag</file>
     </qresource>
 </RCC>

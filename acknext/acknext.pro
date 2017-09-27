@@ -111,7 +111,8 @@ HEADERS += \
     include/acknext/serialization.h \
     src/extensions/extension.hpp \
     src/graphics/core/glenum-translator.hpp \
-    include/acknext/acff.h
+    include/acknext/acff.h \
+    src/scene/animation.hpp
 
 SOURCES += \
     src/graphics/opengl/buffer.cpp \
@@ -164,7 +165,8 @@ SOURCES += \
     src/core/guid.cpp \
     src/serialization/serializers.cpp \
     src/graphics/core/glenum-translator.cpp \
-    src/virtfs/ackfile.cpp
+    src/virtfs/ackfile.cpp \
+    src/scene/animation.cpp
 
 RESOURCES += \
     $$PWD/../resource/builtin.qrc

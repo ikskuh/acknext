@@ -38,3 +38,7 @@ flags.CONFIGFLAGS =
 	"VFS_Use_Cwd",
 	"Silent_Fail"
 }
+flags.ANIMFLAGS = 
+{
+	"Looped",
+}

@@ -52,6 +52,8 @@ private slots:
 
 	void on_actionExit_triggered();
 
+	void on_actionShow_normals_triggered(bool checked);
+
 private:
 	void on_actionSetMode(int mode);
 
@@ -60,6 +62,8 @@ private:
 	void cleanupModel();
 
 	void showMaterialEditor(int i);
+
+	void updateVisuals();
 
 private:
 	Ui::MainWindow *ui;

@@ -106,6 +106,15 @@ void MainWindow::cleanupModel()
 	ui->centralWidget->setModel(nullptr);
 }
 
+void MainWindow::updateVisuals()
+{
+	ui->centralWidget->setDisplayMode(
+		ui->actionShow_Mesh->isChecked(),
+		ui->actionShow_Skelton->isChecked(),
+		ui->actionShow_normals->isChecked());
+	ui->centralWidget->update();
+}
+
 void MainWindow::showMaterialEditor(int i)
 {
 	if(i >= 0 && i < this->materialWidgets.size()) {
@@ -174,19 +183,13 @@ void MainWindow::on_actionWireframe_triggered()
 void MainWindow::on_actionShow_Mesh_triggered(bool checked)
 {
 	Q_UNUSED(checked);
-    ui->centralWidget->setDisplayMode(
-		ui->actionShow_Mesh->isChecked(),
-		ui->actionShow_Skelton->isChecked());
-	ui->centralWidget->update();
+	this->updateVisuals();
 }
 
 void MainWindow::on_actionShow_Skelton_triggered(bool checked)
 {
 	Q_UNUSED(checked);
-	ui->centralWidget->setDisplayMode(
-		ui->actionShow_Mesh->isChecked(),
-		ui->actionShow_Skelton->isChecked());
-	ui->centralWidget->update();
+	this->updateVisuals();
 }
 
 void MainWindow::on_actionSave_triggered()
@@ -234,4 +237,10 @@ void MainWindow::on_actionImport_model_triggered()
 void MainWindow::on_actionExit_triggered()
 {
     this->close();
+}
+
+void MainWindow::on_actionShow_normals_triggered(bool checked)
+{
+	Q_UNUSED(checked);
+	this->updateVisuals();
 }

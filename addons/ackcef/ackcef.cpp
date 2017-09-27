@@ -290,8 +290,8 @@ ACKFUN void ackcef_init(int argc, char ** argv)
 	settings.background_color = CefColorSetARGB(0xFF, 0xFF, 0xFF, 0x00);
 	settings.no_sandbox = true;
 	settings.windowless_rendering_enabled = true;
-	settings.remote_debugging_port = 8090;
-	settings.single_process = true;
+	// settings.remote_debugging_port = 8090;
+	// settings.single_process = true;
 	// settings.file_access_from_file_urls_allowed = true;
 	// settings.universal_access_from_file_urls_allowed = true;
 

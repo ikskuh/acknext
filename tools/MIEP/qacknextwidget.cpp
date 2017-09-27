@@ -96,21 +96,24 @@ void QAcknextWidget::paintGL()
 		this->drawBones();
 	}
 
-	MODEL * mod = mModelDisplay->model;
-	if(mod) {
-		for(int i = 0; i < mod->meshCount; i++) {
-			MESH * mesh = mod->meshes[i];
+	if(this->mShowNormals)
+	{
+		MODEL * mod = mModelDisplay->model;
+		if(mod) {
+			for(int i = 0; i < mod->meshCount; i++) {
+				MESH * mesh = mod->meshes[i];
 
-			int vertexCount = mesh->vertexBuffer->size / sizeof(VERTEX);
-			VERTEX * vertices = (VERTEX*)buffer_map(mesh->vertexBuffer, READONLY);
+				int vertexCount = mesh->vertexBuffer->size / sizeof(VERTEX);
+				VERTEX * vertices = (VERTEX*)buffer_map(mesh->vertexBuffer, READONLY);
 
-			for(int i = 0; i < vertexCount; i++) {
-				draw_line3d(
-					&vertices[i].position,
-					vec_add(vec_clone(&vertices[i].position), &vertices[i].normal),
-					&COLOR_CYAN);
+				for(int i = 0; i < vertexCount; i++) {
+					draw_line3d(
+						&vertices[i].position,
+						vec_add(vec_clone(&vertices[i].position), &vertices[i].normal),
+						&COLOR_CYAN);
+				}
+				buffer_unmap(mesh->vertexBuffer);
 			}
-			buffer_unmap(mesh->vertexBuffer);
 		}
 	}
 	engine_frame();

@@ -141,7 +141,7 @@ void gamemain()
 		// a->flags &= ~FULLSCREEN;
 		//*/
 
-		/*
+		/*.m
 		VIEW * b = view_create((RENDERCALL)render_scene_with_camera, camera);
 		b->size = a->size;
 		b->position = (POINT){ a->size.width, 0 };

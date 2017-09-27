@@ -73,13 +73,34 @@ typedef struct
 	uint32_t lodMask; // lower 16 bits: lod stage, upper 16 bits: render flags!
 } MESH;
 
-// requires backend
+// Plain type, no backend
+typedef struct
+{
+	var time; // starting time of the frame
+	VECTOR position;
+	QUATERNION rotation;
+	VECTOR scale;
+} FRAME;
+
+// managed type
+typedef struct
+{
+	int targetBone; // The bone that will be animated
+	int frameCount;
+	FRAME * ACKCONST frames;
+} CHANNEL;
+
+// managed type
 typedef struct
 {
 	char name[256];
-	// TODO: Implement animation parameters
+	var duration;
+	int channelCount;
+	CHANNEL * * ACKCONST channels;
+	ANIMFLAGS flags;
 } ANIMATION;
 
+// managed type
 typedef struct
 {
 	// counts have a minimum of 1, except for animation count
@@ -97,6 +118,7 @@ typedef struct
 	uint minimumLOD; // (if(lod > minimumLOD) discard; // Usually 16, so always visible
 } MODEL;
 
+// managed type
 typedef struct
 {
 	VECTOR position;
@@ -108,6 +130,7 @@ typedef struct
 	CAMERATYPE type;
 } CAMERA;
 
+
 typedef enum LIGHTTYPE
 {
 	AMBIENTLIGHT = 0,
@@ -116,6 +139,7 @@ typedef enum LIGHTTYPE
 	SPOTLIGHT = 3,
 } LIGHTTYPE;
 
+// managed type
 typedef struct
 {
 	LIGHTTYPE ACKCONST type;
@@ -148,6 +172,16 @@ ACKFUN MODEL * model_create(int numMeshes, int numBones, int numAnimations);
 ACKFUN void model_reshape(MODEL * model, int meshC, int matC, int boneC, int animC);
 
 ACKFUN void model_updateBoundingBox(MODEL * model);
+
+// animation api:
+
+ACKFUN CHANNEL * chan_create(int frames);
+
+ACKFUN void chan_remove(CHANNEL * chan);
+
+ACKFUN ANIMATION * anim_create(char const * name, int channels);
+
+ACKFUN void anim_remove(ANIMATION * anim);
 
 // render api:
 ACKVAR var lod_distances[16]; // The distances for each of the 16 LOD stages. Should be strictly monotonically increasing

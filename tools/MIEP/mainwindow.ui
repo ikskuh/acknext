@@ -64,7 +64,7 @@
     <enum>TopToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
-    <bool>true</bool>
+    <bool>false</bool>
    </attribute>
    <addaction name="actionScene_View"/>
    <addaction name="actionLight_View"/>
@@ -74,6 +74,7 @@
    <addaction name="separator"/>
    <addaction name="actionShow_Mesh"/>
    <addaction name="actionShow_Skelton"/>
+   <addaction name="actionShow_normals"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="fileToolbar">
@@ -93,7 +94,7 @@
   </widget>
   <action name="actionOpen">
    <property name="icon">
-    <iconset resource="../resource/ackui.qrc">
+    <iconset resource="../../resource/ackui.qrc">
      <normaloff>:/icons/folder-open.png</normaloff>:/icons/folder-open.png</iconset>
    </property>
    <property name="text">
@@ -105,7 +106,7 @@
   </action>
   <action name="actionSave">
    <property name="icon">
-    <iconset resource="../resource/ackui.qrc">
+    <iconset resource="../../resource/ackui.qrc">
      <normaloff>:/icons/content-save.png</normaloff>:/icons/content-save.png</iconset>
    </property>
    <property name="text">
@@ -117,7 +118,7 @@
   </action>
   <action name="actionOptions">
    <property name="icon">
-    <iconset resource="../resource/ackui.qrc">
+    <iconset resource="../../resource/ackui.qrc">
      <normaloff>:/icons/settings.png</normaloff>:/icons/settings.png</iconset>
    </property>
    <property name="text">
@@ -167,7 +168,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../resource/ackui.qrc">
+    <iconset resource="../../resource/ackui.qrc">
      <normaloff>:/icons/wireframe.png</normaloff>:/icons/wireframe.png</iconset>
    </property>
    <property name="text">
@@ -185,7 +186,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../resource/ackui.qrc">
+    <iconset resource="../../resource/ackui.qrc">
      <normaloff>:/icons/cube.png</normaloff>:/icons/cube.png</iconset>
    </property>
    <property name="text">
@@ -200,7 +201,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../resource/ackui.qrc">
+    <iconset resource="../../resource/ackui.qrc">
      <normaloff>:/icons/skeleton.png</normaloff>:/icons/skeleton.png</iconset>
    </property>
    <property name="text">
@@ -209,14 +210,29 @@
   </action>
   <action name="actionImport_model">
    <property name="icon">
-    <iconset resource="../resource/ackui.qrc">
+    <iconset resource="../../resource/ackui.qrc">
      <normaloff>:/icons/file-import.png</normaloff>:/icons/file-import.png</iconset>
    </property>
    <property name="text">
-    <string>Import model…</string>
+    <string>&amp;Import model…</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+O</string>
+   </property>
+  </action>
+  <action name="actionShow_normals">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../../resource/ackui.qrc">
+     <normaloff>:/icons/show-normal.png</normaloff>:/icons/show-normal.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show normals</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+N</string>
    </property>
   </action>
  </widget>
@@ -230,7 +246,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../resource/ackui.qrc"/>
+  <include location="../../resource/ackui.qrc"/>
  </resources>
  <connections/>
 </ui>

@@ -44,6 +44,7 @@ enum.SHADERVAR =
 	
 	"useInstancing",
 	"useBones",
+	"useNormalMapping",
 }
 
 enum.ERROR = 

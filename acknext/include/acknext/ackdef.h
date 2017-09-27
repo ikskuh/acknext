@@ -4,6 +4,7 @@
 #include "config.h"
 #include "ackmath.h"
 
+#define LOOPED (1<<0)
 #define USE_VFS (1<<0)
 #define FULLSCREEN (1<<1)
 #define DESKTOP (1<<2)
@@ -21,6 +22,7 @@
 #define CLEAR_COLOR (1<<1)
 #define CLEAR_STENCIL (1<<2)
 
+typedef BITFIELD ANIMFLAGS;
 typedef BITFIELD CONFIGFLAGS;
 typedef BITFIELD ENTITYFLAGS;
 typedef BITFIELD MOVEFLAGS;

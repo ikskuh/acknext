@@ -247,8 +247,6 @@ void terrainmodule_init()
 		);
 	}
 
-	shader_logInfo(shdTerrain);
-
 	obj_listvar(shdTerrain);
 
 	// Äh wut, aber ja, ist sinnvoller so im moment
