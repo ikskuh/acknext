@@ -25,89 +25,6 @@ static inline QUATERNION ass_to_ack(const aiQuaternion & vec)
 	return (QUATERNION){ vec.x, vec.y, vec.z, vec.w };
 }
 
-class AckIoStream : public Assimp::IOStream
-{
-	ACKFILE * file;
-public:
-	AckIoStream(ACKFILE * file) : file(file) { }
-	~AckIoStream() { file_close(file); }
-
-	size_t Read( void* pvBuffer, size_t pSize, size_t pCount)
-	{
-		return file_read(file, pvBuffer, pSize * pCount);
-	}
-
-	size_t Write( const void* pvBuffer, size_t pSize, size_t pCount)
-	{
-		return file_write(file, pvBuffer, pSize * pCount);
-	}
-
-	aiReturn Seek( size_t pOffset, aiOrigin pOrigin)
-	{
-		if(pOrigin != aiOrigin_SET) {
-			return aiReturn_FAILURE;
-		}
-		file_seek(file, pOffset);
-		return aiReturn_SUCCESS;
-	}
-
-	size_t Tell() const
-	{
-		return file_tell(file);
-	}
-
-	size_t FileSize() const
-	{
-		return file_size(file);
-	}
-
-	void Flush ()
-	{
-		file_flush(file);
-	}
-};
-
-/*
-class AckIoSystem : public Assimp::IOSystem
-{
-public:
-	virtual bool Exists(const char *pFile) const override
-	{
-		return !!PHYSFS_exists(pFile);
-	}
-
-	virtual char getOsSeparator() const override { return '/'; }
-
-	virtual Assimp::IOStream * Open(const char *pFile, const char *pMode) override
-	{
-		ACKFILE * file = nullptr;
-		if(strchr(pMode, 'r')) {
-			file = file_open_read(pFile);
-		}
-		else if(strchr(pMode, 'w')) {
-			file = file_open_write(pFile);
-		}
-		else if(strchr(pMode, 'a')) {
-			file = file_open_append(pFile);
-		}
-		else {
-			abort();
-		}
-		if(file == nullptr) {
-			return nullptr;
-		}
-		return new AckIoStream(file);
-	}
-
-	virtual void Close(Assimp::IOStream *pFile)
-	{
-		delete pFile;
-	}
-};
-
-static AckIoSystem iosystem;
-*/
-
 static void ai_to_ack(MATRIX * dst, aiMatrix4x4 const & src)
 {
 	var array[4][4] = {
@@ -416,7 +333,12 @@ MODEL * ModelLoader::load(QString const & _fileName)
 			auto const * src = scene->mAnimations[i];
 			ANIMATION * dst = anim_create(src->mName.C_Str(), src->mNumChannels);
 
-			dst->duration = src->mDuration;
+			double timeScale = 1.0 / 25.0;
+			if(src->mTicksPerSecond > 0) {
+				timeScale = 1.0 / src->mTicksPerSecond;
+			}
+
+			dst->duration = timeScale * src->mDuration;
 
 			for(uint j = 0; j < src->mNumChannels; j++)
 			{
@@ -427,17 +349,29 @@ MODEL * ModelLoader::load(QString const & _fileName)
 					chanSrc->mNumRotationKeys),
 					chanSrc->mNumScalingKeys);
 
+				auto nodeName = chanSrc->mNodeName;
+
 				CHANNEL * chanDst = chan_create(frameCount);
+
+				chanDst->targetBone = -1;
+				for(int i = 0; i < model->boneCount; i++) {
+					if(strcmp(model->bones[i].name, nodeName.C_Str()) == 0) {
+						chanDst->targetBone = i;
+						break;
+					}
+				}
+				assert(chanDst->targetBone >= 0 && chanDst->targetBone < model->boneCount);
+
 				for(int i = 0; i < frameCount; i++)
 				{
 					if(chanSrc->mNumPositionKeys == uint(frameCount)) {
-						chanDst->frames[i].time = chanSrc->mPositionKeys[i].mTime;
+						chanDst->frames[i].time = timeScale * chanSrc->mPositionKeys[i].mTime;
 					}
 					else if(chanSrc->mNumRotationKeys == uint(frameCount)) {
-						chanDst->frames[i].time = chanSrc->mRotationKeys[i].mTime;
+						chanDst->frames[i].time = timeScale * chanSrc->mRotationKeys[i].mTime;
 					}
 					else if(chanSrc->mNumScalingKeys == uint(frameCount)) {
-						chanDst->frames[i].time = chanSrc->mScalingKeys[i].mTime;
+						chanDst->frames[i].time = timeScale * chanSrc->mScalingKeys[i].mTime;
 					}
 					else {
 						assert(false);
@@ -446,25 +380,28 @@ MODEL * ModelLoader::load(QString const & _fileName)
 				for(int i = 0; i < frameCount; i++)
 				{
 					FRAME & frame = chanDst->frames[i];
-					for(uint j = 0; j < chanSrc->mNumPositionKeys; j++) {
-						if(chanSrc->mPositionKeys[j].mTime <= frame.time) {
+					frame.position = ass_to_ack(chanSrc->mPositionKeys[0].mValue);
+					frame.scale = ass_to_ack(chanSrc->mScalingKeys[0].mValue);
+					frame.rotation = ass_to_ack(chanSrc->mRotationKeys[0].mValue);
+
+					// frame.position = (VECTOR){0,0,0};
+					// frame.scale = (VECTOR){1,1,1};
+					// frame.rotation = *quat_id(NULL);
+
+					for(uint j = 1; j < chanSrc->mNumPositionKeys; j++) {
+						if(timeScale * chanSrc->mPositionKeys[j].mTime < frame.time) {
 							frame.position = ass_to_ack(chanSrc->mPositionKeys[j].mValue);
-						} else {
-							break;
 						}
 					}
-					for(uint j = 0; j < chanSrc->mNumRotationKeys; j++) {
-						if(chanSrc->mRotationKeys[j].mTime <= frame.time) {
+					for(uint j = 1; j < chanSrc->mNumRotationKeys; j++) {
+						if(timeScale * chanSrc->mRotationKeys[j].mTime <= frame.time) {
 							frame.rotation = ass_to_ack(chanSrc->mRotationKeys[j].mValue);
-						} else {
-							break;
 						}
 					}
-					for(uint j = 0; j < chanSrc->mNumScalingKeys; j++) {
-						if(chanSrc->mScalingKeys[j].mTime <= frame.time) {
+
+					for(uint j = 1; j < chanSrc->mNumScalingKeys; j++) {
+						if(timeScale * chanSrc->mScalingKeys[j].mTime <= frame.time) {
 							frame.scale = ass_to_ack(chanSrc->mScalingKeys[j].mValue);
-						} else {
-							break;
 						}
 					}
 				}

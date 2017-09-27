@@ -13,7 +13,7 @@
   <property name="minimumSize">
    <size>
     <width>250</width>
-    <height>216</height>
+    <height>219</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -35,6 +35,16 @@
       </item>
       <item>
        <widget class="QLineEdit" name="name"/>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="looped">
+        <property name="layoutDirection">
+         <enum>Qt::RightToLeft</enum>
+        </property>
+        <property name="text">
+         <string>Loop:</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>

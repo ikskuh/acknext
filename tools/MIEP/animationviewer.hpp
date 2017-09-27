@@ -3,6 +3,7 @@
 
 #include <acknext.h>
 #include <QDockWidget>
+#include <QTimer>
 
 #include "modelanimationlistmodel.hpp"
 
@@ -17,6 +18,8 @@ private:
 	MODEL * model;
 	ModelAnimationListModel * listModel;
 	ANIMATION * selection;
+	QTimer * timer;
+	double progress;
 public:
 	explicit AnimationViewer(MODEL * model, QWidget *parent = 0);
 	~AnimationViewer();
@@ -29,11 +32,22 @@ private slots:
 
 	void on_progress_valueChanged(int value);
 
+	void on_play_clicked();
+
+	void on_stop_clicked();
+
+	void on_rewind_clicked();
+
+	void on_looped_clicked(bool checked);
+
+	void on_list_doubleClicked(const QModelIndex &index);
+
 private:
 	void selectAnim(ANIMATION * anim);
-	void updatePosition();
 
 	void animate(double frameTime);
+
+	void animateFurther();
 
 private:
 	Ui::AnimationViewer *ui;
