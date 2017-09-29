@@ -109,7 +109,7 @@ ACKNEXT_API_BLOCK
 				glm::decompose(mat, scale, rotation, translation, skew, perspective);
 
 				glm_to_ack(&ent->pose[i].position, translation);
-				glm_to_ack(&ent->pose[i].rotation, rotation);
+				glm_to_ack(&ent->pose[i].rotation, glm::conjugate(rotation));
 				glm_to_ack(&ent->pose[i].scale, scale);
 			}
 		} else {
