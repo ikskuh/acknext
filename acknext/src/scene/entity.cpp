@@ -55,7 +55,14 @@ ACKNEXT_API_BLOCK
 		ENTRYPOINT action)
 	{
 		ENTITY * ent = demote(new Entity());
-		if(fileName) ent->model = model_get(fileName);
+		if(fileName) {
+			ent->model = model_get(fileName);
+			if(ent->model == nullptr) {
+				ent_remove(ent);
+				engine_seterror(ERR_FILESYSTEM, "The model file %s could not be found!", fileName);
+				return nullptr;
+			}
+		}
 		if(position) ent->position = *position;
 		if(action) {
 			// TODO: Associate the created task with
@@ -149,6 +156,9 @@ ACKNEXT_API_BLOCK
 			engine_seterror(ERR_INVALIDOPERATION, "The animation '%s' could not be found!", animation);
 			return;
 		}
+
+		if(anim->duration > 0 && (anim->flags & LOOPED))
+			progress = fmod(progress, anim->duration);
 
 		for(int i = 0; i < anim->channelCount; i++)
 		{

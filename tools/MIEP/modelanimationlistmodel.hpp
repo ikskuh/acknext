@@ -24,6 +24,8 @@ public:
 		return this->model->animations[index.row()];
 	}
 
+	void refreshAnimation(ANIMATION * anim);
+
 private:
 };
 

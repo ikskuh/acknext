@@ -162,3 +162,28 @@ void AnimationViewer::closeEvent(QCloseEvent *event)
 	this->on_stop_clicked();
 	QDockWidget::closeEvent(event);
 }
+
+void AnimationViewer::on_name_editingFinished()
+{
+	Q_ASSERT(this->selection != nullptr);
+
+	QByteArray data;
+	QString name = ui->name->text();
+	do {
+		data = name.toUtf8();
+		name.chop(1);
+	} while(data.size() >= sizeof(ANIMATION::name));
+
+	memset(
+		this->selection->name,
+	    0,
+		sizeof(BONE::name));
+	memcpy(
+		this->selection->name,
+		data.data(),
+		data.size());
+
+	this->listModel->refreshAnimation(this->selection);
+
+	emit this->hasChanged();
+}

@@ -46,6 +46,8 @@ private slots:
 
 	void on_list_doubleClicked(const QModelIndex &index);
 
+	void on_name_editingFinished();
+
 private:
 	void selectAnim(ANIMATION * anim);
 

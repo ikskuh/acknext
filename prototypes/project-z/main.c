@@ -117,6 +117,7 @@ void gamemain()
 
 	view_create((RENDERCALL)render_scene_with_camera, camera);
 	filesys_addResource("/home/felix/projects/acknext/prototypes/project-z/resources/", "/");
+	filesys_addResource("/home/felix/projects/acknext/scripts/", "/other/");
 
 
 	shdtree = shader_create();
@@ -189,15 +190,58 @@ void gamemain()
 
 	tree();
 
+	ENTITY * player = ent_create("/other/cyber-pirate/cyber-pirate.amd", vector(0, 0, 512), NULL);
+
+	vec_fill(&player->scale, 0.15);
+
 	var pan = 0;
 	var tilt = 0;
 	while(true)
 	{
 		if(nightmode) {
 			sun->color = COLOR_BLACK;
+			ambi->color = *color_hex(0x090b0d);
 		} else {
 			sun->color = *color_hex(0xfffac1);
+			ambi->color = *color_hex(0x232c33);
 		}
+
+		ent_animate(player, "Idle", total_time);
+
+		if(key_3 && default_camera_movement_enabled)
+		{
+			player->position = camera->position;
+		}
+
+		if(!default_camera_movement_enabled)
+		{
+			pan -= 0.3 * mickey.x;
+			tilt = clamp(tilt - 0.3 * mickey.y, -80, 85);
+
+			camera->rotation = *euler(pan, tilt, 0);
+			player->rotation = *euler(pan, 0, 0);
+
+			VECTOR mov = {
+				key_d - key_a,
+				0,
+				key_s - key_w,
+			};
+			vec_normalize(&mov, (3 + 3 * key_lshift) * time_step);
+			vec_rotate(&mov, &player->rotation);
+			vec_add(&player->position, &mov);
+
+			player->position.y = terrain_getheight(terrain->model, player->position.x, player->position.z);
+
+			camera->position = (VECTOR) { 0, 0, 5 };
+			vec_rotate(&camera->position, &camera->rotation);
+			vec_add(&camera->position, &player->position);
+			vec_add(&camera->position, vector(0, 1.5, 0));
+
+			var mincam = terrain_getheight(terrain->model, camera->position.x, camera->position.z) + 1.8;
+			if(camera->position.y < mincam)
+				camera->position.y = mincam;
+		}
+
 
 		if(key_4) {
 			static float gpuTime = 0.0;
@@ -219,24 +263,6 @@ void gamemain()
 				1.0 / frameTime);
 		}
 
-		if(!default_camera_movement_enabled)
-		{
-			pan -= 0.3 * mickey.x;
-			tilt = clamp(tilt - 0.3 * mickey.y, -80, 85);
-
-			camera->rotation = *euler(pan, tilt, 0);
-
-			VECTOR mov = {
-				key_d - key_a,
-				0,
-				key_s - key_w,
-			};
-			vec_normalize(&mov, (3 + 3 * key_lshift) * time_step);
-			vec_rotate(&mov, euler(pan, 0, 0));
-			vec_add(&camera->position, &mov);
-
-			camera->position.y = terrain_getheight(terrain->model, camera->position.x, camera->position.z) + 1.8;
-		}
 		outsider();
 		task_yield();
 	}

@@ -1,4 +1,5 @@
 #include "modelanimationlistmodel.hpp"
+#include <algorithm>
 
 ModelAnimationListModel::ModelAnimationListModel(MODEL * model, QObject *parent) :
     QAbstractListModel(parent),
@@ -33,4 +34,19 @@ QVariant ModelAnimationListModel::data(const QModelIndex &index, int role) const
 		return QVariant(this->model->animations[i]->name);
 	}
 	return QVariant();
+}
+
+void ModelAnimationListModel::refreshAnimation(ANIMATION * anim)
+{
+	int idx = -1;
+	for(int i = 0; i < model->animationCount; i++) {
+		if(model->animations[i] == anim) idx = i;
+	}
+	if(idx < 0)
+		return;
+
+	emit this->dataChanged(
+		this->index(idx),
+		this->index(idx),
+		{ Qt::DisplayRole });
 }
