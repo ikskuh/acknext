@@ -420,6 +420,15 @@ MODEL * ModelLoader::load(QString const & _fileName)
 		}
 	}
 
+	if(model->animationCount > 0)
+	{
+		// If the model has animation, mark all meshes to be animated by default
+		for(int i = 0; i < model->meshCount; i++)
+			model->meshes[i]->lodMask |= ANIMATED;
+	}
+
+	model_updateBoundingBox(model);
+
 	return model;
 }
 

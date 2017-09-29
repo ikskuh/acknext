@@ -84,11 +84,17 @@ void MainWindow::openModel(MODEL * model)
 		ui->centralWidget, SLOT(update()));
 	this->addDockWidget(Qt::LeftDockWidgetArea, this->sceneWidget);
 
-	this->animationWidget = new AnimationViewer(model);
+	this->animationWidget = new AnimationViewer(ui->centralWidget, model);
 	connect(
 		this->animationWidget, SIGNAL(hasChanged()),
 		ui->centralWidget, SLOT(update()));
 	this->addDockWidget(Qt::LeftDockWidgetArea, this->animationWidget);
+
+	if(model->boneCount <= 1)
+		this->sceneWidget->hide();
+
+	if(model->animationCount == 0)
+		this->animationWidget->hide();
 }
 
 void MainWindow::cleanupModel()

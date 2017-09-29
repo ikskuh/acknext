@@ -25,6 +25,7 @@
 #define LOD14		(1<<14)
 #define LOD15		(1<<15)
 #define DOUBLESIDED (1<<16)
+#define ANIMATED    (1<<17)
 
 // Plain type, has no backend
 typedef struct

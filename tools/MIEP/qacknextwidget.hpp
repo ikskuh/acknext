@@ -44,6 +44,8 @@ public:
 
 	bool displaysSkeleton() { return this->mShowSkeleton; }
 
+	ENTITY * entity() { return this->mModelDisplay; }
+
 private:
 	void drawBones();
 

@@ -12,8 +12,9 @@
 #include <QLabel>
 #include <QCheckBox>
 
-AnimationViewer::AnimationViewer(MODEL * model, QWidget *parent) :
+AnimationViewer::AnimationViewer(QAcknextWidget * acknex, MODEL * model, QWidget *parent) :
     QDockWidget(parent),
+    acknex(acknex),
     model(model),
     listModel(new ModelAnimationListModel(model)),
     timer(new QTimer()),
@@ -96,32 +97,7 @@ void AnimationViewer::animate(double frameTime)
 
 	this->progress = frameTime;
 
-	for(int i = 0; i < anim->channelCount; i++)
-	{
-		CHANNEL const * chan = anim->channels[i];
-
-		BONE & bone = model->bones[chan->targetBone];
-		assert(chan->frameCount > 0);
-
-		FRAME frame = chan->frames[0];
-		for(int j = 1; j < chan->frameCount; j++) {
-			if(chan->frames[j].time > frameTime) break;
-			frame = chan->frames[j];
-		}
-
-		MATRIX & transform = bone.transform;
-		mat_id(&transform);
-		mat_translate(&transform, &frame.position);
-		mat_rotate(&transform, &frame.rotation);
-		mat_scale(&transform, &frame.scale);
-
-		// MATRIX temp = bone.bindToBoneTransform;
-		// mat_invert(&temp);
-
-		// mat_mul(&bone.transform, &temp, &transform);
-
-		// bone.transform = transform;
-	}
+	ent_animate(acknex->entity(), this->selection->name, frameTime);
 
 	engine_log("Animate %s @ %f / %f", anim->name, frameTime, anim->duration);
 

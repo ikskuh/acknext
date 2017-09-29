@@ -27,8 +27,6 @@ void BitMaskEditor::setMesh(MESH *mesh)
 
 	if(this->mesh)
 	{
-		qDebug() << "got mesh" << mesh->lodMask;
-
 		bool hasMin = false;
 		int min = 0;
 		int max = 15;
@@ -45,7 +43,8 @@ void BitMaskEditor::setMesh(MESH *mesh)
 			}
 		}
 
-		this->ui->checkBox->setChecked(mesh->lodMask & DOUBLESIDED);
+		this->ui->doubleSided->setChecked(mesh->lodMask & DOUBLESIDED);
+		this->ui->animated->setChecked(mesh->lodMask & ANIMATED);
 		this->ui->minimum->setValue(min);
 		this->ui->maximum->setValue(15 - max);
 
@@ -60,8 +59,11 @@ void BitMaskEditor::updateMesh()
 		if(i >= ui->minimum->value() && i <= (15 - ui->maximum->value()))
 			mask |= (1<<i);
 	}
-	if(ui->checkBox->isChecked()) {
+	if(ui->doubleSided->isChecked()) {
 		mask |= DOUBLESIDED;
+	}
+	if(ui->animated->isChecked()) {
+		mask |= ANIMATED;
 	}
 
 	this->ui->label->setText(
@@ -94,7 +96,12 @@ void BitMaskEditor::on_maximum_valueChanged(int value)
 	this->updateMesh();
 }
 
-void BitMaskEditor::on_checkBox_stateChanged(int arg1)
+void BitMaskEditor::on_animated_stateChanged(int arg1)
+{
+	this->updateMesh();
+}
+
+void BitMaskEditor::on_doubleSided_stateChanged(int arg1)
 {
 	this->updateMesh();
 }

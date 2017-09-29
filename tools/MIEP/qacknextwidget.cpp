@@ -47,8 +47,10 @@ void QAcknextWidget::initializeGL()
 void QAcknextWidget::setModel(MODEL *model)
 {
 	this->mModelDisplay->model = model;
-	if(model != nullptr)
+	if(model != nullptr) {
 		camera->position.z = 1.2 * maxv(model->boundingBox.maximum.z, 1);
+		ent_posereset(this->mModelDisplay);
+	}
 	this->update();
 }
 
@@ -63,9 +65,19 @@ void QAcknextWidget::drawBones()
 	MATRIX mat;
 	mat_id(&mat);
 
+	MATRIX animatedBones[ACKNEXT_MAX_BONES];
+	for(int i = 0; i < ACKNEXT_MAX_BONES; i++)
+	{
+		MATRIX & transform = animatedBones[i];
+		mat_id(&transform);
+		mat_translate(&transform, &this->mModelDisplay->pose[i].position);
+		mat_rotate(&transform, &this->mModelDisplay->pose[i].rotation);
+		mat_scale(&transform, &this->mModelDisplay->pose[i].scale);
+	}
+
 	MATRIX transforms[ACKNEXT_MAX_BONES];
 	VECTOR positions[ACKNEXT_MAX_BONES];
-	transforms[0] = model()->bones[0].transform;
+	transforms[0] = animatedBones[0];
 
 	positions[0] = nullvector;
 	vec_transform(&positions[0], &transforms[0]);
@@ -73,7 +85,7 @@ void QAcknextWidget::drawBones()
 	for(int i = 1; i < model()->boneCount; i++)
 	{
 		BONE * bone = &model()->bones[i];
-		mat_mul(&transforms[i], &bone->transform, &transforms[bone->parent]);
+		mat_mul(&transforms[i], &animatedBones[i], &transforms[bone->parent]);
 
 		positions[i] = nullvector;
 		vec_transform(&positions[i], &transforms[i]);

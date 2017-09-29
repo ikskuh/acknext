@@ -1,6 +1,10 @@
 #include "entity.hpp"
 #include "../events/event.hpp"
 
+#include <glm/glm.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
+#include "../graphics/scene/ackglm.hpp"
+
 Entity * Entity::first = nullptr;
 Entity * Entity::last = nullptr;
 
@@ -59,6 +63,12 @@ ACKNEXT_API_BLOCK
 			// :(
 			task_defer(action, ent);
 		}
+
+		if(ent->model) {
+			// Go into initial pose
+			ent_posereset(ent);
+		}
+
 		return ent;
 	}
 
@@ -77,6 +87,80 @@ ACKNEXT_API_BLOCK
 			return demote(ent->next);
 		} else {
 			return demote(Entity::first);
+		}
+	}
+
+	// Resets the entities pose to the entities models default pose
+	ACKFUN void ent_posereset(ENTITY * ent)
+	{
+		ARG_NOTNULL(ent,);
+		if(ent->model)
+		{
+			for(int i = 0; i < ACKNEXT_MAX_BONES; i++)
+			{
+				glm::mat4 mat = ack_to_glm(ent->model->bones[i].transform);
+
+				glm::vec3 scale;
+				glm::quat rotation;
+				glm::vec3 translation;
+				glm::vec3 skew;
+				glm::vec4 perspective;
+
+				glm::decompose(mat, scale, rotation, translation, skew, perspective);
+
+				glm_to_ack(&ent->pose[i].position, translation);
+				glm_to_ack(&ent->pose[i].rotation, rotation);
+				glm_to_ack(&ent->pose[i].scale, scale);
+			}
+		} else {
+			static const FRAME id =
+			{
+				time:     0,
+			    position: { 0, 0, 0 },
+			    rotation: { 0, 0, 0, 1},
+			    scale:    { 1, 1, 1 },
+			};
+			for(int i = 0; i < ACKNEXT_MAX_BONES; i++)
+				ent->pose[i] = id;
+		}
+	}
+
+	ACKFUN void ent_animate(ENTITY * ent, char const * animation, double progress)
+	{
+		// TODO: Add interpolation
+		ARG_NOTNULL(ent,);
+		ARG_NOTNULL(animation,);
+
+		MODEL * model = ent->model;
+		if(!model) {
+			engine_seterror(ERR_INVALIDOPERATION, "Cannot animate entity without model!");
+			return;
+		}
+
+		ANIMATION const * anim = nullptr;
+		for(int i = 0; i < model->animationCount; i++)
+		{
+			if(strcmp(model->animations[i]->name, animation) == 0) {
+				anim = model->animations[i];
+				break;
+			}
+		}
+		if(!anim) {
+			engine_seterror(ERR_INVALIDOPERATION, "The animation '%s' could not be found!", animation);
+			return;
+		}
+
+		for(int i = 0; i < anim->channelCount; i++)
+		{
+			CHANNEL const * chan = anim->channels[i];
+			assert(chan->frameCount > 0);
+
+			FRAME frame = chan->frames[0];
+			for(int j = 1; j < chan->frameCount; j++) {
+				if(chan->frames[j].time > progress) break;
+				frame = chan->frames[j];
+			}
+			ent->pose[chan->targetBone] = frame;
 		}
 	}
 }

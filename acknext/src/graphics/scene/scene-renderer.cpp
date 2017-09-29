@@ -399,7 +399,7 @@ ACKNEXT_API_BLOCK
 				// They can't be instanced!
 				bool useInstancing =
 					   (currentShader->api().flags & USE_INSTANCING)
-					&& (params.model->animationCount == 0);
+					&& ((params.mesh->lodMask & ANIMATED) == 0);
 
 //				engine_log("Render %5d of (mtl=%p model=%p mesh=%p dsr=%d)%s",
 //					int(instances.size()),
@@ -418,12 +418,22 @@ ACKNEXT_API_BLOCK
 				{
 					for(Instance const & inst : instances)
 					{
+						MATRIX animatedBones[ACKNEXT_MAX_BONES];
+						for(int i = 0; i < ACKNEXT_MAX_BONES; i++)
+						{
+							MATRIX & transform = animatedBones[i];
+							mat_id(&transform);
+							mat_translate(&transform, &inst.ent->pose[i].position);
+							mat_rotate(&transform, &inst.ent->pose[i].rotation);
+							mat_scale(&transform, &inst.ent->pose[i].scale);
+						}
+
 						MATRIX transforms[ACKNEXT_MAX_BONES];
-						transforms[0] = inst.ent->model->bones[0].transform;
+						transforms[0] = animatedBones[0];
 						for(int i = 1; i < inst.ent->model->boneCount; i++)
 						{
 							BONE * bone = &inst.ent->model->bones[i];
-							mat_mul(&transforms[i], &bone->transform, &transforms[bone->parent]);
+							mat_mul(&transforms[i], &animatedBones[i], &transforms[bone->parent]);
 						}
 
 						MATRIX * boneTrafos = (MATRIX*)buffer_map(bonesBuf, READWRITE);

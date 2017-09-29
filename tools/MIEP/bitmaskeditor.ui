@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>201</width>
-    <height>95</height>
+    <height>122</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -75,9 +75,16 @@
     </widget>
    </item>
    <item row="3" column="0">
-    <widget class="QCheckBox" name="checkBox">
+    <widget class="QCheckBox" name="doubleSided">
      <property name="text">
       <string>Double Sided Rendering</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QCheckBox" name="animated">
+     <property name="text">
+      <string>Use Skeleton</string>
      </property>
     </widget>
    </item>

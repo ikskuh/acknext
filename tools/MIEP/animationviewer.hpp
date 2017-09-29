@@ -6,6 +6,7 @@
 #include <QTimer>
 
 #include "modelanimationlistmodel.hpp"
+#include "qacknextwidget.hpp"
 
 namespace Ui {
 	class AnimationViewer;
@@ -15,13 +16,14 @@ class AnimationViewer : public QDockWidget
 {
 	Q_OBJECT
 private:
+	QAcknextWidget * acknex;
 	MODEL * model;
 	ModelAnimationListModel * listModel;
 	ANIMATION * selection;
 	QTimer * timer;
 	double progress;
 public:
-	explicit AnimationViewer(MODEL * model, QWidget *parent = 0);
+	explicit AnimationViewer(QAcknextWidget * acknex, MODEL * model, QWidget *parent = 0);
 	~AnimationViewer();
 
 signals:

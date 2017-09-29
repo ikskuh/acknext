@@ -27,7 +27,9 @@ private slots:
 
 	void on_minimum_valueChanged(int value);
 
-	void on_checkBox_stateChanged(int arg1);
+	void on_animated_stateChanged(int arg1);
+
+	void on_doubleSided_stateChanged(int arg1);
 
 private:
 	void updateMesh();
