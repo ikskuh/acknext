@@ -44,8 +44,6 @@ typedef struct
 {
 	uint8_t parent;
 	char name[64];
-	// VECTOR offset;
-	// QUATERNION rotation;
 	MATRIX transform;
 	MATRIX bindToBoneTransform;
 } BONE;

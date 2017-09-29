@@ -99,26 +99,28 @@ void AnimationViewer::animate(double frameTime)
 	for(int i = 0; i < anim->channelCount; i++)
 	{
 		CHANNEL const * chan = anim->channels[i];
-		try {
-			BONE & bone = model->bones[chan->targetBone];
-			assert(chan->frameCount > 0);
 
-			FRAME frame = chan->frames[0];
-			for(int j = 1; j < chan->frameCount; j++) {
-				if(chan->frames[j].time > frameTime) break;
-				frame = chan->frames[j];
-			}
+		BONE & bone = model->bones[chan->targetBone];
+		assert(chan->frameCount > 0);
 
-			MATRIX transform;
-			mat_id(&transform);
-			mat_scale(&transform, &frame.scale);
-			mat_rotate(&transform, &frame.rotation);
-			mat_translate(&transform, &frame.position);
-
-			bone.transform = transform;
-		} catch(std::exception & ex) {
-			engine_log("Failed to animate bone %d: %s", chan->targetBone, ex.what());
+		FRAME frame = chan->frames[0];
+		for(int j = 1; j < chan->frameCount; j++) {
+			if(chan->frames[j].time > frameTime) break;
+			frame = chan->frames[j];
 		}
+
+		MATRIX & transform = bone.transform;
+		mat_id(&transform);
+		mat_translate(&transform, &frame.position);
+		mat_rotate(&transform, &frame.rotation);
+		mat_scale(&transform, &frame.scale);
+
+		// MATRIX temp = bone.bindToBoneTransform;
+		// mat_invert(&temp);
+
+		// mat_mul(&bone.transform, &temp, &transform);
+
+		// bone.transform = transform;
 	}
 
 	engine_log("Animate %s @ %f / %f", anim->name, frameTime, anim->duration);

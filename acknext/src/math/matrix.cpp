@@ -81,7 +81,7 @@ ACKNEXT_API_BLOCK
 	MATRIX * mat_rotate(MATRIX * mat, QUATERNION const * rotation)
 	{
 		if(!mat) mat = mat_id(NULL);
-		glm_to_ack(mat, glm::mat4_cast(ack_to_glm(*rotation)) * ack_to_glm(*mat));
+		glm_to_ack(mat, ack_to_glm(*mat) * glm::mat4_cast(ack_to_glm(*rotation)));
 		return mat;
 	}
 }

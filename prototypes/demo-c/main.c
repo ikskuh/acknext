@@ -46,14 +46,15 @@ void nextLight()
 {
 	do
 	{
-		lindex = (++lindex % 10);
+		lindex = ((lindex + 1) % 10);
 	} while(!lights[lindex]);
 	selectedLight = lights[lindex];
 	engine_log("Current light: %d", lindex);
 }
 
-void controlLight(LIGHT * light)
+void controlLight(void * foo)
 {
+	(void)foo;
 	for(;;task_yield())
 	{
 		if(!selectedLight) continue;

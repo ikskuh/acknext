@@ -37,7 +37,7 @@ void QAcknextWidget::initializeGL()
 	LIGHT * ambi = light_create(AMBIENTLIGHT);
 	ambi->color = (COLOR){0.3,0.3,0.3,1.0};
 
-	camera->position.z = 64;
+	camera->position.z = 16;
 
 	this->mView = view_create((RENDERCALL)render_scene_with_camera, camera);
 
@@ -47,6 +47,8 @@ void QAcknextWidget::initializeGL()
 void QAcknextWidget::setModel(MODEL *model)
 {
 	this->mModelDisplay->model = model;
+	if(model != nullptr)
+		camera->position.z = 1.2 * maxv(model->boundingBox.maximum.z, 1);
 	this->update();
 }
 

@@ -8,6 +8,8 @@ ModelAnimationListModel::ModelAnimationListModel(MODEL * model, QObject *parent)
 
 QVariant ModelAnimationListModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
+	Q_UNUSED(section);
+	Q_UNUSED(orientation);
 	if(role == Qt::DisplayRole) {
 		return QVariant("Animation");
 	}
