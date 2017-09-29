@@ -88,6 +88,9 @@ void MainWindow::openModel(MODEL * model)
 	connect(
 		this->animationWidget, SIGNAL(hasChanged()),
 		ui->centralWidget, SLOT(update()));
+	connect(
+		this->animationWidget, &QDockWidget::visibilityChanged,
+		this, &MainWindow::on_animationWidget_visibilityChanged);
 	this->addDockWidget(Qt::LeftDockWidgetArea, this->animationWidget);
 
 	if(model->boneCount <= 1)
@@ -125,6 +128,14 @@ void MainWindow::showMaterialEditor(int i)
 {
 	if(i >= 0 && i < this->materialWidgets.size()) {
 		this->materialWidgets[i]->show();
+	}
+}
+
+void MainWindow::on_animationWidget_visibilityChanged(bool vis)
+{
+	if(vis == false)
+	{
+		ent_posereset(ui->centralWidget->entity());
 	}
 }
 

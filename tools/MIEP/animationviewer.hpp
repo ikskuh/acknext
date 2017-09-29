@@ -26,6 +26,8 @@ public:
 	explicit AnimationViewer(QAcknextWidget * acknex, MODEL * model, QWidget *parent = 0);
 	~AnimationViewer();
 
+	virtual void closeEvent(QCloseEvent *event) override;
+
 signals:
 	Q_SIGNAL void hasChanged();
 

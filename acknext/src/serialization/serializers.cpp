@@ -44,6 +44,29 @@ ACKNEXT_API_BLOCK
 		{
 			mtl_write(file, model->materials[i]);
 		}
+
+		for(int i = 0; i < model->animationCount; i++)
+		{
+			ANIMATION const * anim = model->animations[i];
+			file_write_string(file, anim->name, 0);
+			file_write_float(file, anim->duration);
+			file_write_uint32(file, anim->flags);
+			file_write_uint32(file, anim->channelCount);
+			for(int i = 0; i < anim->channelCount; i++)
+			{
+				CHANNEL const * chan = anim->channels[i];
+				file_write_uint8(file, chan->targetBone);
+				file_write_uint32(file, chan->frameCount);
+				for(int i = 0; i < chan->frameCount; i++)
+				{
+					FRAME const & frame = chan->frames[i];
+					file_write_float(file, frame.time);
+					file_write_vector(file, frame.position);
+					file_write_quat(file, frame.rotation);
+					file_write_vector(file, frame.scale);
+				}
+			}
+		}
 	}
 
 	////////////////////////////////////////////////////////////////////////////
@@ -268,6 +291,40 @@ MODEL * loadModel(ACKFILE * file, ACKGUID const * guid)
 	for(uint i = 0; i < meshCount; i++)
 	{
 		result->materials[i] = Extension::load<MATERIAL>(file);
+	}
+
+	for(uint i = 0; i < animationCount; i++)
+	{
+		char * name = file_read_string(file, 0);
+		var duration = file_read_float(file);
+		uint32_t flags = file_read_uint32(file);
+		uint32_t chancnt = file_read_uint32(file);
+
+		ANIMATION * anim = anim_create(name, chancnt);
+		anim->duration = duration;
+		anim->flags = flags;
+
+		for(uint i = 0; i < anim->channelCount; i++)
+		{
+			uint8_t bone = file_read_uint8(file);
+			uint32_t frameCount = file_read_uint32(file);
+
+			CHANNEL * chan = chan_create(frameCount);
+			chan->targetBone = bone;
+
+			for(int i = 0; i < chan->frameCount; i++)
+			{
+				FRAME & frame = chan->frames[i];
+				frame.time = file_read_float(file);
+				frame.position = file_read_vector(file);
+				frame.rotation = file_read_quat(file);
+				frame.scale = file_read_vector(file);
+			}
+
+			anim->channels[i] = chan;
+		}
+		result->animations[i] = anim;
+		free(name);
 	}
 
 	model_updateBoundingBox(result);

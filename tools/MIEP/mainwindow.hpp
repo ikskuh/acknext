@@ -65,6 +65,8 @@ private:
 
 	void updateVisuals();
 
+	void on_animationWidget_visibilityChanged(bool vis);
+
 private:
 	Ui::MainWindow *ui;
 	static QOpenGLWidget * con;

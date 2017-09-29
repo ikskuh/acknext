@@ -156,3 +156,9 @@ void AnimationViewer::on_looped_clicked(bool checked)
 		this->selection->flags |= LOOPED;
 	}
 }
+
+void AnimationViewer::closeEvent(QCloseEvent *event)
+{
+	this->on_stop_clicked();
+	QDockWidget::closeEvent(event);
+}
