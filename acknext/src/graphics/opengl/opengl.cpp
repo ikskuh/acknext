@@ -267,6 +267,7 @@ ACKNEXT_API_BLOCK
 		currentShader->vecAttributes = (VECTOR){material->roughness,material->metallic,material->fresnell};
 		currentShader->vecEmission = material->emission;
 
+		// binds the textures to the correct variables
 		mtl_setvar(const_cast<MATERIAL*>(material), "texAlbedo",     GL_SAMPLER_2D, material->albedoTexture);
 		mtl_setvar(const_cast<MATERIAL*>(material), "texEmission",   GL_SAMPLER_2D, material->emissionTexture);
 		mtl_setvar(const_cast<MATERIAL*>(material), "texNormalMap",  GL_SAMPLER_2D, material->normalTexture);
@@ -276,11 +277,5 @@ ACKNEXT_API_BLOCK
 
 		shader_setUniforms(&currentShader->api(), &currentShader->api(), true);
 		shader_setUniforms(&currentShader->api(), material, false);
-
-		// TODO: Reimplement
-		// opengl_setTexture(0, material->colorTexture);
-		// opengl_setTexture(1, material->attributeTexture);
-		// opengl_setTexture(2, material->emissionTexture);
-		// opengl_setTexture(3, material->normalTexture, defaultNormalMap);
 	}
 }
