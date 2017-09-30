@@ -33,6 +33,9 @@ int process_texture(char const * infile, ACKFILE * outfile)
 	void * pixels = malloc(4 * surface->w * surface->h);
 	memcpy(pixels, surface->pixels, 4 * surface->w * surface->h);
 
+	SDL_UnlockSurface(surface);
+	SDL_FreeSurface(surface);
+
 	int width = surface->w;
 	int height = surface->h;
 	int depth = 1;
@@ -40,10 +43,6 @@ int process_texture(char const * infile, ACKFILE * outfile)
 	GLenum textureFormat = GL_RGBA8;
 	GLenum pixelFormat = GL_BGRA;
 	GLenum pixelType = GL_UNSIGNED_BYTE;
-
-	SDL_UnlockSurface(surface);
-
-	SDL_FreeSurface(surface);
 
 	GLsizei bpp = 4; // round up
 	GLsizei bufsiz = bpp * width * height * depth;
@@ -60,7 +59,15 @@ int process_texture(char const * infile, ACKFILE * outfile)
 	file_write_uint32(outfile, pixelFormat);
 	file_write_uint32(outfile, pixelType);
 	file_write_uint32(outfile, bufsiz);
-	file_write(outfile, pixels, bufsiz);
+
+	assert(depth == 1); // Right now, only support 2D textures
+
+	const size_t stride = bpp * width;
+	const uint8_t * scanlines = (uint8_t*)pixels;
+	for(int y = (height - 1); y >= 0; y--)
+	{
+		file_write(outfile, &scanlines[stride * y], stride);
+	}
 
 	free(pixels);
 

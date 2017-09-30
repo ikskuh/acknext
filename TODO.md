@@ -22,13 +22,16 @@
 - Tools
 	- Create model "compiler"
 	- Create shader compiler (JSON + Files → SHD)
-	- Blender export script (because fuck yeah)
 - Add pure makefile based example
 	- Use of resource compilation
 - File API
 	- benutzerdefiniert (bereitstellung von read/write impl)
 	- wrapper um streams (gzip inflate/deflate)
 
+## Fancy Stuff
+- ATX GIMP Plugin
+- /usr/bin/file magic.mgc file
+- Blender export script (because fuck yeah)
 	
 Graphics Pipeline:
 plan fürs postprocessing: SSAO, Bloom/HDR, Reinhard Tone Mapping als Default-Pipeline

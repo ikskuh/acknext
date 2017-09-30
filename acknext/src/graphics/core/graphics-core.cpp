@@ -253,7 +253,6 @@ void render_init()
 		        bones:       { 0, 0, 0, 0 },
 		        boneWeights: { 255, 0, 0, 0 },
 		    }
-
 		};
 		BUFFER * vbuf = buffer_create(VERTEXBUFFER);
 		buffer_set(vbuf, sizeof(vertices), vertices);

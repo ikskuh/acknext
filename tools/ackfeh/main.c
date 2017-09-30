@@ -313,7 +313,6 @@ int main(int argc, char ** argv)
 
 	SDL_GL_SetSwapInterval(0);
 
-
 	glDebugMessageCallback(&error, NULL);
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
