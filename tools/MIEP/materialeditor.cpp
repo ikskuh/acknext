@@ -99,8 +99,6 @@ bool MaterialEditor::changeTexture(ImageView *target, BITMAP *&ptr)
 		bmap_remove(ptr);
 	}
 
-	engine_log("Setup texture: %d×%d", fitting.width(), fitting.height());
-
 	ptr = bmap_create(GL_TEXTURE_2D, GL_RGBA8);
 	const_cast<void*&>(ptr->pixels) = malloc(4 * fitting.width() * fitting.height());
 	memcpy(ptr->pixels, fitting.bits(), 4 * fitting.width() * fitting.height());

@@ -252,9 +252,6 @@ ACKNEXT_API_BLOCK
 
 	void render_scene_with_camera(CAMERA * perspective)
 	{
-		render_scene(perspective, nullptr);
-		return;
-
 		static FRAMEBUFFER * stage1 = nullptr;
 		if(stage1 == nullptr) {
 			stage1 = framebuf_create();

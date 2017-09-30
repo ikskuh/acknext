@@ -109,16 +109,7 @@ void gamemain()
 	default_init();
 	view_create((void*)render_scene_with_camera, camera);
 
-	ENTITY * ent = ent_create("mtltest/dungeon.obj", vector(0, 0, 0), NULL);
-	ent->material = mtl_create();
-	ent->material->albedoTexture = bmap_load("mtltest/dungeon-diffuse.png");
-	ent->material->emissionTexture = bmap_load("mtltest/dungeon-emissive.png");
-	ent->material->attributeTexture = bmap_load("mtltest/dungeon-attributes.png");
-	ent->material->normalTexture = bmap_load("mtltest/dungeon-normals.png");
-	ent->material->emission = (COLOR){2,2,2,2};
-	ent->material->roughness = 1.0;
-	ent->material->metallic = 1.0;
-	ent->material->fresnell = 25.0;
+	ent_create("dungeon.amd", vector(0, 0, 0), NULL);
 
 	task_yield();
 
@@ -156,6 +147,8 @@ void gamemain()
 		torch->position.z = scene[3*i+2];
 		task_defer(torchwood, torch);
 	}
+
+	camera->position.y = 24;
 
 	while(true)
 	{
