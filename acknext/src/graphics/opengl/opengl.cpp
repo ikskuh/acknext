@@ -272,6 +272,8 @@ ACKNEXT_API_BLOCK
 		mtl_setvar(const_cast<MATERIAL*>(material), "texNormalMap",  GL_SAMPLER_2D, material->normalTexture);
 		mtl_setvar(const_cast<MATERIAL*>(material), "texAttributes", GL_SAMPLER_2D, material->attributeTexture);
 
+		currentShader->useNormalMapping = (material->normalTexture != nullptr);
+
 		shader_setUniforms(&currentShader->api(), &currentShader->api(), true);
 		shader_setUniforms(&currentShader->api(), material, false);
 
