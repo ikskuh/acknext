@@ -126,9 +126,17 @@ ACKNEXT_API_BLOCK
 		SDL_LockSurface(surface);
 
 		bmp->pixels = malloc(4 * surface->w * surface->h);
-		memcpy(bmp->pixels, surface->pixels, 4 * surface->w * surface->h);
 
-		bmap_set(bmp, surface->w, surface->h, GL_BGRA, GL_UNSIGNED_BYTE, surface->pixels);
+		const size_t stride = 4 * surface->w;
+		for(int y = (surface->h - 1); y >= 0; y--)
+		{
+			memcpy(
+				reinterpret_cast<uint8_t*>(bmp->pixels) + (stride * (surface->h - y - 1)),
+				reinterpret_cast<uint8_t*>(surface->pixels) + (stride * y),
+				stride);
+		}
+
+		bmap_set(bmp, surface->w, surface->h, GL_BGRA, GL_UNSIGNED_BYTE, bmp->pixels);
 		SDL_UnlockSurface(surface);
 
 		SDL_FreeSurface(surface);

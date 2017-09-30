@@ -88,7 +88,9 @@ bool MaterialEditor::changeTexture(ImageView *target, BITMAP *&ptr)
 		return false;
 	}
 	QImage source(fileName);
-	QImage fitting = source.convertToFormat(QImage::Format_ARGB32);
+	QImage fitting = source
+		.convertToFormat(QImage::Format_ARGB32)
+		.mirrored(false, true);
 
 	MainWindow::makeCurrent();
 

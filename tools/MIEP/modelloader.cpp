@@ -30,7 +30,7 @@ static const unsigned int importFlags =
 	| aiProcess_RemoveRedundantMaterials
 	| aiProcess_OptimizeMeshes
 	| aiProcess_OptimizeGraph
-	| aiProcess_FlipUVs
+	// | aiProcess_FlipUVs // shouldn't be necessary as textures are loaded in OpenGL space (y=0 → bottom)
 	;
 
 static inline VECTOR ass_to_ack(const aiVector3D & vec)
@@ -550,6 +550,7 @@ MATERIAL * ModelLoader::convertMaterial(aiMaterial const * _src, aiScene const *
 			if(!scene->HasTextures()) {
 				engine_log("Model '%s' wants to use internal texture, but has none!", referenceFileName.c_str());
 			} else {
+				// TODO: Flip loaded texture!
 				int index = atoi(path.data + 1);
 				aiTexture * tex = scene->mTextures[index];
 				if(tex->achFormatHint != nullptr) {

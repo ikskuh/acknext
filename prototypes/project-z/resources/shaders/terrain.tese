@@ -37,7 +37,7 @@ void main()
 	vec2 uv = (pos.xz + 0.5) / vec2(fTerrainScale * vecTerrainSize.x, fTerrainScale * vecTerrainSize.y);
 
 	pos.y = texture(texHeightmap, uv).r;
-	uv.y = 1.0 - uv.y; // normal textures are "upside down"
+	// uv.y = 1.0 - uv.y; // normal textures are "upside down" NOT ANYMORE, BITCH!
 
 	position = (matWorld * vec4(pos, 1)).rgb;
 
