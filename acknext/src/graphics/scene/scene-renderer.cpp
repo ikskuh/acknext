@@ -250,6 +250,8 @@ ACKNEXT_API_BLOCK
 
 	void render_scene_with_camera(CAMERA * perspective)
 	{
+		glBindVertexArray(vao);
+
 		if(perspective == nullptr) {
 			return;
 		}

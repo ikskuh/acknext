@@ -1,4 +1,5 @@
 #include <acknext.h>
+#include <acknext/serialization.h>
 #include <zlib.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,19 +13,14 @@
 
 #include <default.h>
 #include <terrainmodule.h>
-#include <ackcef.h>
 
+// #include <ackcef.h>
+#include <ackgui.h>
+
+#ifdef _ACKNEXT_EXT_ACKCEF_H_
+VIEW * cefview;
 static const bool enableCEF = true;
-
-void storepos()
-{
-	if(key_lctrl)
-	{
-		ACKFILE * file = file_open_write("camera.dat");
-		file_write(file, camera, sizeof(CAMERA));
-		file_close(file);
-	}
-}
+#endif
 
 #define	GL_TEXTURE_MAX_ANISOTROPY_EXT          0x84FE
 #define	GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT      0x84FF
@@ -80,19 +76,22 @@ void grass()
 	spawn(50, 500, "/models/grass.amd", 0.4);
 }
 
-VIEW * cefview;
+ENTITY * player;
 
 void outsider()
 {
 	static float time_step_over_time = 0;
-	char buffer[128];
+	static float gpu_time_over_time = 0;
 
 	time_step_over_time = 0.9 * time_step_over_time + 0.1 * time_step;
+	gpu_time_over_time = 0.9 * gpu_time_over_time + 0.1 * engine_stats.gpuTime;
 
 	int num = 0;
 	ENTITY * you;
 	for(you = ent_next(NULL); you; you = ent_next(you), num++);
 
+#ifdef _ACKNEXT_EXT_ACKCEF_H_
+	char buffer[128];
 	sprintf(buffer,
 		"update(%.2f,%f,%d,%d)",
 		camera->position.y,
@@ -100,7 +99,72 @@ void outsider()
 		num,
 		engine_stats.drawcalls);
 
-	if(enableCEF) ackcef_exec(cefview, buffer);
+	ackcef_exec(cefview, buffer);
+#endif
+
+#ifdef _ACKNEXT_EXT_ACKGUI_H_
+	if(ImGui::Begin("Stats"))
+	{
+		ImGui::Text(
+			"Camera Pos: (%.2f, %.2f, %.2f)",
+			camera->position.x,
+			camera->position.y,
+			camera->position.z);
+		ImGui::Text(
+			"Framerate:  %d FPS",
+			int(1.0 / time_step_over_time));
+		ImGui::Text(
+			"Frame Time: %4.2f ms",
+			1000.0 * time_step_over_time);
+		ImGui::Text(
+			"GPU Time:   %4.2f ms",
+			gpu_time_over_time);
+		ImGui::Text(
+			"Entities:   %d",
+			num);
+		ImGui::Text(
+			"Drawcalls:  %d",
+			engine_stats.drawcalls);
+	}
+	ImGui::End();
+
+
+	if(ImGui::Begin("Camera / Player"))
+	{
+		ImGui::Text("Camera:");
+		if(ImGui::Button("Save##Camera"))
+		{
+			ACKFILE * file = file_open_write("camera.dat");
+			file_write(file, camera, sizeof(CAMERA));
+			file_close(file);
+		}
+		ImGui::SameLine();
+		if(ImGui::Button("Load##Camera"))
+		{
+			ACKFILE * file = file_open_read("camera.dat");
+			file_read(file, camera, sizeof(CAMERA));
+			file_close(file);
+		}
+
+		ImGui::Separator();
+
+		ImGui::Text("Player:");
+		if(ImGui::Button("Save##Player"))
+		{
+			ACKFILE * file = file_open_write("player.dat");
+			file_write_vector(file, player->position);
+			file_close(file);
+		}
+		ImGui::SameLine();
+		if(ImGui::Button("Load##Player"))
+		{
+			ACKFILE * file = file_open_read("player.dat");
+			player->position = file_read_vector(file);
+			file_close(file);
+		}
+	}
+	ImGui::End();
+#endif
 }
 
 bool nightmode = false;
@@ -148,25 +212,27 @@ void gamemain()
 	}
 
 
-	if(enableCEF)
+#ifdef _ACKNEXT_EXT_ACKCEF_H_
+	cefview = ackcef_createView();
+
+	ackcef_navigate(cefview, "ack:///fungui.htm");
+
+	while(!ackcef_ready(cefview))
 	{
-		cefview = ackcef_createView();
-
-		ackcef_navigate(cefview, "ack:///fungui.htm");
-
-		while(!ackcef_ready(cefview))
-		{
-			task_yield();
-		}
-
-		ackcef_exec(cefview, "initialize()");
+		task_yield();
 	}
 
-	event_attach(on_s, storepos);
-	event_attach(on_t, tree);
-	event_attach(on_g, grass);
-	event_attach(on_l, funnylight);
-	event_attach(on_n, toggle_nightmode);
+	ackcef_exec(cefview, "initialize()");
+#endif
+
+#ifdef _ACKNEXT_EXT_ACKGUI_H_
+	ackgui_init();
+#endif
+
+	event_attach(on_t, (EVENTHANDLER)tree);
+	event_attach(on_g, (EVENTHANDLER)grass);
+	event_attach(on_l, (EVENTHANDLER)funnylight);
+	event_attach(on_n, (EVENTHANDLER)toggle_nightmode);
 
 	terrainmodule_init();
 	default_init();
@@ -195,7 +261,7 @@ void gamemain()
 
 	tree();
 
-	ENTITY * player = ent_create("/other/cyber-pirate/cyber-pirate.amd", vector(0, 0, 512), NULL);
+	player = ent_create("/other/cyber-pirate/cyber-pirate.amd", vector(0, 0, 512), NULL);
 
 	vec_fill(&player->scale, 0.15);
 
@@ -293,7 +359,9 @@ void gamemain()
 int main(int argc, char ** argv)
 {
 	// May not return!
-	if(enableCEF) ackcef_init(argc, argv);
+#ifdef _ACKNEXT_EXT_ACKCEF_H_
+	ackcef_init(argc, argv);
+#endif
 
 	assert(argc >= 1);
 	engine_config.argv0 = argv[0];

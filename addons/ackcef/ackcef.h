@@ -1,5 +1,5 @@
-#ifndef ACKCEF_H
-#define ACKCEF_H
+#ifndef _ACKNEXT_EXT_ACKCEF_H_
+#define _ACKNEXT_EXT_ACKCEF_H_
 
 #include <acknext.h>
 
@@ -15,4 +15,4 @@ ACKFUN void ackcef_exec(VIEW * view, char const * js);
 
 ACKFUN void ackcef_refresh(VIEW * view);
 
-#endif // ACKCEF_H
+#endif // _ACKNEXT_EXT_ACKCEF_H_

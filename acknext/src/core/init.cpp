@@ -43,6 +43,8 @@ ACKNEXT_API_BLOCK
 
 	ENGINESTATS engine_stats;
 
+	EVENT * on_begin_frame;
+
 	int engine_main(void (*main)())
 	{
 		if(engine_open() == false)
@@ -173,6 +175,8 @@ ACKNEXT_API_BLOCK
 			engine_log("Failed to initialize SDL_image: %s", IMG_GetError());
 		}
 
+		on_begin_frame = event_create();
+
 		// engine_log("Initialize collision engine...");
 		// collision_init();
 
@@ -262,6 +266,8 @@ ACKNEXT_API_BLOCK
 				}
 			}
 		}
+
+		event_invoke(on_begin_frame, nullptr);
 
 		scheduler_update();
 

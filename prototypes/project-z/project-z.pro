@@ -11,7 +11,7 @@ include($$PWD/../../common.pri)
 include($$PWD/../../acknext/acknext.pri)
 
 SOURCES += \
-    main.c
+    main.cpp
 
 DISTFILES += \
     resources/shaders/terrain.vert \
@@ -44,6 +44,16 @@ INCLUDEPATH += $$PWD/../../addons/ackcef
 DEPENDPATH += $$PWD/../../addons/ackcef
 LIBS += -L/opt/cef-minimal/Release/ -lcef
 LIBS += -L/opt/cef-minimal/libcef_dll_wrapper -lcef_dll_wrapper
+
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../addons/dearackgui/release/ -ldearackgui
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../addons/dearackgui/debug/ -ldearackgui
+else:unix: LIBS += -L$$OUT_PWD/../../addons/dearackgui/ -ldearackgui
+
+INCLUDEPATH += $$PWD/../../addons/dearackgui
+INCLUDEPATH += $$PWD/../../../imgui
+DEPENDPATH += $$PWD/../../addons/dearackgui
+
 
 #win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../../addons/ackcef/release/libackcef.a
 #else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$OUT_PWD/../../addons/ackcef/debug/libackcef.a

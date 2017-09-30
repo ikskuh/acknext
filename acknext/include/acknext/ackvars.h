@@ -7,6 +7,8 @@
 ACKVAR ACKCONST SIZE screen_size;
 ACKVAR var screen_gamma;
 
+ACKVAR EVENT * ACKCONST on_begin_frame; // Called before starting the update loop
+
 // Time vars:
 
 ACKVAR ACKCONST int total_frames;

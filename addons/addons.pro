@@ -4,4 +4,5 @@ SUBDIRS += \
     terrain \
     ackmain \
     default \
-    ackcef
+    ackcef \
+    dearackgui
