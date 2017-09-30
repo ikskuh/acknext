@@ -64,7 +64,7 @@ void MaterialEditor::bmapToImage(ImageView * target, BITMAP const * src)
 {
 	if(src) {
 		QImage img((uchar*)src->pixels, src->width, src->height, QImage::Format_RGBA8888);
-		target->setImage(img.rgbSwapped());
+		target->setImage(img.mirrored(false, true));
 	} else {
 		target->setImage(QImage());
 	}
@@ -90,6 +90,7 @@ bool MaterialEditor::changeTexture(ImageView *target, BITMAP *&ptr)
 	QImage source(fileName);
 	QImage fitting = source
 		.convertToFormat(QImage::Format_ARGB32)
+		.rgbSwapped()
 		.mirrored(false, true);
 
 	MainWindow::makeCurrent();
@@ -107,7 +108,7 @@ bool MaterialEditor::changeTexture(ImageView *target, BITMAP *&ptr)
 	bmap_set(
 		ptr,
 		fitting.width(), fitting.height(),
-		GL_BGRA, GL_UNSIGNED_BYTE,
+		GL_RGBA, GL_UNSIGNED_BYTE,
 		ptr->pixels);
 
 	bmapToImage(target, ptr);
