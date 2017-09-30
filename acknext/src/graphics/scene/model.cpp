@@ -66,6 +66,31 @@ ACKNEXT_API_BLOCK
 		return demote(model);
 	}
 
+	void model_reshape(MODEL * model, int meshC, int boneC, int animC)
+	{
+		ARG_NOTNULL(model,);
+
+		meshC = maxv(meshC, 1);
+		animC = maxv(animC, 0);
+
+		// Trivial resize
+		model->boneCount = clamp(boneC, 1, ACKNEXT_MAX_BONES);
+
+		if(meshC != model->meshCount)
+		{
+			model->meshes = (MESH**)realloc(model->meshes, meshC * sizeof(model->meshes[0]));
+			assert(model->meshes);
+			model->meshCount = meshC;
+		}
+
+		if(animC != model->animationCount)
+		{
+			model->animations = (ANIMATION**)realloc(model->animations, animC * sizeof(model->animations[0]));
+			assert(model->animations);
+			model->animationCount = animC;
+		}
+	}
+
 	MODEL * model_get(char const * fileName) // uses caching
 	{
 		std::string name(fileName);

@@ -17,6 +17,22 @@
 #include <assimp/IOSystem.hpp>
 #include <assimp/IOStream.hpp>
 
+static const unsigned int importFlags =
+	  aiProcess_JoinIdenticalVertices
+	// | aiProcess_MakeLeftHanded // is this needed?
+	| aiProcess_CalcTangentSpace
+	| aiProcess_GenUVCoords // required for tangent space :(
+	| aiProcess_Triangulate
+	| aiProcess_GenNormals
+	| aiProcess_LimitBoneWeights
+	| aiProcess_ValidateDataStructure
+	| aiProcess_ImproveCacheLocality
+	| aiProcess_RemoveRedundantMaterials
+	| aiProcess_OptimizeMeshes
+	| aiProcess_OptimizeGraph
+	| aiProcess_FlipUVs
+	;
+
 static inline VECTOR ass_to_ack(const aiVector3D & vec)
 {
 	return (VECTOR){ vec.x, vec.y, vec.z };
@@ -126,27 +142,11 @@ MODEL * ModelLoader::load(QString const & _fileName)
 		return nullptr;
 	}
 
-	unsigned int flags =
-		  aiProcess_JoinIdenticalVertices
-		// | aiProcess_MakeLeftHanded // is this needed?
-		| aiProcess_CalcTangentSpace
-		| aiProcess_GenUVCoords // required for tangent space :(
-		| aiProcess_Triangulate
-		| aiProcess_GenNormals
-		| aiProcess_LimitBoneWeights
-		| aiProcess_ValidateDataStructure
-		| aiProcess_ImproveCacheLocality
-		| aiProcess_RemoveRedundantMaterials
-		| aiProcess_OptimizeMeshes
-		| aiProcess_OptimizeGraph
-		| aiProcess_FlipUVs
-		;
-
 	auto fileName = _fileName.toUtf8().toStdString();
 
 	Importer importer;
 	// importer.SetIOHandler(new AckIoSystem);
-	aiScene const * scene = importer.ReadFile(fileName, flags);
+	aiScene const * scene = importer.ReadFile(fileName, importFlags);
 	if(!scene) {
 		engine_log("Failed to load: %s", importer.GetErrorString());
 		return nullptr;
@@ -172,6 +172,12 @@ MODEL * ModelLoader::load(QString const & _fileName)
 	uint8_t counter = 0;
 	translateNodes(model, scene->mRootNode, 0, counter);
 	assert(counter == boneCount);
+
+	std::map<std::string, int> boneMap;
+	for(int i = 0; i < model->boneCount; i++)
+	{
+		boneMap.emplace(model->bones[i].name, i);
+	}
 
 	for(uint index = 0; index < scene->mNumMeshes; index++)
 	{
@@ -329,94 +335,13 @@ MODEL * ModelLoader::load(QString const & _fileName)
 
 	if(scene->HasAnimations())
 	{
+
 		assert(size_t(scene->mNumAnimations) == size_t(model->animationCount));
 		for(uint i = 0; i < scene->mNumAnimations; i++)
 		{
 			auto const * src = scene->mAnimations[i];
-			char name[256];
-			strncpy(name, src->mName.C_Str(), 256);
-			if(strlen(name) == 0) {
-				sprintf(name, "Animation %d", i);
-			}
-
-			ANIMATION * dst = anim_create(name, src->mNumChannels);
-
-			double timeScale = 1.0 / 25.0;
-			if(src->mTicksPerSecond > 0) {
-				timeScale = 1.0 / src->mTicksPerSecond;
-			}
-
-			dst->duration = timeScale * src->mDuration;
-
-			for(uint j = 0; j < src->mNumChannels; j++)
-			{
-				auto * const chanSrc = src->mChannels[j];
-
-				int frameCount = std::max(std::max(
-					chanSrc->mNumPositionKeys,
-					chanSrc->mNumRotationKeys),
-					chanSrc->mNumScalingKeys);
-
-				auto nodeName = chanSrc->mNodeName;
-
-				CHANNEL * chanDst = chan_create(frameCount);
-
-				chanDst->targetBone = -1;
-				for(int i = 0; i < model->boneCount; i++) {
-					if(strcmp(model->bones[i].name, nodeName.C_Str()) == 0) {
-						chanDst->targetBone = i;
-						break;
-					}
-				}
-				assert(chanDst->targetBone >= 0 && chanDst->targetBone < model->boneCount);
-
-				for(int i = 0; i < frameCount; i++)
-				{
-					if(chanSrc->mNumPositionKeys == uint(frameCount)) {
-						chanDst->frames[i].time = timeScale * chanSrc->mPositionKeys[i].mTime;
-					}
-					else if(chanSrc->mNumRotationKeys == uint(frameCount)) {
-						chanDst->frames[i].time = timeScale * chanSrc->mRotationKeys[i].mTime;
-					}
-					else if(chanSrc->mNumScalingKeys == uint(frameCount)) {
-						chanDst->frames[i].time = timeScale * chanSrc->mScalingKeys[i].mTime;
-					}
-					else {
-						assert(false);
-					}
-				}
-				for(int i = 0; i < frameCount; i++)
-				{
-					FRAME & frame = chanDst->frames[i];
-					frame.position = ass_to_ack(chanSrc->mPositionKeys[0].mValue);
-					frame.scale = ass_to_ack(chanSrc->mScalingKeys[0].mValue);
-					frame.rotation = ass_to_ack(chanSrc->mRotationKeys[0].mValue);
-
-					// frame.position = (VECTOR){0,0,0};
-					// frame.scale = (VECTOR){1,1,1};
-					// frame.rotation = *quat_id(NULL);
-
-					for(uint j = 1; j < chanSrc->mNumPositionKeys; j++) {
-						if(timeScale * chanSrc->mPositionKeys[j].mTime < frame.time) {
-							frame.position = ass_to_ack(chanSrc->mPositionKeys[j].mValue);
-						}
-					}
-					for(uint j = 1; j < chanSrc->mNumRotationKeys; j++) {
-						if(timeScale * chanSrc->mRotationKeys[j].mTime <= frame.time) {
-							frame.rotation = ass_to_ack(chanSrc->mRotationKeys[j].mValue);
-						}
-					}
-
-					for(uint j = 1; j < chanSrc->mNumScalingKeys; j++) {
-						if(timeScale * chanSrc->mScalingKeys[j].mTime <= frame.time) {
-							frame.scale = ass_to_ack(chanSrc->mScalingKeys[j].mValue);
-						}
-					}
-				}
-				dst->channels[j] = chanDst;
-			}
-
-			model->animations[i] = dst;
+			model->animations[i] = this->convertAnimation(src, boneMap);
+			assert(model->animations[i]);
 		}
 	}
 
@@ -430,6 +355,154 @@ MODEL * ModelLoader::load(QString const & _fileName)
 	model_updateBoundingBox(model);
 
 	return model;
+}
+
+QVector<ANIMATION*> ModelLoader::loadAnimations(MODEL * reference, QString const & _fileName)
+{
+	MainWindow::makeCurrent();
+
+	using namespace Assimp;
+
+	if(_fileName.isNull()) {
+		engine_seterror(ERR_INVALIDARGUMENT, "fileName must not be NULL!");
+		return QVector<ANIMATION*>();
+	}
+
+	auto fileName = _fileName.toUtf8().toStdString();
+
+	Importer importer;
+	aiScene const * scene = importer.ReadFile(fileName, importFlags);
+	if(!scene) {
+		engine_log("Failed to load: %s", importer.GetErrorString());
+		return QVector<ANIMATION*>();
+	}
+
+	int boneCount = 0;
+	{
+		std::stack<aiNode const *> stack;
+		stack.push(scene->mRootNode);
+		while(stack.size() > 0)
+		{
+			++boneCount;
+			aiNode const * top = stack.top();
+			stack.pop();
+			for(uint i = 0; i < top->mNumChildren; i++) {
+				stack.push(top->mChildren[i]);
+			}
+		}
+	}
+
+	assert(boneCount <= reference->boneCount);
+
+	std::map<std::string, int> boneMap;
+	for(int i = 0; i < reference->boneCount; i++)
+	{
+		boneMap.emplace(reference->bones[i].name, i);
+	}
+
+	QVector<ANIMATION*> animations;
+
+	if(scene->HasAnimations())
+	{
+		for(uint i = 0; i < scene->mNumAnimations; i++)
+		{
+			auto const * src = scene->mAnimations[i];
+			auto * dst = this->convertAnimation(src, boneMap);
+			assert(dst != nullptr);
+			animations.push_back(dst);
+		}
+	}
+
+	return animations;
+}
+
+ANIMATION * ModelLoader::convertAnimation(aiAnimation const * src, std::map<std::string, int> const & boneMap)
+{
+	char name[256];
+	strncpy(name, src->mName.C_Str(), 256);
+	if(strlen(name) == 0) {
+		strcpy(name, "<Unnamed>");
+	}
+
+	ANIMATION * dst = anim_create(name, src->mNumChannels);
+
+	double timeScale = 1.0 / 25.0;
+	if(src->mTicksPerSecond > 0) {
+		timeScale = 1.0 / src->mTicksPerSecond;
+	}
+
+	dst->duration = timeScale * src->mDuration;
+
+	for(uint j = 0; j < src->mNumChannels; j++)
+	{
+		auto * const chanSrc = src->mChannels[j];
+
+		int frameCount = std::max(std::max(
+			chanSrc->mNumPositionKeys,
+			chanSrc->mNumRotationKeys),
+			chanSrc->mNumScalingKeys);
+
+		aiString nodeName = chanSrc->mNodeName;
+
+		CHANNEL * chanDst = chan_create(frameCount);
+
+		chanDst->targetBone = boneMap.at(nodeName.C_Str());
+		/*
+		for(int i = 0; i < model->boneCount; i++) {
+			if(strcmp(model->bones[i].name, nodeName.C_Str()) == 0) {
+				chanDst->targetBone = i;
+				break;
+			}
+		}
+		*/
+		// assert(chanDst->targetBone >= 0 && chanDst->targetBone < model->boneCount);
+
+		for(int i = 0; i < frameCount; i++)
+		{
+			if(chanSrc->mNumPositionKeys == uint(frameCount)) {
+				chanDst->frames[i].time = timeScale * chanSrc->mPositionKeys[i].mTime;
+			}
+			else if(chanSrc->mNumRotationKeys == uint(frameCount)) {
+				chanDst->frames[i].time = timeScale * chanSrc->mRotationKeys[i].mTime;
+			}
+			else if(chanSrc->mNumScalingKeys == uint(frameCount)) {
+				chanDst->frames[i].time = timeScale * chanSrc->mScalingKeys[i].mTime;
+			}
+			else {
+				assert(false);
+			}
+		}
+		for(int i = 0; i < frameCount; i++)
+		{
+			FRAME & frame = chanDst->frames[i];
+			frame.position = ass_to_ack(chanSrc->mPositionKeys[0].mValue);
+			frame.scale = ass_to_ack(chanSrc->mScalingKeys[0].mValue);
+			frame.rotation = ass_to_ack(chanSrc->mRotationKeys[0].mValue);
+
+			// frame.position = (VECTOR){0,0,0};
+			// frame.scale = (VECTOR){1,1,1};
+			// frame.rotation = *quat_id(NULL);
+
+			for(uint j = 1; j < chanSrc->mNumPositionKeys; j++) {
+				if(timeScale * chanSrc->mPositionKeys[j].mTime < frame.time) {
+					frame.position = ass_to_ack(chanSrc->mPositionKeys[j].mValue);
+				}
+			}
+			for(uint j = 1; j < chanSrc->mNumRotationKeys; j++) {
+				if(timeScale * chanSrc->mRotationKeys[j].mTime <= frame.time) {
+					frame.rotation = ass_to_ack(chanSrc->mRotationKeys[j].mValue);
+				}
+			}
+
+			for(uint j = 1; j < chanSrc->mNumScalingKeys; j++) {
+				if(timeScale * chanSrc->mScalingKeys[j].mTime <= frame.time) {
+					frame.scale = ass_to_ack(chanSrc->mScalingKeys[j].mValue);
+				}
+			}
+		}
+		dst->channels[j] = chanDst;
+	}
+	return dst;
 }
 
 MATERIAL * ModelLoader::convertMaterial(aiMaterial const * _src, aiScene const * scene, std::string const & referenceFileName)

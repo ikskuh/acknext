@@ -46,6 +46,18 @@ AnimationViewer::~AnimationViewer()
 	delete timer;
 }
 
+
+void AnimationViewer::refresh()
+{
+	ui->list->setModel(nullptr);
+	ui->list->setModel(this->listModel);
+	connect(
+		ui->list->selectionModel(),
+		&QItemSelectionModel::currentChanged,
+		this,
+		&AnimationViewer::on_list_currentChanged);
+}
+
 void AnimationViewer::selectAnim(ANIMATION *anim)
 {
 	bool enabled = (anim != nullptr);

@@ -251,6 +251,61 @@ void MainWindow::on_actionImport_model_triggered()
 	ui->centralWidget->doneCurrent();
 }
 
+void MainWindow::on_actionImport_animation_triggered()
+{
+	MODEL * model = ui->centralWidget->model();
+	if(model == nullptr)
+	{
+		QMessageBox::warning(
+			this,
+			this->windowTitle(),
+			tr("To import animations, you must open a model first!"));
+		return;
+	}
+
+	QString fileName = QFileDialog::getOpenFileName(
+		this,
+		"Open animation file...");
+	if(fileName.isNull()) {
+		return;
+	}
+
+	ui->centralWidget->makeCurrent();
+
+	try
+	{
+		auto anims = loader()->loadAnimations(model, fileName);
+
+		if(anims.size() == 0)
+		{
+			QMessageBox::warning(
+				this,
+				this->windowTitle(),
+				tr("The loaded file does not contain any animations!"));
+		}
+
+		int offset = model->animationCount;
+
+		model_reshape(model, model->meshCount, model->boneCount, model->animationCount + anims.size());
+
+		for(int i = 0; i < anims.size(); i++)
+		{
+			model->animations[offset + i] = anims[i];
+		}
+
+		this->animationWidget->refresh();
+	}
+	catch(std::exception const & ex)
+	{
+		QMessageBox::critical(
+			this,
+			this->windowTitle(),
+			tr("Failed to open file: %1").arg(ex.what()));
+	}
+
+	ui->centralWidget->doneCurrent();
+}
+
 void MainWindow::on_actionExit_triggered()
 {
     this->close();

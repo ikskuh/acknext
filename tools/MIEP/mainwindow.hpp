@@ -54,6 +54,8 @@ private slots:
 
 	void on_actionShow_normals_triggered(bool checked);
 
+	void on_actionImport_animation_triggered();
+
 private:
 	void on_actionSetMode(int mode);
 

@@ -168,7 +168,7 @@ ACKFUN void model_remove(MODEL * model); // only created or loaded ones
 
 ACKFUN MODEL * model_create(int numMeshes, int numBones, int numAnimations);
 
-ACKFUN void model_reshape(MODEL * model, int meshC, int matC, int boneC, int animC);
+ACKFUN void model_reshape(MODEL * model, int meshC, int boneC, int animC);
 
 ACKFUN void model_updateBoundingBox(MODEL * model);
 

@@ -50,6 +50,7 @@
     </property>
     <addaction name="actionOpen"/>
     <addaction name="actionImport_model"/>
+    <addaction name="actionImport_animation"/>
     <addaction name="separator"/>
     <addaction name="actionSave"/>
     <addaction name="separator"/>
@@ -57,7 +58,22 @@
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <addaction name="actionScene_View"/>
+    <addaction name="actionLight_View"/>
+    <addaction name="actionNormal_View"/>
+    <addaction name="separator"/>
+    <addaction name="actionWireframe"/>
+    <addaction name="separator"/>
+    <addaction name="actionShow_Mesh"/>
+    <addaction name="actionShow_Skelton"/>
+    <addaction name="actionShow_normals"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuView"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -138,7 +154,7 @@
     <string>Normal View</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+3</string>
+    <string>F7</string>
    </property>
   </action>
   <action name="actionLight_View">
@@ -149,7 +165,7 @@
     <string>Light View</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+2</string>
+    <string>F6</string>
    </property>
   </action>
   <action name="actionScene_View">
@@ -160,7 +176,7 @@
     <string>Scene View</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+1</string>
+    <string>F5</string>
    </property>
   </action>
   <action name="actionWireframe">
@@ -175,7 +191,7 @@
     <string>Wireframe</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+4</string>
+    <string>F9</string>
    </property>
   </action>
   <action name="actionShow_Mesh">
@@ -192,6 +208,9 @@
    <property name="text">
     <string>Show Mesh</string>
    </property>
+   <property name="shortcut">
+    <string>F10</string>
+   </property>
   </action>
   <action name="actionShow_Skelton">
    <property name="checkable">
@@ -206,6 +225,9 @@
    </property>
    <property name="text">
     <string>Show Skelton</string>
+   </property>
+   <property name="shortcut">
+    <string>F11</string>
    </property>
   </action>
   <action name="actionImport_model">
@@ -232,7 +254,12 @@
     <string>Show normals</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Shift+N</string>
+    <string>F12</string>
+   </property>
+  </action>
+  <action name="actionImport_animation">
+   <property name="text">
+    <string>Import animation...</string>
    </property>
   </action>
  </widget>

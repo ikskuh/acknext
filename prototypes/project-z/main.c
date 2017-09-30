@@ -188,6 +188,9 @@ void gamemain()
 	LIGHT * ambi = light_create(AMBIENTLIGHT);
 	ambi->color = *color_hex(0x232c33);
 
+	LIGHT * plambilight = light_create(POINTLIGHT);
+	plambilight->intensity = 2;
+
 	tree();
 
 	ENTITY * player = ent_create("/other/cyber-pirate/cyber-pirate.amd", vector(0, 0, 512), NULL);
@@ -237,9 +240,15 @@ void gamemain()
 			vec_add(&camera->position, &player->position);
 			vec_add(&camera->position, vector(0, 1.5, 0));
 
-			var mincam = terrain_getheight(terrain->model, camera->position.x, camera->position.z) + 1.8;
+			var mincam = terrain_getheight(terrain->model, camera->position.x, camera->position.z) + 0.2;
 			if(camera->position.y < mincam)
 				camera->position.y = mincam;
+
+			vec_lerp(
+				&plambilight->position,
+				&player->position,
+				&camera->position,
+				0.4);
 		}
 
 

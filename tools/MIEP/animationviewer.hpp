@@ -28,6 +28,8 @@ public:
 
 	virtual void closeEvent(QCloseEvent *event) override;
 
+	void refresh();
+
 signals:
 	Q_SIGNAL void hasChanged();
 
