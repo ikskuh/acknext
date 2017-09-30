@@ -143,6 +143,22 @@ ACKNEXT_API_BLOCK
 		return bmp;
 	}
 
+	void bmap_renew(BITMAP * bitmap)
+	{
+		ARG_NOTNULL(bitmap,);
+
+		if(bitmap->pixels)
+			free(bitmap->pixels);
+
+		glDeleteTextures(1, &bitmap->object);
+		glCreateTextures(bitmap->target, 1, &bitmap->object);
+
+		bitmap->pixels = nullptr;
+		bitmap->width = 0;
+		bitmap->height = 0;
+		bitmap->depth = 0;
+	}
+
 	void bmap_set(BITMAP * bitmap, int width, int height, GLenum pixelFormat, GLenum channelFormat, void const * data)
 	{
 		Bitmap * bmp = promote<Bitmap>(bitmap);
@@ -187,15 +203,14 @@ ACKNEXT_API_BLOCK
 				data);
 		}
 
-		glTextureParameteri(bitmap->object, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTextureParameteri(bitmap->object, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTextureParameteri(bitmap->object, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTextureParameteri(bitmap->object, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		glTextureParameteri(bitmap->object, GL_TEXTURE_WRAP_R, GL_REPEAT);
 		glTextureParameteri(bitmap->object, GL_TEXTURE_WRAP_S, GL_REPEAT);
 
 		bitmap->width = width;
 		bitmap->height = height;
-		bitmap->format = pixelFormat;
 		bitmap->depth = 1;
 	}
 

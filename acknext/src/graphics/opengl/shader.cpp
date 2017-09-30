@@ -22,17 +22,6 @@ Shader::~Shader()
 	glDeleteProgram(api().object);
 }
 
-void Shader::setUniform(SHADERVAR var, std::function<void(int,int)> const & func)
-{
-	for(UNIFORM & u : this->uniforms)
-	{
-		if(u.var != var) {
-			continue;
-		}
-		func(api().object, u.location);
-	}
-}
-
 ACKNEXT_API_BLOCK
 {
 	SHADER * shader_create()
@@ -169,7 +158,7 @@ ACKNEXT_API_BLOCK
 							return false; \
 						} \
 						uni->var = value; \
-						shader->xname.location = uni->location; \
+						shader->xname.uniform = uni; \
 					} \
 				} while(false);
 	#include "uniformconfig.h"

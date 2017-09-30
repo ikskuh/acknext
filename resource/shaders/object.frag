@@ -114,6 +114,6 @@ void main() {
 
 	vec3 surface = occlusion * lightedSurface + cEmissive.rgb;
 
-	fragment.rgb = toGamma(applyFog(position, surface));
+	fragment.rgb = applyFog(position, surface);
 	fragment.a = 1.0;
 }

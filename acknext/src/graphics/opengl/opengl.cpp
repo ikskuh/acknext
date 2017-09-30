@@ -31,6 +31,29 @@ ACKNEXT_API_BLOCK
 		glBindFramebuffer(
 			GL_DRAW_FRAMEBUFFER,
 			(fb != nullptr) ? fb->object : 0);
+
+		if(fb)
+		{
+			glDisable(GL_SCISSOR_TEST);
+			glViewport(0, 0, fb->size.width, fb->size.height);
+		}
+		else
+		{
+			glEnable(GL_SCISSOR_TEST);
+
+			POINT pos;
+			SIZE size;
+			view_to_bounds(view_current, &pos, &size);
+
+			if(size.width <= 0 || size.height <= 0) {
+				return;
+			}
+
+			int gly = screen_size.height - pos.y - size.height;
+
+			glViewport(pos.x, gly, size.width, size.height);
+			glScissor(pos.x, gly, size.width, size.height);
+		}
 	}
 
 	void opengl_setVertexBuffer(BUFFER const * _buffer)
@@ -199,6 +222,11 @@ ACKNEXT_API_BLOCK
 		currentShader = FALLBACK(const_cast<Shader*>(promote<Shader>(shader)), defaultShader);
 		glUseProgram(currentShader->api().object);
 
+		POINT pos;
+		SIZE size;
+		view_to_bounds(view_current, &pos, &size);
+
+		currentShader->vecViewPort = (VECTOR4) { float(pos.x), float(pos.y), float(size.width), float(size.height) };
 		currentShader->fGamma = screen_gamma;
 		currentShader->vecTime = (VECTOR2){ total_time, time_step };
 		currentShader->iDebugMode = opengl_debugMode;
@@ -265,14 +293,15 @@ ACKNEXT_API_BLOCK
 
 	void opengl_drawFullscreenQuad()
 	{
+		glBindVertexArray(vao);
 		MATRIX id; mat_id(&id);
 		currentShader->useInstancing = false;
 		currentShader->useBones = false;
 		currentShader->matWorld = id;
 		currentShader->matView = id;
 		currentShader->matProj = id;
-		opengl_setMesh(fullscreenQuad, nullptr);
-		opengl_draw(GL_TRIANGLES, 0, 4, 1);
+		opengl_setVertexBuffer(fullscreenQuadBuffer);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	}
 
 	void opengl_setMaterial(MATERIAL const * material)

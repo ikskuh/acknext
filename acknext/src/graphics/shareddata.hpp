@@ -10,6 +10,6 @@ extern Shader * defaultShader;
 extern Shader * currentShader;
 extern BITMAP * defaultWhiteTexture;
 extern BITMAP * defaultNormalMap;
-extern MESH   * fullscreenQuad;
+extern BUFFER * fullscreenQuadBuffer;
 
 #endif // SHAREDDATA_HPP

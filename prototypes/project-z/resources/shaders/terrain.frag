@@ -92,6 +92,6 @@ void main()
 
 	vec3 surface = applyLighting(position, normal, 0.9, 0.0, 150.0, albedo);
 
-	fragment.rgb = toGamma(applyFog(position, surface));
+	fragment.rgb = applyFog(position, surface);
 	fragment.a = 1.0;
 }

@@ -174,9 +174,6 @@ SOURCES += \
 RESOURCES += \
     $$PWD/../resource/builtin.qrc
 
-SHADERS += \
-	$$PWD/../resource/shaders/ackpbr.glsl
-
 custom_rcc.output  = resource.o
 custom_rcc.commands = make -C $$PWD/../resource/ qmake OUTFILE=`pwd`/${QMAKE_FILE_OUT} shaders
 custom_rcc.depend_command = make -C $$PWD/../resource/ depends

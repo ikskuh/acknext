@@ -7,8 +7,19 @@
 #include <string>
 #include <functional>
 
+enum SHADERVAR
+{
+NULL_VAR = 0,
+#define _UNIFORM(xname, xtype, value, _rtype) value,
+#include "uniformconfig.h"
+#undef _UNIFORM
+};
+
 template<typename T>
-void glProgramUniform(int program, int location, T const & value);
+class UniformProxy;
+
+template<typename T>
+void glProgramUniform(int program, UniformProxy<T> & proxy, int location, T const & value);
 
 class Shader;
 
@@ -17,11 +28,12 @@ class UniformProxy
 {
 friend class Shader;
 friend bool shader_link(SHADER * _shader);
+friend void glProgramUniform<T>(int program, UniformProxy<T> & proxy, int location, T const & value);
 private:
 	Shader * shader;
-	int location;
+	UNIFORM * uniform;
 public:
-	UniformProxy() : shader(nullptr), location(-1) { }
+	UniformProxy() : shader(nullptr), uniform(nullptr) { }
 	NOCOPY(UniformProxy);
 	~UniformProxy() = default;
 
@@ -43,17 +55,15 @@ public:
 	Shader();
 	NOCOPY(Shader);
 	~Shader();
-
-	void setUniform(SHADERVAR var, std::function<void(int,int)> const & func);
 };
 
 
 template<typename T>
 inline void UniformProxy<T>::operator =(T const & value)
 {
-	if(location < 0)
+	if(this->uniform == nullptr)
 		return;
-	glProgramUniform(shader->api().object, location, value);
+	glProgramUniform(shader->api().object, *this, this->uniform->location, value);
 }
 
 #endif // SHADER_HPP

@@ -21,13 +21,33 @@ ACKNEXT_API_BLOCK
 	void framebuf_resize(FRAMEBUFFER * fb, SIZE size)
 	{
 		ARG_NOTNULL(fb,);
+		bool hasChanges = false;
 		for(int i = 0; i < ACKNEXT_MAX_FRAMEBUFFER_TARGETS; i++)
 		{
-			if(fb->targets[i])
-				bmap_set(fb->targets[i], size.width, size.height, GL_NONE, GL_NONE, nullptr);
+			BITMAP * bmp = fb->targets[i];
+			if(bmp == nullptr)
+				continue;
+			if(bmp->width == size.width && bmp->height == size.height)
+				continue;
+			bmap_renew(bmp);
+			bmap_set(bmp, size.width, size.height, GL_NONE, GL_NONE, nullptr);
+			hasChanges = true;
 		}
 		if(fb->depthBuffer)
-			bmap_set(fb->depthBuffer, size.width, size.height, GL_NONE, GL_NONE, nullptr);
+		{
+			if(fb->depthBuffer->width != size.width
+			   || fb->depthBuffer->height != size.height)
+			{
+				bmap_renew(fb->depthBuffer);
+				bmap_set(fb->depthBuffer, size.width, size.height, GL_NONE, GL_NONE, nullptr);
+				hasChanges = true;
+			}
+		}
+		fb->size = size;
+
+		if(hasChanges) {
+			framebuf_update(fb);
+		}
 	}
 
 	void framebuf_update(FRAMEBUFFER * fb)

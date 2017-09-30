@@ -17,7 +17,7 @@ Shader * defaultShader;
 BITMAP * defaultWhiteTexture;
 BITMAP * defaultNormalMap;
 
-MESH   * fullscreenQuad;
+BUFFER * fullscreenQuadBuffer;
 
 // graphics-resource.cpp
 extern char const * srcVertexShader;
@@ -214,7 +214,7 @@ void render_init()
 		VERTEX vertices[4] =
 		{
 		    {
-		        position:    { 0, 0, 0 },
+		        position:    { -1, -1, 0 },
 		        normal:      { 0, 0, 1 },
 		        tangent:     { 1, 0, 0 },
 		        color:       { 1, 1, 1, 1 },
@@ -224,40 +224,38 @@ void render_init()
 		        boneWeights: { 255, 0, 0, 0 },
 		    },
 		    {
-		        position:    { 0, 0, 0 },
+		        position:    { 1, -1, 0 },
 		        normal:      { 0, 0, 1 },
 		        tangent:     { 1, 0, 0 },
 		        color:       { 1, 1, 1, 1 },
-		        texcoord0:   { 0, 0 },
+		        texcoord0:   { 1, 0 },
 		        texcoord1:   { 0, 0 },
 		        bones:       { 0, 0, 0, 0 },
 		        boneWeights: { 255, 0, 0, 0 },
 		    },
 		    {
-		        position:    { 0, 0, 0 },
+		        position:    { -1, 1, 0 },
 		        normal:      { 0, 0, 1 },
 		        tangent:     { 1, 0, 0 },
 		        color:       { 1, 1, 1, 1 },
-		        texcoord0:   { 0, 0 },
+		        texcoord0:   { 0, 1 },
 		        texcoord1:   { 0, 0 },
 		        bones:       { 0, 0, 0, 0 },
 		        boneWeights: { 255, 0, 0, 0 },
 		    },
 		    {
-		        position:    { 0, 0, 0 },
+		        position:    { 1, 1, 0 },
 		        normal:      { 0, 0, 1 },
 		        tangent:     { 1, 0, 0 },
 		        color:       { 1, 1, 1, 1 },
-		        texcoord0:   { 0, 0 },
+		        texcoord0:   { 1, 1 },
 		        texcoord1:   { 0, 0 },
 		        bones:       { 0, 0, 0, 0 },
 		        boneWeights: { 255, 0, 0, 0 },
 		    }
 		};
-		BUFFER * vbuf = buffer_create(VERTEXBUFFER);
-		buffer_set(vbuf, sizeof(vertices), vertices);
-
-		fullscreenQuad = mesh_create(GL_TRIANGLE_STRIP, vbuf, nullptr);
+		fullscreenQuadBuffer = buffer_create(VERTEXBUFFER);
+		buffer_set(fullscreenQuadBuffer, sizeof(vertices), vertices);
 	}
 
 	DebugDrawer::initialize();

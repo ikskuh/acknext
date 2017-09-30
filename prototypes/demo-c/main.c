@@ -111,8 +111,6 @@ void gamemain()
 
 	ent_create("dungeon.amd", vector(0, 0, 0), NULL);
 
-	task_yield();
-
 	LIGHT * playerAura = light_create(POINTLIGHT);
 	playerAura->color = *color_hex(0xffde96);
 	playerAura->intensity = 8;

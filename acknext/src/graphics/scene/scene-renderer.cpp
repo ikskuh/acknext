@@ -224,6 +224,19 @@ extern GLuint vao;
 
 static void render_scene(CAMERA * perspective, MATERIAL * mtlOverride);
 
+static SHADER * create_ppshader(char const * pixelop)
+{
+	SHADER * ppshader = shader_create();
+
+	shader_addFileSource(ppshader, VERTEXSHADER, "/builtin/shaders/postprocess.vert");
+	shader_addFileSource(ppshader, FRAGMENTSHADER, "/builtin/shaders/gamma.glsl");
+	shader_addFileSource(ppshader, FRAGMENTSHADER, pixelop);
+
+	shader_link(ppshader);
+
+	return ppshader;
+}
+
 ACKNEXT_API_BLOCK
 {
 	CAMERA * camera;
@@ -252,29 +265,98 @@ ACKNEXT_API_BLOCK
 
 	void render_scene_with_camera(CAMERA * perspective)
 	{
+		GLint drawFboId = 0;
+		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &drawFboId);
+
+		engine_log("Current FB: %d", drawFboId);
+
 		static FRAMEBUFFER * stage1 = nullptr;
-		if(stage1 == nullptr) {
+		static FRAMEBUFFER * stage2 = nullptr;
+		static FRAMEBUFFER * stage3 = nullptr;
+
+		if(stage1 == nullptr)
+		{
 			stage1 = framebuf_create();
-			stage1->targets[0] = bmap_create(GL_TEXTURE_2D, GL_RGBA8);
+			stage1->targets[0] = bmap_create(GL_TEXTURE_2D, GL_RGBA32F);
 			stage1->depthBuffer = bmap_create(GL_TEXTURE_2D, GL_DEPTH24_STENCIL8);
 			framebuf_update(stage1);
 		}
 
+		if(stage2 == nullptr)
+		{
+			stage2 = framebuf_create();
+			stage2->targets[0] = bmap_create(GL_TEXTURE_2D, GL_RGBA32F);
+			stage2->depthBuffer = bmap_create(GL_TEXTURE_2D, GL_DEPTH24_STENCIL8);
+			framebuf_update(stage2);
+		}
+
+		if(stage3 == nullptr)
+		{
+			stage3 = framebuf_create();
+			stage3->targets[0] = bmap_create(GL_TEXTURE_2D, GL_RGBA32F);
+			stage3->depthBuffer = bmap_create(GL_TEXTURE_2D, GL_DEPTH24_STENCIL8);
+			framebuf_update(stage3);
+		}
+
+		static SHADER * tonemap = nullptr;
+
+		static SHADER * bloomblur = nullptr;
+		static SHADER * bloomcomb = nullptr;
+
+		if(!tonemap) tonemap = create_ppshader("/builtin/shaders/pp/hdr/reinhard.frag");
+
+		if(!bloomblur) bloomblur = create_ppshader("/builtin/shaders/pp/bloom/blur.frag");
+		if(!bloomcomb) bloomcomb = create_ppshader("/builtin/shaders/pp/bloom/combine.frag");
+
 		SIZE targetSize;
 		view_to_bounds(view_current, nullptr, &targetSize);
-		framebuf_resize(stage1, targetSize);
 
-		opengl_setFrameBuffer(stage1);
+		{ // 1: render scnee
+			framebuf_resize(stage1, targetSize);
+			opengl_setFrameBuffer(stage1);
 
-		render_scene(perspective, nullptr);
+			render_scene(perspective, nullptr);
+		}
 
-		opengl_setFrameBuffer(nullptr);
+		glDisable(GL_CULL_FACE);
+		glDisable(GL_BLEND);
+		glDisable(GL_DEPTH_TEST);
 
-		ACKFILE * foo = file_open_write("framebuf.atx");
-		bmap_write(foo, stage1->targets[0]);
-		file_close(foo);
+		{ // 2: render bloom image (half size)
+			SIZE halfSize = targetSize;
+			halfSize.width /= 2;
+			halfSize.height /= 2;
+			framebuf_resize(stage2, halfSize);
+			opengl_setFrameBuffer(stage2);
 
-		exit(-1);
+			opengl_setShader(bloomblur);
+			currentShader->texInput = stage1->targets[0];
+
+			opengl_drawFullscreenQuad();
+		}
+
+		{ // 3: combine bloom image with source image
+			framebuf_resize(stage3, targetSize);
+			opengl_setFrameBuffer(stage3);
+
+			opengl_setShader(bloomcomb);
+			currentShader->texInput = stage1->targets[0];
+			currentShader->texBloom = stage2->targets[0];
+
+			opengl_drawFullscreenQuad();
+		}
+
+		{ // 4:
+			opengl_setFrameBuffer(nullptr);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFboId);
+
+			opengl_setShader(tonemap);
+
+			currentShader->texInput = stage3->targets[0];
+			currentShader->fExposure = 1.0;
+
+			opengl_drawFullscreenQuad();
+		}
 	}
 }
 

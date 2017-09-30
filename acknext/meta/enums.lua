@@ -6,47 +6,6 @@ enum.STAGETYPE =
 	"Custom",
 }
 
-enum.SHADERVAR = 
-{
-	postfix = "_VAR",
-	noDefault = true,
-	"matWorld",
-	"matView",
-	"matProj",
-	"matWorldView",
-	"matViewProj",
-	"matWorldViewProj",
-	
-	-- TODO: Complete!
-	"vecViewDir",
-	"vecViewPos",
-	"vecViewPort",
-	"fArc",
-
-	-- Material
-	"vecAlbedo",
-	"vecEmission",
-	"vecAttributes",
-	"texColor",
-	"texAttributes",
-	"texEmission",
-	"texNormalmap",
-	
-	-- Light
-	"iLightCount",
-	
-	"fGamma",
-	"vecTime",
-	
-	"vecFogColor",
-	
-	"iDebugMode",
-	
-	"useInstancing",
-	"useBones",
-	"useNormalMapping",
-}
-
 enum.ERROR = 
 {
 	prefix = "ERR_",

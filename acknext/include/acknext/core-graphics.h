@@ -25,6 +25,7 @@ typedef struct FRAMEBUFFER
 	GLuint object;
 	BITMAP * targets[32];
 	BITMAP * depthBuffer;
+	SIZE size;
 } FRAMEBUFFER;
 
 typedef struct
@@ -49,7 +50,7 @@ typedef struct
 	char ACKCONST name[128];
 	GLenum ACKCONST type;
 	int ACKCONST size;
-	SHADERVAR ACKCONST var;
+	int ACKCONST var;         // internal shader variable for fast uniform setting
 	int ACKCONST textureSlot; // the index of the texture slot this uniform has assigned
 } UNIFORM;
 
@@ -63,9 +64,12 @@ ACKFUN BITMAP * bmap_createpixel(COLOR color);
 
 ACKFUN BITMAP * bmap_load(char const * fileName);
 
+
 ACKFUN BITMAP * bmap_read(ACKFILE * file);
 
 ACKFUN void bmap_write(ACKFILE * file, BITMAP * bitmap);
+
+ACKFUN void bmap_renew(BITMAP * bitmap); // realloc a new bitmap object, loose everything but the object pointer
 
 ACKFUN void bmap_set(
 	BITMAP * bitmap,

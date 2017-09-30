@@ -9,5 +9,10 @@
         <file>shaders/fog.glsl</file>
         <file>shaders/linedraw.vert</file>
         <file>shaders/linedraw.frag</file>
+        <file>shaders/postprocess.vert</file>
+        <file>shaders/pp/hdr/linear.frag</file>
+        <file>shaders/pp/hdr/reinhard.frag</file>
+        <file>shaders/pp/bloom/blur.frag</file>
+        <file>shaders/pp/bloom/combine.frag</file>
     </qresource>
 </RCC>
