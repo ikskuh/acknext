@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 #include <GL/gl3w.h>
 
 #include <stdlib.h>
@@ -190,6 +191,7 @@ void gamemain()
 
 	LIGHT * plambilight = light_create(POINTLIGHT);
 	plambilight->intensity = 2;
+	vec_fill((VECTOR*)&plambilight->color, 0.3);
 
 	tree();
 
@@ -199,6 +201,7 @@ void gamemain()
 
 	var pan = 0;
 	var tilt = 0;
+	var camdist = 5;
 	while(true)
 	{
 		if(nightmode) {
@@ -209,8 +212,6 @@ void gamemain()
 			ambi->color = *color_hex(0x232c33);
 		}
 
-		ent_animate(player, "Idle", total_time);
-
 		if(key_3 && default_camera_movement_enabled)
 		{
 			player->position = camera->position;
@@ -220,22 +221,34 @@ void gamemain()
 		{
 			pan -= 0.3 * mickey.x;
 			tilt = clamp(tilt - 0.3 * mickey.y, -80, 85);
+			camdist = clamp(camdist - 0.5 * mickey.w, 2.0, 10.0);
 
 			camera->rotation = *euler(pan, tilt, 0);
-			player->rotation = *euler(pan, 0, 0);
 
 			VECTOR mov = {
 				key_d - key_a,
 				0,
 				key_s - key_w,
 			};
+
 			vec_normalize(&mov, (3 + 3 * key_lshift) * time_step);
-			vec_rotate(&mov, &player->rotation);
+			vec_rotate(&mov, euler(pan, 0, 0));
 			vec_add(&player->position, &mov);
+
+			if(vec_length(&mov) > 0.0)
+			{
+				var offset = atan2(mov.x, mov.z);
+				player->rotation = *euler(RAD_TO_DEG * offset, 0, 0);
+				ent_animate(player, "Walk", total_time);
+			}
+			else
+			{
+				ent_animate(player, "Idle", total_time);
+			}
 
 			player->position.y = terrain_getheight(terrain->model, player->position.x, player->position.z);
 
-			camera->position = (VECTOR) { 0, 0, 5 };
+			camera->position = (VECTOR) { 0, 0, camdist };
 			vec_rotate(&camera->position, &camera->rotation);
 			vec_add(&camera->position, &player->position);
 			vec_add(&camera->position, vector(0, 1.5, 0));
