@@ -1,19 +1,12 @@
 # TODO List / Concept Ideas
 
 ## Fix / Update / Refactor
-- add MODEL::minimumLOD, MESH::lodMask to ACFF
 
+- STORE TEXTURES without Y flip (so y=0 is bottom!)
+  → Neat OpenGL-Texture-Compatibility, also more logically
 
 ## Implement
-- Instancing of ENTITY
-	`int ent_addInstance(...)`
-	`void ent_setInstance(VECTOR*,QUAT*,VECTOR*)
 - MODEL
-	- Animation
-		- Eine Animation enthält für jeden verwendeten Bone eine
-		  Sequenz aus Keyframes (position,rotation,skalierung)
-		- Länge der Animation ist von vornherein festgelegt
-		- Eigenschaften wie "looped" werden vom Programmierer vergeben
 - Collider API
 	- "Collider Model" in addition to `hull_create` functions
 	  to merge model loading with collider loading
@@ -22,7 +15,6 @@
 		- bone-attached colliders
 		- "colliders between bones"
 - UI stuff
-	- dear imgui integration
 	- Minimal engine ui (Panels)
 - Terrain System
 	- Add "terrain compiler" for preprocessing terrain
@@ -33,7 +25,14 @@
 	- Blender export script (because fuck yeah)
 - Add pure makefile based example
 	- Use of resource compilation
-	- Use of 
 - File API
 	- benutzerdefiniert (bereitstellung von read/write impl)
 	- wrapper um streams (gzip inflate/deflate)
+
+	
+Graphics Pipeline:
+plan fürs postprocessing: SSAO, Bloom/HDR, Reinhard Tone Mapping als Default-Pipeline
+Forward+ für mehr Licht pro Level
+und transparenz mach ich erst mal nix spannendes, nur halt mit forward+ beleuchten, weil cool
+ach und Screen Space Reflections sollte ich auch noch reinmachen, hab ja schließlich PBR und das kommt mit Spiegelungen einfach immer geiler
+und ein sky a'la https://developer.nvidia.com/gpugems/GPUGems2/gpugems2_chapter16.html

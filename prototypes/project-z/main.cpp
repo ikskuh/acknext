@@ -128,7 +128,6 @@ void outsider()
 	}
 	ImGui::End();
 
-
 	if(ImGui::Begin("Camera / Player"))
 	{
 		ImGui::Text("Camera:");

@@ -20,6 +20,13 @@ typedef struct
 	void * ACKCONST pixels; // when bitmap is loaded, contains raw data
 } BITMAP;
 
+typedef struct FRAMEBUFFER
+{
+	GLuint object;
+	BITMAP * targets[32];
+	BITMAP * depthBuffer;
+} FRAMEBUFFER;
+
 typedef struct
 {
 	GLuint ACKCONST object;
@@ -70,6 +77,21 @@ ACKFUN void bmap_set(
 ACKFUN void bmap_remove(BITMAP * bitmap);
 
 ACKFUN BITMAP * bmap_to_mipmap(BITMAP * bitmap);
+
+// Framebuffer Api:
+
+ACKFUN FRAMEBUFFER * framebuf_create();
+
+// resize all textures attached
+ACKFUN void framebuf_resize(FRAMEBUFFER * fb, SIZE size);
+
+// Adapt changes from the structure to the opengl object
+ACKFUN void framebuf_update(FRAMEBUFFER * fb);
+
+ACKFUN bool framebuf_checkValid(FRAMEBUFFER * fb);
+
+ACKFUN void framebuf_remove(FRAMEBUFFER * fb);
+
 
 // BUFFER api:
 #define VERTEXBUFFER  GL_ARRAY_BUFFER

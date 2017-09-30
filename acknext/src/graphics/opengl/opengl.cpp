@@ -4,24 +4,34 @@
 #include "shader.hpp"
 #include "bitmap.hpp"
 
+#include "../shareddata.hpp"
+
 #define FALLBACK(a, b) ((a) ? (a) : (b))
 
 
 static Buffer const * currentVertexBuffer;
 static Buffer const * currentIndexBuffer;
+static FRAMEBUFFER * currentFramebuffer;
 Shader * currentShader;
-
-// graphics-core.cpp
-extern GLuint vao;
-extern Shader * defaultShader;
-extern BITMAP * defaultWhiteTexture;
-extern BITMAP * defaultNormalMap;
 
 ACKNEXT_API_BLOCK
 {
 	int opengl_debugMode = 0;
 
 	bool opengl_wireFrame = false;
+
+	void opengl_setFrameBuffer(FRAMEBUFFER * fb)
+	{
+		if(fb && !framebuf_checkValid(fb))
+		{
+			engine_seterror(ERR_INVALIDARGUMENT, "Framebuffer is not complete!");
+			return;
+		}
+		currentFramebuffer = fb;
+		glBindFramebuffer(
+			GL_DRAW_FRAMEBUFFER,
+			(fb != nullptr) ? fb->object : 0);
+	}
 
 	void opengl_setVertexBuffer(BUFFER const * _buffer)
 	{
@@ -251,6 +261,18 @@ ACKNEXT_API_BLOCK
 			0,
 			count,
 			1);
+	}
+
+	void opengl_drawFullscreenQuad()
+	{
+		MATRIX id; mat_id(&id);
+		currentShader->useInstancing = false;
+		currentShader->useBones = false;
+		currentShader->matWorld = id;
+		currentShader->matView = id;
+		currentShader->matProj = id;
+		opengl_setMesh(fullscreenQuad, nullptr);
+		opengl_draw(GL_TRIANGLES, 0, 4, 1);
 	}
 
 	void opengl_setMaterial(MATERIAL const * material)

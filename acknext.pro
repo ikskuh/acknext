@@ -7,7 +7,8 @@ SUBDIRS += \
     acknext \  # Engine is first
     addons \   # Then comes the list of addons
     tools \    # After that, the tools are built
-	prototypes # And finally, the prototypes
+	prototypes \ # And finally, the prototypes
+    utilities
 
 prototypes.depends = acknext addons
 tools.depends = acknext addons

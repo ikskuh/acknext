@@ -222,6 +222,8 @@ struct Instance
 
 extern GLuint vao;
 
+static void render_scene(CAMERA * perspective, MATERIAL * mtlOverride);
+
 ACKNEXT_API_BLOCK
 {
 	CAMERA * camera;
@@ -250,158 +252,191 @@ ACKNEXT_API_BLOCK
 
 	void render_scene_with_camera(CAMERA * perspective)
 	{
-		glBindVertexArray(vao);
-
-		if(perspective == nullptr) {
-			return;
+		static FRAMEBUFFER * stage1 = nullptr;
+		if(stage1 == nullptr) {
+			stage1 = framebuf_create();
+			stage1->targets[0] = bmap_create(GL_TEXTURE_2D, GL_RGBA8);
+			stage1->depthBuffer = bmap_create(GL_TEXTURE_2D, GL_DEPTH24_STENCIL8);
+			framebuf_update(stage1);
 		}
 
-		if(!ubo)
+		SIZE targetSize;
+		view_to_bounds(view_current, nullptr, &targetSize);
+		framebuf_resize(stage1, targetSize);
+
+		opengl_setFrameBuffer(stage1);
+
+		render_scene(perspective, nullptr);
+
+		opengl_setFrameBuffer(nullptr);
+
+		ACKFILE * foo = file_open_write("framebuf.atx");
+		bmap_write(foo, stage1->targets[0]);
+		file_close(foo);
+
+		exit(-1);
+	}
+}
+
+static void render_scene(CAMERA * perspective, MATERIAL * mtlOverride)
+{
+	glBindVertexArray(vao);
+
+	if(perspective == nullptr) {
+		return;
+	}
+
+	if(!ubo)
+	{
+		ubo = buffer_create(UNIFORMBUFFER);
+		buffer_set(ubo, sizeof(LIGHTDATA) * LIGHT_LIMIT, nullptr);
+	}
+
+	if(!bonesBuf)
+	{
+		bonesBuf = buffer_create(UNIFORMBUFFER);
+		buffer_set(bonesBuf, sizeof(MATRIX) * ACKNEXT_MAX_BONES, NULL);
+	}
+
+	if(!instaBuf)
+	{
+		instaBuf = buffer_create(VERTEXBUFFER);
+	}
+
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+
+	if(opengl_wireFrame) {
+		glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+	} else {
+		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+	}
+
+	glEnable(GL_DEPTH_TEST);
+	glClearColor(sky_color.red, sky_color.green, sky_color.blue, sky_color.alpha);
+	glClearDepth(1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDisable(GL_BLEND);
+
+	MATRIX matView, matProj;
+	camera_to_matrix(perspective, &matView, &matProj, view_current);
+
+	std::vector<Drawcall> drawcalls;
+
+	for(ENTITY * ent = ent_next(nullptr); ent != nullptr; ent = ent_next(ent))
+	{
+		// Entity * entity = promote<Entity>(ent);
+		if(ent->model == nullptr)
+			continue;
+		if(!(ent->flags & VISIBLE))
+			continue;
+		// TODO: Filter entity by mask bits
+
+		MATRIX matWorld;
+		glm_to_ack(&matWorld,
+			glm::translate(glm::mat4(), ack_to_glm(ent->position)) *
+			glm::mat4_cast(ack_to_glm(ent->rotation)) *
+			glm::scale(glm::mat4(), ack_to_glm(ent->scale)));
+
+		MATRIX matWorldViewProj;
+		glm_to_ack(&matWorldViewProj,
+			  ack_to_glm(matProj)
+			* ack_to_glm(matView)
+			* ack_to_glm(matWorld));
+
+		var dist = vec_dist(&camera->position, &ent->position);
+		uint lod;
+		for(lod = 15; lod_distances[lod] > dist && lod > 0; lod--);
+
+		if(lod >= 16)
+			continue;
+
+		if(lod > ent->model->minimumLOD)
+			continue;
+
+		Model * model = promote<Model>(ent->model);
+		for(int i = 0; i < model->api().meshCount; i++)
 		{
-			ubo = buffer_create(UNIFORMBUFFER);
-			buffer_set(ubo, sizeof(LIGHTDATA) * LIGHT_LIMIT, nullptr);
-		}
+			Drawcall call;
 
-		if(!bonesBuf)
-		{
-			bonesBuf = buffer_create(UNIFORMBUFFER);
-			buffer_set(bonesBuf, sizeof(MATRIX) * ACKNEXT_MAX_BONES, NULL);
-		}
-
-		if(!instaBuf)
-		{
-			instaBuf = buffer_create(VERTEXBUFFER);
-		}
-
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
-
-		if(opengl_wireFrame) {
-			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-		} else {
-			glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-		}
-
-		glEnable(GL_DEPTH_TEST);
-		glClearColor(sky_color.red, sky_color.green, sky_color.blue, sky_color.alpha);
-		glClearDepth(1.0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glDisable(GL_BLEND);
-
-		// TODO: add current_view for rendering steps
-		MATRIX matView, matProj;
-		camera_to_matrix(perspective, &matView, &matProj, NULL);
-
-		std::vector<Drawcall> drawcalls;
-
-		for(ENTITY * ent = ent_next(nullptr); ent != nullptr; ent = ent_next(ent))
-		{
-			// Entity * entity = promote<Entity>(ent);
-			if(ent->model == nullptr)
-				continue;
-			if(!(ent->flags & VISIBLE))
-				continue;
-			// TODO: Filter entity by mask bits
-
-			MATRIX matWorld;
-			glm_to_ack(&matWorld,
-				glm::translate(glm::mat4(), ack_to_glm(ent->position)) *
-				glm::mat4_cast(ack_to_glm(ent->rotation)) *
-				glm::scale(glm::mat4(), ack_to_glm(ent->scale)));
-
-			MATRIX matWorldViewProj;
-			glm_to_ack(&matWorldViewProj,
-				  ack_to_glm(matProj)
-				* ack_to_glm(matView)
-				* ack_to_glm(matWorld));
-
-			var dist = vec_dist(&camera->position, &ent->position);
-			uint lod;
-			for(lod = 15; lod_distances[lod] > dist && lod > 0; lod--);
-
-			if(lod >= 16)
-				continue;
-
-			if(lod > ent->model->minimumLOD)
-				continue;
-
-			Model * model = promote<Model>(ent->model);
-			for(int i = 0; i < model->api().meshCount; i++)
+			if(mtlOverride != nullptr)
 			{
-				Drawcall call;
-
-				if(ent->material == nullptr) {
+				call.material = mtlOverride;
+			}
+			else
+			{
+				if(ent->material == nullptr)
 					call.material = model->api().materials[i];
-				} else {
+				else
 					call.material = ent->material;
-				}
+			}
 
-				call.matWorld = matWorld;
-				call.model = demote(model);
-				call.mesh = model->api().meshes[i];
-				call.ent = ent;
-				call.renderDoubleSided = !!(call.mesh->lodMask & DOUBLESIDED);
+			call.matWorld = matWorld;
+			call.model = demote(model);
+			call.mesh = model->api().meshes[i];
+			call.ent = ent;
+			call.renderDoubleSided = !!(call.mesh->lodMask & DOUBLESIDED);
 
-				// Only allow rendering of meshes when the
-				// LOD is enabled in the MESH
-				if(call.mesh->lodMask & (1<<lod)) {
-					// And only render it, when the
-					// mesh is actually visible
-					// if(!cull(matWorldViewProj, call.mesh->boundingBox))
-					{
-						drawcalls.push_back(call);
-					}
+			// Only allow rendering of meshes when the
+			// LOD is enabled in the MESH
+			if(call.mesh->lodMask & (1<<lod)) {
+				// And only render it, when the
+				// mesh is actually visible
+				// if(!cull(matWorldViewProj, call.mesh->boundingBox))
+				{
+					drawcalls.push_back(call);
 				}
 			}
 		}
+	}
 
+	{
+		std::unordered_map<Drawgroup, std::vector<Instance>, DrawgroupHash> groups;
+		for(auto & call : drawcalls)
 		{
-			std::unordered_map<Drawgroup, std::vector<Instance>, DrawgroupHash> groups;
-			for(auto & call : drawcalls)
-			{
-				Drawgroup group;
-				group.mtl = call.material;
-				group.mesh = call.mesh;
-				group.model = call.model;
-				group.doublesided = call.renderDoubleSided;
+			Drawgroup group;
+			group.mtl = call.material;
+			group.mesh = call.mesh;
+			group.model = call.model;
+			group.doublesided = call.renderDoubleSided;
 
-				Instance instance;
-				instance.ent = call.ent;
-				instance.transform = call.matWorld;
+			Instance instance;
+			instance.ent = call.ent;
+			instance.transform = call.matWorld;
 
-				groups[group].push_back(instance);
-			}
+			groups[group].push_back(instance);
+		}
 
 //			engine_log("start rendering");
-			for(auto & entry : groups)
+		for(auto & entry : groups)
+		{
+			Drawgroup const & params = entry.first;
+			std::vector<Instance> const & instances = entry.second;
+
+			// Setup:
 			{
-				Drawgroup const & params = entry.first;
-				std::vector<Instance> const & instances = entry.second;
+				opengl_setMaterial(params.mtl);
 
-				// Setup:
-				{
-					opengl_setMaterial(params.mtl);
+				currentShader->matView = matView;
+				currentShader->matProj = matProj;
 
-					currentShader->matView = matView;
-					currentShader->matProj = matProj;
+				currentShader->vecViewPos = perspective->position;
+				static const COLOR fog = {152/255.0,179/255.0,166/255.0,0.0003};
+				currentShader->vecFogColor = fog;
+				currentShader->fArc = tan(0.5 * DEG_TO_RAD * perspective->arc);
 
-					currentShader->vecViewPos = perspective->position;
-					static const COLOR fog = {152/255.0,179/255.0,166/255.0,0.0003};
-					currentShader->vecFogColor = fog;
-					currentShader->fArc = tan(0.5 * DEG_TO_RAD * perspective->arc);
+				setupLights();
+				setupBones();
+			}
 
-					setupLights();
-					setupBones();
-				}
+			shader_setUniforms(&currentShader->api(), params.model, false);
+			shader_setUniforms(&currentShader->api(), params.mesh, false);
 
-				shader_setUniforms(&currentShader->api(), params.model, false);
-				shader_setUniforms(&currentShader->api(), params.mesh, false);
-
-				// Animated models have a slight problem:
-				// They can't be instanced!
-				bool useInstancing =
-					   (currentShader->api().flags & USE_INSTANCING)
-					&& ((params.mesh->lodMask & ANIMATED) == 0);
+			// Animated models have a slight problem:
+			// They can't be instanced!
+			bool useInstancing =
+				   (currentShader->api().flags & USE_INSTANCING)
+				&& ((params.mesh->lodMask & ANIMATED) == 0);
 
 //				engine_log("Render %5d of (mtl=%p model=%p mesh=%p dsr=%d)%s",
 //					int(instances.size()),
@@ -411,197 +446,109 @@ ACKNEXT_API_BLOCK
 //					params.doublesided,
 //					(useInstancing) ? " instanced" : "");
 
-				if(params.doublesided)
-					glDisable(GL_CULL_FACE);
-				else
-					glEnable(GL_CULL_FACE);
+			if(params.doublesided)
+				glDisable(GL_CULL_FACE);
+			else
+				glEnable(GL_CULL_FACE);
 
-				if(useInstancing == false)
+			if(useInstancing == false)
+			{
+				for(Instance const & inst : instances)
 				{
-					for(Instance const & inst : instances)
+					MATRIX animatedBones[ACKNEXT_MAX_BONES];
+					for(int i = 0; i < ACKNEXT_MAX_BONES; i++)
 					{
-						MATRIX animatedBones[ACKNEXT_MAX_BONES];
-						for(int i = 0; i < ACKNEXT_MAX_BONES; i++)
-						{
-							MATRIX & transform = animatedBones[i];
-							mat_id(&transform);
-							mat_translate(&transform, &inst.ent->pose[i].position);
-							mat_rotate(&transform, &inst.ent->pose[i].rotation);
-							mat_scale(&transform, &inst.ent->pose[i].scale);
-						}
-
-						MATRIX transforms[ACKNEXT_MAX_BONES];
-						transforms[0] = animatedBones[0];
-						for(int i = 1; i < inst.ent->model->boneCount; i++)
-						{
-							BONE * bone = &inst.ent->model->bones[i];
-							mat_mul(&transforms[i], &animatedBones[i], &transforms[bone->parent]);
-						}
-
-						MATRIX * boneTrafos = (MATRIX*)buffer_map(bonesBuf, READWRITE);
-						for(int i = 0; i < inst.ent->model->boneCount; i++)
-						{
-							BONE * bone = &inst.ent->model->bones[i];
-							mat_mul(&boneTrafos[i], &bone->bindToBoneTransform, &transforms[i]);
-						}
-						buffer_unmap(bonesBuf);
-
-						currentShader->useInstancing = false;
-						currentShader->useBones = true;
-						currentShader->matWorld = inst.transform;
-						opengl_drawMesh(params.mesh);
+						MATRIX & transform = animatedBones[i];
+						mat_id(&transform);
+						mat_translate(&transform, &inst.ent->pose[i].position);
+						mat_rotate(&transform, &inst.ent->pose[i].rotation);
+						mat_scale(&transform, &inst.ent->pose[i].scale);
 					}
-				}
-				else
-				{
+
 					MATRIX transforms[ACKNEXT_MAX_BONES];
-					transforms[0] = params.model->bones[0].transform;
-					for(int i = 1; i < params.model->boneCount; i++)
+					transforms[0] = animatedBones[0];
+					for(int i = 1; i < inst.ent->model->boneCount; i++)
 					{
-						BONE const * bone = &params.model->bones[i];
-						mat_mul(&transforms[i], &bone->transform, &transforms[bone->parent]);
+						BONE * bone = &inst.ent->model->bones[i];
+						mat_mul(&transforms[i], &animatedBones[i], &transforms[bone->parent]);
 					}
 
 					MATRIX * boneTrafos = (MATRIX*)buffer_map(bonesBuf, READWRITE);
-					for(int i = 0; i < params.model->boneCount; i++)
+					for(int i = 0; i < inst.ent->model->boneCount; i++)
 					{
-						BONE const * bone = &params.model->bones[i];
+						BONE * bone = &inst.ent->model->bones[i];
 						mat_mul(&boneTrafos[i], &bone->bindToBoneTransform, &transforms[i]);
 					}
 					buffer_unmap(bonesBuf);
 
-					currentShader->useInstancing = true;
-					currentShader->useBones = false;
-
-					// TODO: Implement instance buffer cycling
-					{
-						size_t size = instances.size() * sizeof(Instance);
-						if(size <= instaBuf->size) {
-							buffer_update(
-								instaBuf,
-								0,
-								size,
-								instances.data());
-						} else {
-							buffer_set(
-								instaBuf,
-								size,
-								instances.data());
-						}
-					}
-
-					glVertexArrayVertexBuffer(
-						vao,
-						12,
-						instaBuf->object,
-						0,
-						sizeof(Instance));
-					glVertexArrayBindingDivisor(
-						vao,
-						12,
-						1);
-
-					currentShader->matWorld = MATRIX { 0 };
-
-					int count;
-					GLenum type = opengl_setMesh(params.mesh, &count);
-
-					opengl_draw(
-						type,
-						0,
-						count,
-						instances.size());
+					currentShader->useInstancing = false;
+					currentShader->useBones = true;
+					currentShader->matWorld = inst.transform;
+					opengl_drawMesh(params.mesh);
 				}
 			}
-		}
-
-		DebugDrawer::render(matView, matProj);
-	}
-}
-
-// old render loop:
-
-/*
-else
-{
-
-	// std::sort(drawcalls.begin(), drawcalls.end());
-
-	MATERIAL const * mtl = nullptr;
-	MESH const * mesh = nullptr;
-	MODEL const * model = nullptr;
-	ENTITY const * ent = nullptr;
-	bool doublesided = false;
-
-	for(auto & call : drawcalls)
-	{
-		if(call.material != mtl) {
-			mtl = call.material;
-			opengl_setMaterial(mtl);
-
-			currentShader->matView = matView;
-			currentShader->matProj = matProj;
-
-			currentShader->vecViewPos = perspective->position;
-			static const COLOR fog = {152/255.0,179/255.0,166/255.0,0.0003};
-			currentShader->vecFogColor = fog;
-			currentShader->fArc = tan(0.5 * DEG_TO_RAD * perspective->arc);
-
-			setupLights();
-			setupBones();
-
-
-			currentShader->useInstancing = false;
-			currentShader->useBones = true;
-
-			// Bind everything
-			shader_setUniforms(&currentShader->api(), call.ent, false);
-			shader_setUniforms(&currentShader->api(), call.model, false);
-			shader_setUniforms(&currentShader->api(), call.mesh, false);
-		}
-
-		if(call.ent != ent) {
-			ent = call.ent;
-
-			MATRIX transforms[ACKNEXT_MAX_BONES];
-			transforms[0] = ent->model->bones[0].transform;
-			for(int i = 1; i < ent->model->boneCount; i++)
-			{
-				BONE * bone = &ent->model->bones[i];
-				mat_mul(&transforms[i], &bone->transform, &transforms[bone->parent]);
-			}
-
-			MATRIX * boneTrafos = (MATRIX*)buffer_map(bonesBuf, READWRITE);
-			for(int i = 0; i < ent->model->boneCount; i++)
-			{
-				BONE * bone = &ent->model->bones[i];
-				mat_mul(&boneTrafos[i], &bone->bindToBoneTransform, &transforms[i]);
-			}
-			buffer_unmap(bonesBuf);
-			shader_setUniforms(&currentShader->api(), ent, false);
-		}
-
-		if(call.model != model) {
-			model = call.model;
-			shader_setUniforms(&currentShader->api(), model, false);
-		}
-
-		if(call.mesh != mesh) {
-			mesh = call.mesh;
-			shader_setUniforms(&currentShader->api(), mesh, false);
-		}
-
-		currentShader->matWorld = call.matWorld;
-
-		if(doublesided != call.renderDoubleSided) {
-			doublesided = call.renderDoubleSided;
-			if(doublesided)
-				glDisable(GL_CULL_FACE);
 			else
-				glEnable(GL_CULL_FACE);
-		}
+			{
+				MATRIX transforms[ACKNEXT_MAX_BONES];
+				transforms[0] = params.model->bones[0].transform;
+				for(int i = 1; i < params.model->boneCount; i++)
+				{
+					BONE const * bone = &params.model->bones[i];
+					mat_mul(&transforms[i], &bone->transform, &transforms[bone->parent]);
+				}
 
-		call.exec();
+				MATRIX * boneTrafos = (MATRIX*)buffer_map(bonesBuf, READWRITE);
+				for(int i = 0; i < params.model->boneCount; i++)
+				{
+					BONE const * bone = &params.model->bones[i];
+					mat_mul(&boneTrafos[i], &bone->bindToBoneTransform, &transforms[i]);
+				}
+				buffer_unmap(bonesBuf);
+
+				currentShader->useInstancing = true;
+				currentShader->useBones = false;
+
+				// TODO: Implement instance buffer cycling
+				{
+					size_t size = instances.size() * sizeof(Instance);
+					if(size <= instaBuf->size) {
+						buffer_update(
+							instaBuf,
+							0,
+							size,
+							instances.data());
+					} else {
+						buffer_set(
+							instaBuf,
+							size,
+							instances.data());
+					}
+				}
+
+				glVertexArrayVertexBuffer(
+					vao,
+					12,
+					instaBuf->object,
+					0,
+					sizeof(Instance));
+				glVertexArrayBindingDivisor(
+					vao,
+					12,
+					1);
+
+				currentShader->matWorld = MATRIX { 0 };
+
+				int count;
+				GLenum type = opengl_setMesh(params.mesh, &count);
+
+				opengl_draw(
+					type,
+					0,
+					count,
+					instances.size());
+			}
+		}
 	}
+
+	DebugDrawer::render(matView, matProj);
 }
-*/

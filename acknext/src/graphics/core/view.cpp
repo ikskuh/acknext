@@ -28,6 +28,7 @@ void View::draw()
 	if(!(view.flags & VISIBLE)) {
 		return;
 	}
+	assert(view_current != nullptr);
 	POINT pos;
 	SIZE size;
 	view_to_bounds(&this->api(), &pos, &size);

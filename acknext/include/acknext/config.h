@@ -34,6 +34,7 @@
 // also, it can get jittery and slow... :P
 #define ACKNEXT_MAX_CONTACTS     32
 #define ACKNEXT_MAX_BONES        256
+#define ACKNEXT_MAX_FRAMEBUFFER_TARGETS 8
 
 typedef unsigned int uint;
 

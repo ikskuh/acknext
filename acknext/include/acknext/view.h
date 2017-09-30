@@ -19,6 +19,9 @@ typedef struct
 	VIEWFLAGS flags;
 } VIEW;
 
+// Current view, only valid in rendering process
+ACKVAR VIEW * ACKCONST view_current;
+
 ACKFUN VIEW * view_create(RENDERCALL render, void * context);
 
 ACKFUN void view_draw(VIEW * view);

@@ -112,7 +112,9 @@ HEADERS += \
     src/extensions/extension.hpp \
     src/graphics/core/glenum-translator.hpp \
     include/acknext/acff.h \
-    src/scene/animation.hpp
+    src/scene/animation.hpp \
+    src/graphics/shareddata.hpp \
+    src/graphics/opengl/framebuffer.hpp
 
 SOURCES += \
     src/graphics/opengl/buffer.cpp \
@@ -166,7 +168,8 @@ SOURCES += \
     src/serialization/serializers.cpp \
     src/graphics/core/glenum-translator.cpp \
     src/virtfs/ackfile.cpp \
-    src/scene/animation.cpp
+    src/scene/animation.cpp \
+    src/graphics/opengl/framebuffer.cpp
 
 RESOURCES += \
     $$PWD/../resource/builtin.qrc
@@ -182,3 +185,4 @@ QMAKE_EXTRA_COMPILERS += custom_rcc
 
 DISTFILES += \
     acknext.pri
+

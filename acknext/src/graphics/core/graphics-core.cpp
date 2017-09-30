@@ -10,10 +10,14 @@
 
 #include "../debug/debugdrawer.hpp"
 
+#include "../shareddata.hpp"
+
 GLuint vao;
 Shader * defaultShader;
 BITMAP * defaultWhiteTexture;
 BITMAP * defaultNormalMap;
+
+MESH   * fullscreenQuad;
 
 // graphics-resource.cpp
 extern char const * srcVertexShader;
@@ -26,6 +30,8 @@ ACKNEXT_API_BLOCK
 	var screen_gamma = 2.2;
 
 	COLOR screen_color = { 0, 0, 0.5, 1.0 };
+
+	VIEW * view_current;
 }
 
 static GLuint renderTimeQuery;
@@ -204,6 +210,57 @@ void render_init()
 
 	}
 
+	{
+		VERTEX vertices[4] =
+		{
+		    {
+		        position:    { 0, 0, 0 },
+		        normal:      { 0, 0, 1 },
+		        tangent:     { 1, 0, 0 },
+		        color:       { 1, 1, 1, 1 },
+		        texcoord0:   { 0, 0 },
+		        texcoord1:   { 0, 0 },
+		        bones:       { 0, 0, 0, 0 },
+		        boneWeights: { 255, 0, 0, 0 },
+		    },
+		    {
+		        position:    { 0, 0, 0 },
+		        normal:      { 0, 0, 1 },
+		        tangent:     { 1, 0, 0 },
+		        color:       { 1, 1, 1, 1 },
+		        texcoord0:   { 0, 0 },
+		        texcoord1:   { 0, 0 },
+		        bones:       { 0, 0, 0, 0 },
+		        boneWeights: { 255, 0, 0, 0 },
+		    },
+		    {
+		        position:    { 0, 0, 0 },
+		        normal:      { 0, 0, 1 },
+		        tangent:     { 1, 0, 0 },
+		        color:       { 1, 1, 1, 1 },
+		        texcoord0:   { 0, 0 },
+		        texcoord1:   { 0, 0 },
+		        bones:       { 0, 0, 0, 0 },
+		        boneWeights: { 255, 0, 0, 0 },
+		    },
+		    {
+		        position:    { 0, 0, 0 },
+		        normal:      { 0, 0, 1 },
+		        tangent:     { 1, 0, 0 },
+		        color:       { 1, 1, 1, 1 },
+		        texcoord0:   { 0, 0 },
+		        texcoord1:   { 0, 0 },
+		        bones:       { 0, 0, 0, 0 },
+		        boneWeights: { 255, 0, 0, 0 },
+		    }
+
+		};
+		BUFFER * vbuf = buffer_create(VERTEXBUFFER);
+		buffer_set(vbuf, sizeof(vertices), vertices);
+
+		fullscreenQuad = mesh_create(GL_TRIANGLE_STRIP, vbuf, nullptr);
+	}
+
 	DebugDrawer::initialize();
 }
 
@@ -212,12 +269,12 @@ void render_frame()
 	engine_stats.drawcalls = 0;
 	engine_stats.gpuTime = 0.0;
 
-	glBeginQuery(GL_TIME_ELAPSED, renderTimeQuery);
-
 	std::sort(
 		View::all.begin(),
 		View::all.end(),
 		[](View * lhs, View * rhs) { return (lhs->api().layer < rhs->api().layer); });
+
+	glBeginQuery(GL_TIME_ELAPSED, renderTimeQuery);
 
 	glDisable(GL_SCISSOR_TEST);
 
@@ -228,7 +285,9 @@ void render_frame()
 
 	for(View * view : View::all)
 	{
+		view_current = demote(view);
 		view->draw();
+		view_current = nullptr;
 	}
 
 	glEndQuery(GL_TIME_ELAPSED);

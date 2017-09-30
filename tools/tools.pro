@@ -3,4 +3,5 @@ TEMPLATE = subdirs
 SUBDIRS += \
     ackrc \
 	MIEP \
-    mtlconv
+    mtlconv \
+    ackfeh
