@@ -23,7 +23,7 @@ typedef struct
 typedef struct FRAMEBUFFER
 {
 	GLuint object;
-	BITMAP * targets[32];
+	BITMAP * targets[ACKNEXT_MAX_FRAMEBUFFER_TARGETS];
 	BITMAP * depthBuffer;
 	SIZE size;
 } FRAMEBUFFER;

@@ -1,5 +1,7 @@
 #include "framebuffer.hpp"
 
+#include "../core/glenum-translator.hpp"
+
 FrameBuffer::FrameBuffer()
 {
 	glCreateFramebuffers(1, &api().object);
@@ -54,6 +56,8 @@ ACKNEXT_API_BLOCK
 	{
 		ARG_NOTNULL(fb,);
 
+		GLenum drawbuffers[ACKNEXT_MAX_FRAMEBUFFER_TARGETS];
+
 		for(int i = 0; i < ACKNEXT_MAX_FRAMEBUFFER_TARGETS; i++)
 		{
 			glNamedFramebufferTexture(
@@ -61,7 +65,13 @@ ACKNEXT_API_BLOCK
 				GL_COLOR_ATTACHMENT0 + i,
 				(fb->targets[i] != nullptr) ? fb->targets[i]->object : 0,
 				0);
+			drawbuffers[i] = (fb->targets[i] != nullptr) ? (GL_COLOR_ATTACHMENT0 + i) : GL_NONE;
 		}
+
+		glNamedFramebufferDrawBuffers(
+			fb->object,
+			ACKNEXT_MAX_FRAMEBUFFER_TARGETS,
+			drawbuffers);
 
 		glNamedFramebufferTexture(
 			fb->object,
@@ -69,7 +79,10 @@ ACKNEXT_API_BLOCK
 			(fb->depthBuffer != nullptr) ? fb->depthBuffer->object : 0,
 			0);
 
-		// if(framebuf_checkValid(fb) == false)
+		GLenum status = glCheckNamedFramebufferStatus(fb->object, GL_DRAW_FRAMEBUFFER);
+		if(status != GL_FRAMEBUFFER_COMPLETE) {
+			engine_log("framebuf_update() → %s", GLenumToString(status));
+		}
 		// 	engine_seterror(ERR_INVALIDOPERATION, "framebuf_update(): The framebuffer is not valid!");
 	}
 

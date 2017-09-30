@@ -203,8 +203,8 @@ ACKNEXT_API_BLOCK
 				data);
 		}
 
-		glTextureParameteri(bitmap->object, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTextureParameteri(bitmap->object, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTextureParameteri(bitmap->object, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTextureParameteri(bitmap->object, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 		glTextureParameteri(bitmap->object, GL_TEXTURE_WRAP_R, GL_REPEAT);
 		glTextureParameteri(bitmap->object, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -213,7 +213,6 @@ ACKNEXT_API_BLOCK
 		bitmap->height = height;
 		bitmap->depth = 1;
 	}
-
 
 	BITMAP * bmap_to_mipmap(BITMAP * bitmap)
 	{

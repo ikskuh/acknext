@@ -268,18 +268,25 @@ ACKNEXT_API_BLOCK
 		GLint drawFboId = 0;
 		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &drawFboId);
 
-		engine_log("Current FB: %d", drawFboId);
+		if(drawFboId != 0)
+			engine_log("Current FB: %d", drawFboId);
 
 		static FRAMEBUFFER * stage1 = nullptr;
 		static FRAMEBUFFER * stage2 = nullptr;
 		static FRAMEBUFFER * stage3 = nullptr;
 
+
+		SIZE targetSize;
+		view_to_bounds(view_current, nullptr, &targetSize);
+
 		if(stage1 == nullptr)
 		{
 			stage1 = framebuf_create();
-			stage1->targets[0] = bmap_create(GL_TEXTURE_2D, GL_RGBA32F);
+			stage1->targets[0] = bmap_create(GL_TEXTURE_2D, GL_RGB16F); // color
+			stage1->targets[1] = bmap_create(GL_TEXTURE_2D, GL_RGB16F); // position
+			stage1->targets[2] = bmap_create(GL_TEXTURE_2D, GL_RGB8);   // normal
 			stage1->depthBuffer = bmap_create(GL_TEXTURE_2D, GL_DEPTH24_STENCIL8);
-			framebuf_update(stage1);
+			framebuf_resize(stage1, targetSize);
 		}
 
 		if(stage2 == nullptr)
@@ -287,7 +294,7 @@ ACKNEXT_API_BLOCK
 			stage2 = framebuf_create();
 			stage2->targets[0] = bmap_create(GL_TEXTURE_2D, GL_RGBA32F);
 			stage2->depthBuffer = bmap_create(GL_TEXTURE_2D, GL_DEPTH24_STENCIL8);
-			framebuf_update(stage2);
+			framebuf_resize(stage2, targetSize);
 		}
 
 		if(stage3 == nullptr)
@@ -295,21 +302,19 @@ ACKNEXT_API_BLOCK
 			stage3 = framebuf_create();
 			stage3->targets[0] = bmap_create(GL_TEXTURE_2D, GL_RGBA32F);
 			stage3->depthBuffer = bmap_create(GL_TEXTURE_2D, GL_DEPTH24_STENCIL8);
-			framebuf_update(stage3);
+			framebuf_resize(stage3, targetSize);
 		}
 
 		static SHADER * tonemap = nullptr;
 
 		static SHADER * bloomblur = nullptr;
+
 		static SHADER * bloomcomb = nullptr;
 
-		if(!tonemap) tonemap = create_ppshader("/builtin/shaders/pp/hdr/reinhard.frag");
+		if(!tonemap) tonemap = create_ppshader("/builtin/shaders/pp/hdr/linear.frag");
 
 		if(!bloomblur) bloomblur = create_ppshader("/builtin/shaders/pp/bloom/blur.frag");
 		if(!bloomcomb) bloomcomb = create_ppshader("/builtin/shaders/pp/bloom/combine.frag");
-
-		SIZE targetSize;
-		view_to_bounds(view_current, nullptr, &targetSize);
 
 		{ // 1: render scnee
 			framebuf_resize(stage1, targetSize);
@@ -348,7 +353,8 @@ ACKNEXT_API_BLOCK
 
 		{ // 4:
 			opengl_setFrameBuffer(nullptr);
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFboId);
+			if(drawFboId != 0)
+				glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFboId);
 
 			opengl_setShader(tonemap);
 

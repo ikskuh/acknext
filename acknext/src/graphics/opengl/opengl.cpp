@@ -27,6 +27,7 @@ ACKNEXT_API_BLOCK
 			engine_seterror(ERR_INVALIDARGUMENT, "Framebuffer is not complete!");
 			return;
 		}
+
 		currentFramebuffer = fb;
 		glBindFramebuffer(
 			GL_DRAW_FRAMEBUFFER,

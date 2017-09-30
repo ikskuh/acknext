@@ -8,6 +8,10 @@ in vec3 color;
 in vec2 uv0;
 in vec3 normal;
 
+layout(location = 0) out vec3 frag_Color;
+layout(location = 1) out vec3 frag_Position;
+layout(location = 2) out vec3 frag_Normal;
+
 uniform int iDebugMode;
 
 uniform sampler2D texAlbedo;
@@ -23,8 +27,6 @@ uniform vec3 vecViewPos;
 uniform vec3 vecViewDir;
 
 uniform bool useNormalMapping = false;
-
-out vec4 fragment;
 
 vec3 toLinear(vec3 v);
 vec4 toLinear(vec4 v);
@@ -88,12 +90,10 @@ void main() {
 	if(iDebugMode == 1) {
 		cAlbedo = vec4(1);
 	} else if(iDebugMode == 2) {
-		fragment.rgb = 0.5 + 0.5 * realNormal;
-		fragment.a = 1.0;
+		frag_Color = 0.5 + 0.5 * realNormal;
 		return;
 	} else if(iDebugMode == 3) {
-		fragment.rgb = vec3(float(iLightCount) / (LIGHT_LIMIT - 1));
-		fragment.a = 1.0;
+		frag_Color = vec3(float(iLightCount) / (LIGHT_LIMIT - 1));
 		return;
 	}
 
@@ -114,6 +114,7 @@ void main() {
 
 	vec3 surface = occlusion * lightedSurface + cEmissive.rgb;
 
-	fragment.rgb = applyFog(position, surface);
-	fragment.a = 1.0;
+	frag_Color = applyFog(position, surface);
+	frag_Position = position;
+	frag_Normal = realNormal;
 }
