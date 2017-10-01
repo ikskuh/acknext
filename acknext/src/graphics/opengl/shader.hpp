@@ -38,6 +38,8 @@ public:
 	~UniformProxy() = default;
 
 	inline void operator =(T const & value);
+
+	bool present() const { return (this->uniform != nullptr); }
 };
 
 class Shader : public EngineObject<SHADER>

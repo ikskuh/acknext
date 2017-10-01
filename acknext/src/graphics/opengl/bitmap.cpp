@@ -67,6 +67,12 @@ ACKNEXT_API_BLOCK
 			ext++;
 		}
 
+		if(strcasecmp(ext, "atx")  == 0) {
+			BITMAP * bmp = bmap_read(file);
+			file_close(file);
+			return bmp;
+		}
+
 		SDL_RWops *rwops = SDL_AllocRW();
 		{
 			assert(rwops);

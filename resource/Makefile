@@ -2,6 +2,7 @@
 RESOURCES=$(shell rcc --list builtin.qrc)
 
 all: shaders resource.o
+
 	
 depends:
 	echo $(addprefix /home/felix/projects/acknext/resource/,$(RESOURCES))
@@ -21,10 +22,11 @@ resource.zip: $(RESOURCES)
 shaders: fragmentshaders vertexshaders
 
 fragmentshaders: shaders/ackpbr.glsl shaders/gamma.glsl \
-								 shaders/lighting.glsl shaders/object.frag
+								 shaders/lighting.glsl \
+								 $(filter %.frag,$(RESOURCES))
 	glslangValidator -S frag $^
 
-vertexshaders: shaders/object.vert
+vertexshaders: $(filter %.vert,$(RESOURCES))
 	glslangValidator -S vert $^
 	
 clean:

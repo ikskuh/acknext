@@ -17,6 +17,8 @@ Shader * defaultShader;
 BITMAP * defaultWhiteTexture;
 BITMAP * defaultNormalMap;
 
+BITMAP * noisemap;
+
 BUFFER * fullscreenQuadBuffer;
 
 // graphics-resource.cpp
@@ -209,6 +211,10 @@ void render_init()
 		engine_log("Query Resolution: %d", num);
 
 	}
+
+	noisemap = bmap_load("/builtin/textures/noise.atx");
+
+	assert(noisemap != nullptr);
 
 	{
 		VERTEX vertices[4] =

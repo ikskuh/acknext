@@ -12,4 +12,6 @@ extern BITMAP * defaultWhiteTexture;
 extern BITMAP * defaultNormalMap;
 extern BUFFER * fullscreenQuadBuffer;
 
+extern BITMAP * noisemap;
+
 #endif // SHAREDDATA_HPP

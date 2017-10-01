@@ -31,8 +31,11 @@
 
 ## Fancy Stuff
 - ATX GIMP Plugin
+	- Allow export of 1D, 1D Array, 2D Array and 3D textures
 - /usr/bin/file magic.mgc file
+	- Add more sugar
 - Blender export script (because fuck yeah)
+	- Start with it
 	
 Graphics Pipeline:
 plan fürs postprocessing: SSAO, Bloom/HDR, Reinhard Tone Mapping als Default-Pipeline

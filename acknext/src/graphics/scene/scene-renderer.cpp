@@ -237,6 +237,14 @@ static SHADER * create_ppshader(char const * pixelop)
 	return ppshader;
 }
 
+static BITMAP * bmap_to_linear(BITMAP * bmp)
+{
+	ARG_NOTNULL(bmp, nullptr);
+	glTextureParameteri(bmp->object, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTextureParameteri(bmp->object, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	return bmp;
+}
+
 ACKNEXT_API_BLOCK
 {
 	CAMERA * camera;
@@ -271,54 +279,87 @@ ACKNEXT_API_BLOCK
 		if(drawFboId != 0)
 			engine_log("Current FB: %d", drawFboId);
 
-		static FRAMEBUFFER * stage1 = nullptr;
-		static FRAMEBUFFER * stage2 = nullptr;
-		static FRAMEBUFFER * stage3 = nullptr;
 
+		static FRAMEBUFFER * stageScene = nullptr;
+		static FRAMEBUFFER * stageSSAOApply = nullptr;
+		static FRAMEBUFFER * stageSSAOBlur = nullptr;
+		static FRAMEBUFFER * stageSSAOCombine = nullptr;
+		static FRAMEBUFFER * stageBloom0 = nullptr;
+		static FRAMEBUFFER * stageBloom1 = nullptr;
+		static FRAMEBUFFER * stageBloomCombine = nullptr;
 
 		SIZE targetSize;
 		view_to_bounds(view_current, nullptr, &targetSize);
 
-		if(stage1 == nullptr)
+		SIZE halfSize = targetSize;
+		halfSize.width /= 2;
+		halfSize.height /= 2;
+
+		MATRIX matView, matProj;
+		camera_to_matrix(perspective, &matView, &matProj, view_current);
+
+		if(stageScene == nullptr)
 		{
-			stage1 = framebuf_create();
-			stage1->targets[0] = bmap_create(GL_TEXTURE_2D, GL_RGB16F); // color
-			stage1->targets[1] = bmap_create(GL_TEXTURE_2D, GL_RGB16F); // position
-			stage1->targets[2] = bmap_create(GL_TEXTURE_2D, GL_RGB8);   // normal
-			stage1->depthBuffer = bmap_create(GL_TEXTURE_2D, GL_DEPTH24_STENCIL8);
-			framebuf_resize(stage1, targetSize);
+			stageScene = framebuf_create();
+			stageScene->targets[0] = bmap_create(GL_TEXTURE_2D, GL_RGBA32F); // color
+			stageScene->targets[1] = bmap_create(GL_TEXTURE_2D, GL_RGBA32F); // position
+			stageScene->targets[2] = bmap_create(GL_TEXTURE_2D, GL_RGBA8);   // normal
+			stageScene->targets[3] = bmap_create(GL_TEXTURE_2D, GL_RGBA8);   // attributes (roughness, metallic, ???)
+			stageScene->depthBuffer = bmap_create(GL_TEXTURE_2D, GL_DEPTH24_STENCIL8);
 		}
 
-		if(stage2 == nullptr)
+		if(stageSSAOApply == nullptr)
 		{
-			stage2 = framebuf_create();
-			stage2->targets[0] = bmap_create(GL_TEXTURE_2D, GL_RGBA32F);
-			stage2->depthBuffer = bmap_create(GL_TEXTURE_2D, GL_DEPTH24_STENCIL8);
-			framebuf_resize(stage2, targetSize);
+			stageSSAOApply = framebuf_create();
+			stageSSAOApply->targets[0] = bmap_create(GL_TEXTURE_2D, GL_R8);
 		}
 
-		if(stage3 == nullptr)
+		if(stageSSAOBlur == nullptr)
 		{
-			stage3 = framebuf_create();
-			stage3->targets[0] = bmap_create(GL_TEXTURE_2D, GL_RGBA32F);
-			stage3->depthBuffer = bmap_create(GL_TEXTURE_2D, GL_DEPTH24_STENCIL8);
-			framebuf_resize(stage3, targetSize);
+			stageSSAOBlur = framebuf_create();
+			stageSSAOBlur->targets[0] = bmap_create(GL_TEXTURE_2D, GL_R8);
+		}
+
+		if(stageSSAOCombine == nullptr)
+		{
+			stageSSAOCombine = framebuf_create();
+			stageSSAOCombine->targets[0] = bmap_create(GL_TEXTURE_2D, GL_RGB16F);
+		}
+
+		if(stageBloom0 == nullptr)
+		{
+			stageBloom0 = framebuf_create();
+			stageBloom0->targets[0] = bmap_create(GL_TEXTURE_2D, GL_RGB16F);
+		}
+
+		if(stageBloom1 == nullptr)
+		{
+			stageBloom1 = framebuf_create();
+			stageBloom1->targets[0] = bmap_create(GL_TEXTURE_2D, GL_RGB16F);
+		}
+
+		if(stageBloomCombine == nullptr)
+		{
+			stageBloomCombine = framebuf_create();
+			stageBloomCombine->targets[0] = bmap_create(GL_TEXTURE_2D, GL_RGB16F);
+			framebuf_resize(stageBloomCombine, targetSize);
 		}
 
 		static SHADER * tonemap = nullptr;
-
 		static SHADER * bloomblur = nullptr;
-
 		static SHADER * bloomcomb = nullptr;
+		static SHADER * ssao = nullptr;
+		static SHADER * ssaoCombine = nullptr;
 
-		if(!tonemap) tonemap = create_ppshader("/builtin/shaders/pp/hdr/linear.frag");
-
-		if(!bloomblur) bloomblur = create_ppshader("/builtin/shaders/pp/bloom/blur.frag");
-		if(!bloomcomb) bloomcomb = create_ppshader("/builtin/shaders/pp/bloom/combine.frag");
+		if(!tonemap)     tonemap     = create_ppshader("/builtin/shaders/pp/hdr/linear.frag");
+		if(!bloomblur)   bloomblur   = create_ppshader("/builtin/shaders/pp/bloom/blur.frag");
+		if(!bloomcomb)   bloomcomb   = create_ppshader("/builtin/shaders/pp/bloom/combine.frag");
+		if(!ssao)        ssao        = create_ppshader("/builtin/shaders/pp/ssao/apply.frag");
+		if(!ssaoCombine) ssaoCombine = create_ppshader("/builtin/shaders/pp/ssao/combine.frag");
 
 		{ // 1: render scnee
-			framebuf_resize(stage1, targetSize);
-			opengl_setFrameBuffer(stage1);
+			framebuf_resize(stageScene, targetSize);
+			opengl_setFrameBuffer(stageScene);
 
 			render_scene(perspective, nullptr);
 		}
@@ -326,27 +367,80 @@ ACKNEXT_API_BLOCK
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_BLEND);
 		glDisable(GL_DEPTH_TEST);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-		{ // 2: render bloom image (half size)
-			SIZE halfSize = targetSize;
-			halfSize.width /= 2;
-			halfSize.height /= 2;
-			framebuf_resize(stage2, halfSize);
-			opengl_setFrameBuffer(stage2);
+		{
+			framebuf_resize(stageSSAOApply, halfSize);
+			opengl_setFrameBuffer(stageSSAOApply);
+
+			opengl_setShader(ssao);
+
+			currentShader->matView = matView;
+			currentShader->matProj = matProj;
+			currentShader->texInput = bmap_to_linear(stageScene->targets[0]);
+			currentShader->texPosition = bmap_to_linear(stageScene->targets[1]);
+			currentShader->texNormal = bmap_to_linear(stageScene->targets[2]);
+
+			opengl_drawFullscreenQuad();
+		}
+
+		{
+			framebuf_resize(stageSSAOBlur, halfSize);
+			opengl_setFrameBuffer(stageSSAOBlur);
 
 			opengl_setShader(bloomblur);
-			currentShader->texInput = stage1->targets[0];
+			currentShader->texInput = bmap_to_linear(stageSSAOApply->targets[0]);
+			currentShader->fCutoff = 0.0;
+			currentShader->vecBlurScale = (VECTOR2) { 0.5, 0.5 };
+
+			opengl_drawFullscreenQuad();
+		}
+
+		{
+			framebuf_resize(stageSSAOCombine, targetSize);
+			opengl_setFrameBuffer(stageSSAOCombine);
+
+			opengl_setShader(ssaoCombine);
+			currentShader->texInput     = bmap_to_linear(stageScene->targets[0]);
+			currentShader->texOcclusion = bmap_to_linear(stageSSAOBlur->targets[0]);
+
+			opengl_drawFullscreenQuad();
+		}
+
+		{ // 2: render bloom image (half size)
+			framebuf_resize(stageBloom0, halfSize);
+			opengl_setFrameBuffer(stageBloom0);
+
+			opengl_setShader(bloomblur);
+			currentShader->texInput = bmap_to_linear(stageSSAOCombine->targets[0]);
+			currentShader->fCutoff = 1.0;
+			currentShader->vecBlurScale = (VECTOR2) { 1.0, 0.5 };
+
+			opengl_drawFullscreenQuad();
+		}
+
+		{ // 3: render bloom image (quart size)
+			SIZE halfSize = targetSize;
+			halfSize.width /= 4;
+			halfSize.height /= 4;
+			framebuf_resize(stageBloom1, halfSize);
+			opengl_setFrameBuffer(stageBloom1);
+
+			opengl_setShader(bloomblur);
+			currentShader->texInput = bmap_to_linear(stageBloom0->targets[0]);
+			currentShader->fCutoff = 0.0;
+			currentShader->vecBlurScale = (VECTOR2) { 1.0, 0.5 };
 
 			opengl_drawFullscreenQuad();
 		}
 
 		{ // 3: combine bloom image with source image
-			framebuf_resize(stage3, targetSize);
-			opengl_setFrameBuffer(stage3);
+			framebuf_resize(stageBloomCombine, targetSize);
+			opengl_setFrameBuffer(stageBloomCombine);
 
 			opengl_setShader(bloomcomb);
-			currentShader->texInput = stage1->targets[0];
-			currentShader->texBloom = stage2->targets[0];
+			currentShader->texInput = stageSSAOCombine->targets[0];
+			currentShader->texBloom = bmap_to_linear(stageBloom1->targets[0]);
 
 			opengl_drawFullscreenQuad();
 		}
@@ -358,7 +452,7 @@ ACKNEXT_API_BLOCK
 
 			opengl_setShader(tonemap);
 
-			currentShader->texInput = stage3->targets[0];
+			currentShader->texInput = stageBloomCombine->targets[0];
 			currentShader->fExposure = 1.0;
 
 			opengl_drawFullscreenQuad();

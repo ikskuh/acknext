@@ -261,8 +261,14 @@ void gamemain()
 	tree();
 
 	player = ent_create("/other/cyber-pirate/cyber-pirate.amd", vector(0, 0, 512), NULL);
-
 	vec_fill(&player->scale, 0.15);
+
+
+	ACKFILE * file = file_open_read("player.dat");
+	if(file) {
+		player->position = file_read_vector(file);
+		file_close(file);
+	}
 
 	var pan = 0;
 	var tilt = 0;
@@ -304,7 +310,11 @@ void gamemain()
 			{
 				var offset = atan2(mov.x, mov.z);
 				player->rotation = *euler(RAD_TO_DEG * offset, 0, 0);
-				ent_animate(player, "Walk", total_time);
+
+				if(key_lshift)
+					ent_animate(player, "Run", total_time);
+				else
+					ent_animate(player, "Walk", total_time);
 			}
 			else
 			{

@@ -231,6 +231,7 @@ ACKNEXT_API_BLOCK
 		currentShader->fGamma = screen_gamma;
 		currentShader->vecTime = (VECTOR2){ total_time, time_step };
 		currentShader->iDebugMode = opengl_debugMode;
+		currentShader->texNoise = noisemap;
 	}
 
 	void opengl_setTexture(int slot, BITMAP const * _texture)
@@ -295,12 +296,8 @@ ACKNEXT_API_BLOCK
 	void opengl_drawFullscreenQuad()
 	{
 		glBindVertexArray(vao);
-		MATRIX id; mat_id(&id);
 		currentShader->useInstancing = false;
 		currentShader->useBones = false;
-		currentShader->matWorld = id;
-		currentShader->matView = id;
-		currentShader->matProj = id;
 		opengl_setVertexBuffer(fullscreenQuadBuffer);
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	}

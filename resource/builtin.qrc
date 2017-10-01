@@ -14,5 +14,8 @@
         <file>shaders/pp/hdr/reinhard.frag</file>
         <file>shaders/pp/bloom/blur.frag</file>
         <file>shaders/pp/bloom/combine.frag</file>
+        <file>textures/noise.atx</file>
+        <file>shaders/pp/ssao/apply.frag</file>
+        <file>shaders/pp/ssao/combine.frag</file>
     </qresource>
 </RCC>

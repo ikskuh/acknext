@@ -11,6 +11,7 @@ in vec3 normal;
 layout(location = 0) out vec3 frag_Color;
 layout(location = 1) out vec3 frag_Position;
 layout(location = 2) out vec3 frag_Normal;
+layout(location = 3) out vec3 frag_Attrib; // (roughness, metallic, ???)
 
 uniform int iDebugMode;
 
@@ -117,4 +118,5 @@ void main() {
 	frag_Color = applyFog(position, surface);
 	frag_Position = position;
 	frag_Normal = realNormal;
+	frag_Attrib = vec3(roughness, metallic, 0.0);
 }
