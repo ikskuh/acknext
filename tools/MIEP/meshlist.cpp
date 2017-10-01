@@ -68,6 +68,7 @@ void MeshList::selectIndex(int i)
 
 void MeshList::on_list_selectionChanged(const QModelIndex & current, const QModelIndex & previous)
 {
+	Q_UNUSED(previous);
 	if(current.isValid())
 		this->selectIndex(current.row());
 	else

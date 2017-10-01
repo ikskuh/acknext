@@ -9,6 +9,8 @@ MeshListModel::MeshListModel(MODEL * model, QObject *parent)
 
 QVariant MeshListModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
+	Q_UNUSED(section);
+	Q_UNUSED(orientation);
 	if(role == Qt::DisplayRole) {
 		return QVariant("Mesh");
 	}

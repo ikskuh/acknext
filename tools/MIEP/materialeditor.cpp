@@ -170,19 +170,19 @@ void MaterialEditor::on_clearEmissionMap_clicked()
 
 void MaterialEditor::on_roughness_valueChanged(int value)
 {
-	mtl->roughness = map(ui->roughness->value(), 0, 100, 0, 1);
+	mtl->roughness = map(value, 0, 100, 0, 1);
     emit this->hasChanged();
 }
 
 void MaterialEditor::on_metallic_valueChanged(int value)
 {
-	mtl->metallic = map(ui->metallic->value(), 0, 100, 0, 1);
+	mtl->metallic = map(value, 0, 100, 0, 1);
 	emit this->hasChanged();
 }
 
 void MaterialEditor::on_fresnell_valueChanged(int value)
 {
-	mtl->fresnell = map(ui->fresnell->value(), 0, 100, 0, 100);
+	mtl->fresnell = map(value, 0, 100, 0, 100);
 	emit this->hasChanged();
 }
 

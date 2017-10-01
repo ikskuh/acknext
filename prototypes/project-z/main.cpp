@@ -291,9 +291,9 @@ void gamemain()
 			camera->rotation = *euler(pan, tilt, 0);
 
 			VECTOR mov = {
-				key_d - key_a,
+				float(key_d - key_a),
 				0,
-				key_s - key_w,
+				float(key_s - key_w),
 			};
 
 			vec_normalize(&mov, (3 + 3 * key_lshift) * time_step);

@@ -143,7 +143,7 @@ void gamemain()
 		torch->position.x = scene[3*i+0];
 		torch->position.y = scene[3*i+1];
 		torch->position.z = scene[3*i+2];
-		task_defer(torchwood, torch);
+		task_defer(torchwood, (EVENTHANDLER)torch);
 	}
 
 	camera->position.y = 24;

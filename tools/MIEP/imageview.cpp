@@ -22,6 +22,7 @@ void ImageView::setImage(QImage const & img)
 
 void ImageView::resizeEvent(QResizeEvent *event)
 {
+	Q_UNUSED(event);
 	if(this->mImage.isNull())
 		return;
 	this->fitInView(0, 0, mImage.width(), mImage.height(), Qt::KeepAspectRatio);

@@ -304,7 +304,7 @@ MODEL * loadModel(ACKFILE * file, ACKGUID const * guid)
 		anim->duration = duration;
 		anim->flags = flags;
 
-		for(uint i = 0; i < anim->channelCount; i++)
+		for(int i = 0; i < anim->channelCount; i++)
 		{
 			uint8_t bone = file_read_uint8(file);
 			uint32_t frameCount = file_read_uint32(file);

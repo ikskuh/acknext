@@ -184,7 +184,7 @@ void AnimationViewer::on_name_editingFinished()
 	do {
 		data = name.toUtf8();
 		name.chop(1);
-	} while(data.size() >= sizeof(ANIMATION::name));
+	} while(uint(data.size()) >= sizeof(ANIMATION::name));
 
 	memset(
 		this->selection->name,

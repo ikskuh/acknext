@@ -90,7 +90,7 @@ void BoneEditor::on_name_editingFinished()
 	do {
 		data = name.toUtf8();
 		name.chop(1);
-	} while(data.size() >= sizeof(BONE::name));
+	} while(uint(data.size()) >= sizeof(BONE::name));
 
 	memset(
 		model->bones[this->currentBone].name,

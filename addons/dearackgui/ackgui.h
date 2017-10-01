@@ -6,7 +6,12 @@
 #define ACKGUI_LAYER 10000
 
 #ifdef __cplusplus
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #include <imgui.h>
+#pragma GCC diagnostic pop
+
 #else
 #warning Note that dear imgui only runs with C++, not with C!
 #endif

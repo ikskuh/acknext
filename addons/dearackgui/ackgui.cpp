@@ -1,5 +1,4 @@
 #include "ackgui.h"
-#include <imgui.h>
 #include <GL/gl3w.h>
 
 static VIEW * view = nullptr;

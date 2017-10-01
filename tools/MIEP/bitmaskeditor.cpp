@@ -98,10 +98,12 @@ void BitMaskEditor::on_maximum_valueChanged(int value)
 
 void BitMaskEditor::on_animated_stateChanged(int arg1)
 {
+	Q_UNUSED(arg1);
 	this->updateMesh();
 }
 
 void BitMaskEditor::on_doubleSided_stateChanged(int arg1)
 {
+	Q_UNUSED(arg1);
 	this->updateMesh();
 }

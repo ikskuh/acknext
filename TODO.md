@@ -22,6 +22,7 @@
 - Tools
 	- Create model "compiler"
 	- Create shader compiler (JSON + Files → SHD)
+	- Allow adding external resources in MIEP
 - Add pure makefile based example
 	- Use of resource compilation
 - File API

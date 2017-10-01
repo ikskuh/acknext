@@ -46,6 +46,7 @@ ACKNEXT_API_BLOCK
 			return -1;
 		}
 		int chan = Mix_PlayChannel(-1, sound->chunk, 0);
+		Mix_Volume(chan, int(0.01 * clamp(volume, 0, 100) * MIX_MAX_VOLUME));
 		// TODO: Mix_Volume(chan, 0.01 * volume * MIX_MAX_VOLUME);
 		return chan;
 	}
