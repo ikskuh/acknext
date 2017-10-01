@@ -287,6 +287,7 @@ ACKNEXT_API_BLOCK
 		static FRAMEBUFFER * stageBloom0 = nullptr;
 		static FRAMEBUFFER * stageBloom1 = nullptr;
 		static FRAMEBUFFER * stageBloomCombine = nullptr;
+		static FRAMEBUFFER * stageHDR = nullptr;
 
 		SIZE targetSize;
 		view_to_bounds(view_current, nullptr, &targetSize);
@@ -345,17 +346,27 @@ ACKNEXT_API_BLOCK
 			framebuf_resize(stageBloomCombine, targetSize);
 		}
 
+		if(stageHDR == nullptr)
+		{
+			stageHDR = framebuf_create();
+			stageHDR->targets[0] = bmap_create(GL_TEXTURE_2D, GL_RGB16F);
+			framebuf_resize(stageHDR, targetSize);
+		}
+
 		static SHADER * tonemap = nullptr;
 		static SHADER * bloomblur = nullptr;
 		static SHADER * bloomcomb = nullptr;
 		static SHADER * ssao = nullptr;
 		static SHADER * ssaoCombine = nullptr;
+		static SHADER * fxaa = nullptr;
 
 		if(!tonemap)     tonemap     = create_ppshader("/builtin/shaders/pp/hdr/linear.frag");
 		if(!bloomblur)   bloomblur   = create_ppshader("/builtin/shaders/pp/bloom/blur.frag");
 		if(!bloomcomb)   bloomcomb   = create_ppshader("/builtin/shaders/pp/bloom/combine.frag");
 		if(!ssao)        ssao        = create_ppshader("/builtin/shaders/pp/ssao/apply.frag");
 		if(!ssaoCombine) ssaoCombine = create_ppshader("/builtin/shaders/pp/ssao/combine.frag");
+		if(!fxaa)
+			fxaa        = create_ppshader("/builtin/shaders/pp/fxaa.frag");
 
 		{ // 1: render scnee
 			framebuf_resize(stageScene, targetSize);
@@ -446,14 +457,25 @@ ACKNEXT_API_BLOCK
 		}
 
 		{ // 4:
-			opengl_setFrameBuffer(nullptr);
-			if(drawFboId != 0)
-				glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFboId);
+			framebuf_resize(stageHDR, targetSize);
+			opengl_setFrameBuffer(stageHDR);
 
 			opengl_setShader(tonemap);
 
 			currentShader->texInput = stageBloomCombine->targets[0];
 			currentShader->fExposure = 1.0;
+
+			opengl_drawFullscreenQuad();
+		}
+
+		{
+			opengl_setFrameBuffer(nullptr);
+			if(drawFboId != 0)
+				glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFboId);
+
+			opengl_setShader(fxaa);
+
+			currentShader->texInput = stageHDR->targets[0];
 
 			opengl_drawFullscreenQuad();
 		}

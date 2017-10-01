@@ -17,5 +17,6 @@
         <file>textures/noise.atx</file>
         <file>shaders/pp/ssao/apply.frag</file>
         <file>shaders/pp/ssao/combine.frag</file>
+        <file>shaders/pp/fxaa.frag</file>
     </qresource>
 </RCC>

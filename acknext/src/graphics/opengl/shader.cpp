@@ -1,5 +1,7 @@
 #include "shader.hpp"
 
+#include "../core/glenum-translator.hpp"
+
 Shader::Shader() :
     EngineObject<SHADER>(),
     uniforms(), shaders(),
@@ -82,6 +84,7 @@ ACKNEXT_API_BLOCK
 	{
 		BLOB * blob = blob_load(fileName);
 		if(!blob) {
+			engine_log("Failed to open %s file: %s", GLenumToString(type), fileName);
 			return false;
 		}
 		bool result = shader_addSource(shader, type, (char*)blob->data);
