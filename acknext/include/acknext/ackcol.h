@@ -7,9 +7,18 @@
 #include "scene.h"
 #include "ackentity.h"
 
-typedef struct
+#include <ode/collision.h>
+
+#define HULL_SPHERE   dSphereClass
+#define HULL_BOX      dBoxClass
+#define HULL_CAPSULE  dCapsuleClass
+#define HULL_CYLINDER dCylinderClass
+#define HULL_CONVEX   dConvexClass
+#define HULL_POLYGON  dTriMeshClass
+
+typedef struct HULL
 {
-	HULLTYPE ACKCONST type;
+	int ACKCONST type;
 	ENTITY * ACKCONST entity;
 	void * userData;
 } HULL;
@@ -23,10 +32,14 @@ typedef struct
 
 ACKVAR bool debug_collision;
 
+ACKVAR dSpaceID collision_space; // The ODE collision space the game uses
+
 // Hull API:
 ACKFUN HULL * hull_createSphere(ENTITY * ent, float radius);
 
 ACKFUN HULL * hull_createBox(ENTITY * ent, VECTOR const * size);
+
+ACKFUN HULL * hull_createFromExisting(ENTITY * ent, dGeomID geom);
 
 ACKFUN void hull_remove(HULL * hull);
 

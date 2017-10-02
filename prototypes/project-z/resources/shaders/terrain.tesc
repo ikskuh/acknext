@@ -41,6 +41,7 @@ float calcTessLevel(int a, int b)
 
 bool offscreen(vec4 pos)
 {
+	return false;
 	if(pos.z < 0)
 		return true;
 	// take a small threshold so some clipping artifacts are prevented
@@ -50,6 +51,7 @@ bool offscreen(vec4 pos)
 void main()
 {
 	gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
+
 	if(gl_InvocationID == 0)
 	{
 		vec4 p[4];

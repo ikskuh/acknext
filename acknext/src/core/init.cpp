@@ -177,9 +177,6 @@ ACKNEXT_API_BLOCK
 
 		on_begin_frame = event_create();
 
-		// engine_log("Initialize collision engine...");
-		// collision_init();
-
 		engine_log("Initialize input...");
 		InputManager::init();
 

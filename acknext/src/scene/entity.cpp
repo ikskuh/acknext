@@ -11,7 +11,8 @@ Entity * Entity::last = nullptr;
 Entity::Entity() :
     EngineObject<ENTITY>(),
     previous(last),
-    next(nullptr)
+    next(nullptr),
+    hullProvider(nullptr)
 {
 	// insert
 	if(Entity::first == nullptr) {
@@ -74,6 +75,9 @@ ACKNEXT_API_BLOCK
 		if(ent->model) {
 			// Go into initial pose
 			ent_posereset(ent);
+
+			// Update the collision hull
+			ent_updatehull(ent);
 		}
 
 		return ent;
@@ -95,6 +99,34 @@ ACKNEXT_API_BLOCK
 		} else {
 			return demote(Entity::first);
 		}
+	}
+
+	void ent_updatehull(ENTITY * ent)
+	{
+		ARG_NOTNULL(ent,);
+		Entity * subent = promote<Entity>(ent);
+
+		// yay, we're already done!
+		if(subent->hullProvider == ent->model)
+			return;
+
+		if(ent->mainCollider != nullptr)
+			hull_remove(ent->mainCollider);
+
+		if(ent->model && ent->model->createCollider)
+		{
+			dGeomID newHull = (ent->model->createCollider)(collision_space, ent->model);
+			if(newHull)
+				ent->mainCollider = hull_createFromExisting(ent, newHull);
+			else
+				ent->mainCollider = nullptr;
+		}
+		else
+		{
+			ent->mainCollider = nullptr;
+		}
+
+		subent->hullProvider = ent->model;
 	}
 
 	// Resets the entities pose to the entities models default pose

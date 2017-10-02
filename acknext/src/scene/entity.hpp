@@ -11,6 +11,8 @@ public:
 	Entity * previous;
 	Entity * next;
 public:
+	MODEL * hullProvider;
+public:
 	Entity();
 	NOCOPY(Entity);
 	~Entity();

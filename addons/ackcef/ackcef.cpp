@@ -2,11 +2,11 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+
 #include <cef_app.h>
 #include <cef_client.h>
 #include <wrapper/cef_helpers.h>
 #include <cef_task.h>
-#pragma GCC diagnostic pop
 
 #include <functional>
 
@@ -534,3 +534,6 @@ ACKFUN void ackcef_refresh(VIEW * _view)
 	auto * view = (AckCefView *)_view->context;
 	view->browser->Reload();
 }
+
+
+#pragma GCC diagnostic pop

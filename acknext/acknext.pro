@@ -2,6 +2,7 @@ TEMPLATE = lib
 CONFIG += c++11
 CONFIG -= app_bundle
 CONFIG -= qt
+
 unix: CONFIG += link_pkgconfig
 unix: PKGCONFIG += ode dotconf sdl2 SDL2_image SDL2_mixer zlib
 

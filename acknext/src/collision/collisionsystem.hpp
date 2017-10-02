@@ -9,8 +9,6 @@
 class CollisionSystem
 {
 public:
-	static dSpaceID space;
-public:
 	CollisionSystem() = delete;
 
 	static void initialize();

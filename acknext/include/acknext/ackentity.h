@@ -6,6 +6,8 @@
 #include "scene.h"
 #include "scheduler.h"
 
+typedef struct HULL HULL;
+
 typedef struct
 {
 	// Transform
@@ -18,6 +20,11 @@ typedef struct
 	MATERIAL * material;
 	FRAME pose[ACKNEXT_MAX_BONES];
 
+	// Collision
+	HULL * ACKCONST mainCollider; // changed by ent_updatehull
+	BITFIELD categories; // bitmask for collisions
+
+	// Other
 	ENTITYFLAGS flags;
 
 	// Events
@@ -28,6 +35,10 @@ ACKFUN ENTITY * ent_create(
 	char const * fileName,
 	VECTOR * const position,
 	ENTRYPOINT action);
+
+// resets the entities collision hull according to its model
+// should be called when ENTITY::model is changed
+ACKFUN void ent_updatehull(ENTITY * ent);
 
 // Resets the entities pose to the entities models default pose
 ACKFUN void ent_posereset(ENTITY * ent);

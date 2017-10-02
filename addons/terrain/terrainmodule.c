@@ -8,6 +8,9 @@
 #include <acknext/extension.h>
 #include <acknext/serialization.h>
 
+#include <ode/common.h>
+#include <ode/collision.h>
+
 #include "l3dt/l3dt.h"
 
 static const ACKGUID terrainguid = {{
@@ -27,8 +30,22 @@ static ACKTYPE canLoad(ACKGUID const * guid)
 	return TYPE_INVALID;
 }
 
+static dGeomID terrainCreateCollider(dSpaceID space, struct MODEL * model)
+{
+	assert(space != NULL);
+	assert(model != NULL);
+	GLenum type;
+	dHeightfieldDataID const * data = (dHeightfieldDataID*)obj_getvar(model, "terrain-collider-data", &type);
+	assert(data != NULL);
+	assert(type == ACK_POINTER);
+	assert(*data != NULL);
+	return dCreateHeightfield(space, *data, 1);
+}
+
 static MODEL * terrain_load(ACKFILE * file, ACKGUID const * guid)
 {
+	assert(guid_compare(guid, &terrainguid));
+
 	BLOB * packed = blob_load("/terrain/GrassyMountains_HF.hfz");
 	BLOB * unpacked = blob_inflate(packed);
 
@@ -99,21 +116,6 @@ static MODEL * terrain_load(ACKFILE * file, ACKGUID const * guid)
 
 		model->materials[0]->shader = shdTerrain;
 
-		BITMAP * bmpLSC   = bmap_to_mipmap(bmap_load("/terrain/GrassyMountains_TX.jpg"));
-		BITMAP * bmpDetail = bmap_to_mipmap(bmap_load("/textures/grass-01.jpg"));
-
-		/*
-		glTextureParameterf(
-			bmpLSC->object,
-			GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
-		glTextureParameterf(
-			bmpDetail->object,
-			GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
-		*/
-
-		shader_setvar(model->materials[0], "texLargeScaleColor", GL_SAMPLER_2D, bmpLSC);
-		shader_setvar(model->materials[0], "texDetail", GL_SAMPLER_2D, bmpDetail);
-
 		*((AABB*)&model->boundingBox) = (AABB){
 			minimum: { 1, 1, 1 },
 			maximum: { -1, -1, -1 },
@@ -178,6 +180,55 @@ static MODEL * terrain_load(ACKFILE * file, ACKGUID const * guid)
 			GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
 		*/
 		shader_setvar(model->materials[0], "texTerrainMaterials", GL_SAMPLER_2D_ARRAY, materials);
+	}
+
+	{ // Setup heightmap data
+		dHeightfieldDataID heightfield = dGeomHeightfieldDataCreate();
+
+		engine_log("%d, %d", hf->width, hf->height);
+
+//		dGeomHeightfieldDataBuildCallback(
+//			heightfield,
+//			hf,
+//			terrainReadHeight,
+//			hf->horizontalScale * (hf->width - 1), hf->horizontalScale * (hf->height - 1),
+//			hf->width, hf->height,
+//			1.0, 1.0,
+//			10.0,
+//			0);
+
+		dGeomHeightfieldDataBuildSingle(
+			heightfield,
+			hf->data,
+			0, // please reference hf data, not copy
+			hf->horizontalScale * (hf->width - 1), hf->horizontalScale * (hf->height - 1), // real size
+			hf->width, hf->height, // data point size
+			1.0, 0.0, // no scale/offset, we have already correct height data
+			1000.0, // 1km thick terrain
+			0); // no wrap
+
+		var min =  FLT_MAX;
+		var max = -FLT_MAX;
+		for(int z = 0; z < hf->height; z++)
+		{
+			for(int x = 0; x < hf->width; x++)
+			{
+				var h = hf->data[z * hf->width + x];
+				min = minv(min, h);
+				max = maxv(max, h);
+			}
+		}
+
+		dGeomHeightfieldDataSetBounds(
+			heightfield,
+			min,
+			max);
+
+		engine_log("min,max: %f %f", min, max);
+
+		obj_setvar(model, "terrain-collider-data", ACK_POINTER, heightfield);
+
+		model->createCollider = &terrainCreateCollider;
 	}
 
 	obj_setvar(model, "terrain-data", ACK_POINTER, hf);

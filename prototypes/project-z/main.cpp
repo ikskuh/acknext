@@ -49,7 +49,23 @@ void funnylight()
 }
 
 ENTITY * terrain;
-SHADER * shdtree;
+
+#define TERRAIN_MASK (1<<0)
+#define PLAYER_MASK (1<<1)
+
+static bool placeToGround(VECTOR * ref, float distance)
+{
+	COLLISION * hit = c_trace(
+		vec_add(vec_clone(ref), vector(0, 10000, 0)),
+		vec_add(vec_clone(ref), vector(0, -10000, 0)),
+		TERRAIN_MASK);
+	if(hit) {
+		engine_log("hit: %f %p(%d)", hit->distance, hit->hull, hit->hull->type);
+		draw_point3d(&hit->contact, &COLOR_MAGENTA);
+		ref->y = hit->contact.y + distance;
+	}
+	return (hit != nullptr);
+}
 
 void spawn(const int radius, const int count, char const * fileName, float scale)
 {
@@ -59,8 +75,11 @@ void spawn(const int radius, const int count, char const * fileName, float scale
 		VECTOR off;
 		off.x = center.x + (rand() / (float)RAND_MAX) * 2*radius - radius;
 		off.z = center.z + (rand() / (float)RAND_MAX) * 2*radius - radius;
-		off.y = terrain_getheight(terrain->model, off.x, off.z) - 0.2;
+		off.y = 0;
 		ENTITY * tree = ent_create(fileName, &off, NULL);
+
+		placeToGround(&tree->position, -0.15);
+
 		quat_axis_angle(&tree->rotation, vector(0,1,0), 360 * (float)rand() / (float)RAND_MAX);
 		vec_fill(&tree->scale, scale);
 	}
@@ -71,12 +90,17 @@ void tree()
 	spawn(250, 250, "/models/tree.amd", 1.0);
 }
 
-void grass()
+void house()
 {
-	spawn(50, 500, "/models/grass.amd", 0.4);
+	spawn(1, 0, "/buildings/inn.amd", 0.1);
 }
 
 ENTITY * player;
+bool nightmode = false;
+
+bool editorMode = false;
+
+ENTITY * entToInsert = NULL;
 
 void outsider()
 {
@@ -163,14 +187,62 @@ void outsider()
 		}
 	}
 	ImGui::End();
+
+	if(editorMode = ImGui::Begin("Level Editor", &editorMode))
+	{
+		static int selection = 0;
+		static char const* items[] =
+		{
+			"/other/buildings/inn.amd",
+		    "/models/tree.amd",
+		};
+		static float scale[] =
+		{
+			0.0125,
+		    1.0,
+		};
+		if(ImGui::ListBox("Spawn List", &selection, items, 2))
+		{
+			// Selection changed
+		}
+		if(ImGui::Button("Spawn"))
+		{
+			engine_log("Create %s", items[selection]);
+			if(entToInsert) ent_remove(entToInsert);
+			entToInsert = ent_create(items[selection], &camera->position, NULL);
+			vec_fill(&entToInsert->scale, scale[selection]);
+		}
+	}
+	else
+	{
+		if(entToInsert)
+			ent_remove(entToInsert);
+		entToInsert = NULL;
+	}
+	ImGui::End();
+
+	if(ImGui::Begin("Environment Control"))
+	{
+		ImGui::Checkbox("Night Scene", &nightmode);
+	}
+	ImGui::End();
 #endif
 }
 
-bool nightmode = false;
-
-static void toggle_nightmode()
+void accept_insert()
 {
-	nightmode ^= true;
+	if(!editorMode)	return;
+	entToInsert = NULL;
+}
+
+void cancel_insert()
+{
+	if(!editorMode)	return;
+
+	if(entToInsert) {
+		ent_remove(entToInsert);
+		entToInsert = NULL;
+	}
 }
 
 void gamemain()
@@ -182,33 +254,6 @@ void gamemain()
 	view_create((RENDERCALL)render_scene_with_camera, camera);
 	filesys_addResource("/home/felix/projects/acknext/prototypes/project-z/resources/", "/");
 	filesys_addResource("/home/felix/projects/acknext/scripts/", "/other/");
-
-
-	shdtree = shader_create();
-
-//	if(shader_addFileSource(shdtree, VERTEXSHADER, "/builtin/shaders/object.vert") == false) {
-	if(shader_addFileSource(shdtree, VERTEXSHADER, "/shaders/fastobject.vert") == false) {
-		abort();
-	}
-//	if(shader_addFileSource(shdtree, FRAGMENTSHADER, "/shaders/fastobject.frag") == false) {
-	if(shader_addFileSource(shdtree, FRAGMENTSHADER, "/builtin/shaders/object.frag") == false) {
-		abort();
-	}
-	if(shader_addFileSource(shdtree, FRAGMENTSHADER, "/builtin/shaders/lighting.glsl") == false) {
-		abort();
-	}
-	if(shader_addFileSource(shdtree, FRAGMENTSHADER, "/builtin/shaders/gamma.glsl") == false) {
-		abort();
-	}
-	if(shader_addFileSource(shdtree, FRAGMENTSHADER, "/builtin/shaders/ackpbr.glsl") == false) {
-		abort();
-	}
-	if(shader_addFileSource(shdtree, FRAGMENTSHADER, "/builtin/shaders/fog.glsl") == false) {
-		abort();
-	}
-	if(shader_link(shdtree) == false) {
-		abort();
-	}
 
 
 #ifdef _ACKNEXT_EXT_ACKCEF_H_
@@ -229,13 +274,15 @@ void gamemain()
 #endif
 
 	event_attach(on_t, (EVENTHANDLER)tree);
-	event_attach(on_g, (EVENTHANDLER)grass);
 	event_attach(on_l, (EVENTHANDLER)funnylight);
-	event_attach(on_n, (EVENTHANDLER)toggle_nightmode);
+
+	event_attach(on_mouse_left, (EVENTHANDLER)accept_insert);
+	event_attach(on_mouse_right, (EVENTHANDLER)cancel_insert);
 
 	terrainmodule_init();
 	default_init();
 	default_speedup = 500;
+	default_camera_movement_enabled = true;
 
 	{
 		ACKFILE * file = file_open_read("camera.dat");
@@ -246,6 +293,7 @@ void gamemain()
 	}
 
 	terrain = ent_create("/terrain/GrassyMountains.terrain", vector(0,0,0), NULL);
+	terrain->categories = TERRAIN_MASK;
 
 	LIGHT * sun = light_create(SUNLIGHT);
 	sun->direction = *vec_normalize(vector(0.6, -1, -0.4), 1.0);
@@ -260,9 +308,10 @@ void gamemain()
 
 	tree();
 
-	player = ent_create("/other/cyber-pirate/cyber-pirate.amd", vector(0, 0, 512), NULL);
+	player = ent_create("/other/cyber-pirate/cyber-pirate.amd", vector(0, 0, 0), NULL);
 	vec_fill(&player->scale, 0.15);
 
+	// hull_createBox(player, vector(1, 2.5, 1));
 
 	ACKFILE * file = file_open_read("player.dat");
 	if(file) {
@@ -288,7 +337,7 @@ void gamemain()
 			player->position = camera->position;
 		}
 
-		if(!default_camera_movement_enabled)
+		if(!default_camera_movement_enabled && !editorMode)
 		{
 			pan -= 0.3 * mickey.x;
 			tilt = clamp(tilt - 0.3 * mickey.y, -80, 85);
@@ -302,7 +351,7 @@ void gamemain()
 				float(key_s - key_w),
 			};
 
-			vec_normalize(&mov, (3 + 3 * key_lshift) * time_step);
+			vec_normalize(&mov, (3 + 3 * key_lshift - 2.5 * key_lalt) * time_step);
 			vec_rotate(&mov, euler(pan, 0, 0));
 			vec_add(&player->position, &mov);
 
@@ -321,22 +370,41 @@ void gamemain()
 				ent_animate(player, "Idle", total_time);
 			}
 
-			player->position.y = terrain_getheight(terrain->model, player->position.x, player->position.z);
+			placeToGround(&player->position, -0.05);
 
 			camera->position = (VECTOR) { 0, 0, camdist };
 			vec_rotate(&camera->position, &camera->rotation);
 			vec_add(&camera->position, &player->position);
 			vec_add(&camera->position, vector(0, 1.5, 0));
 
-			var mincam = terrain_getheight(terrain->model, camera->position.x, camera->position.z) + 0.2;
-			if(camera->position.y < mincam)
-				camera->position.y = mincam;
+			VECTOR refpos = camera->position;
+			placeToGround(&refpos, 0.2);
+
+			if(camera->position.y < refpos.y)
+				camera->position.y = refpos.y;
 
 			vec_lerp(
 				&plambilight->position,
 				&player->position,
 				&camera->position,
 				0.4);
+		}
+
+		if(editorMode)
+		{
+			VECTOR from, to;
+			from = { mouse_pos.x, mouse_pos.y, 0 };
+			to   = { mouse_pos.x, mouse_pos.y, 100 };
+
+			vec_for_screen(&from, camera, NULL);
+			vec_for_screen(&to, camera, NULL);
+
+			COLLISION * col = c_trace(&from, &to, BITFIELD_ALL);
+			if(col)
+			{
+				draw_point3d(&col->contact, &COLOR_CYAN);
+				if(entToInsert) entToInsert->position = col->contact;
+			}
 		}
 
 

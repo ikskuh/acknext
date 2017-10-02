@@ -5,22 +5,25 @@
 #include <vector>
 #include <algorithm>
 
-dSpaceID CollisionSystem::space;
-
 void CollisionSystem::initialize()
 {
-	dInitODE();
-	space = dHashSpaceCreate(0);
+	dInitODE2(0);
+	dAllocateODEDataForThread(dAllocateMaskAll);
+	engine_log("ODE Config: %s", dGetConfiguration());
+
+
+	// collision_space = dHashSpaceCreate(0);
+	collision_space = dSimpleSpaceCreate(0);
 }
 
 void CollisionSystem::update()
 {
-	int count = dSpaceGetNumGeoms(space);
+	int count = dSpaceGetNumGeoms(collision_space);
 	std::vector<dGeomID> geoms(count);
 
 	for(int i = 0; i < count; i++)
 	{
-		geoms[i] = dSpaceGetGeom(space, i);
+		geoms[i] = dSpaceGetGeom(collision_space, i);
 	}
 
 	for(dGeomID g : geoms)
@@ -40,17 +43,27 @@ void CollisionSystem::draw()
 
 	COLOR * color = &COLOR_GREEN;
 
-	int count = dSpaceGetNumGeoms(space);
+
+	engine_log("Display Geoms:");
+	int count = dSpaceGetNumGeoms(collision_space);
 	for(int i = 0; i < count; i++)
 	{
-		dGeomID g = dSpaceGetGeom(space, i);
+		dGeomID g = dSpaceGetGeom(collision_space, i);
 
-		dQuaternion drot;
-		dGeomGetQuaternion(g, drot);
-		QUATERNION rot = { drot[1], drot[2], drot[3], drot[0] };
+		int _class = dGeomGetClass(g);
 
-		dReal const * dpos = dGeomGetPosition(g);
-		VECTOR pos = { dpos[0], dpos[1], dpos[2] };
+		QUATERNION rot = { 0, 0, 0, 1 };
+		VECTOR pos = { 0, 0, 0 };
+
+		if(_class != dHeightfieldClass) {
+			dQuaternion drot;
+			dGeomGetQuaternion(g, drot);
+			rot = { drot[1], drot[2], drot[3], drot[0] };
+
+			dReal const * dpos = dGeomGetPosition(g);
+			pos = { dpos[0], dpos[1], dpos[2] };
+		}
+
 
 		// Draw AABB
 		{
@@ -61,9 +74,11 @@ void CollisionSystem::draw()
 			VECTOR bbmax = {aabb[1], aabb[3], aabb[5] };
 
 			draw_aabb3d(&bbmin, &bbmax, color);
+
+			engine_log("%d: (%f %f %f) → (%f %f %f)", i, aabb[0], aabb[2], aabb[4], aabb[1], aabb[3], aabb[5]);
 		}
 
-		switch(dGeomGetClass(g))
+		switch(_class)
 		{
 			case dSphereClass: {
 				var radius = dGeomSphereGetRadius(g);
@@ -85,7 +100,7 @@ void CollisionSystem::draw()
 
 void CollisionSystem::shutdown()
 {
-	dSpaceDestroy(space);
+	dSpaceDestroy(collision_space);
 	dCloseODE();
 }
 
@@ -106,6 +121,22 @@ struct TraceFeedback
 
 static void dTraceCallback (void *data, dGeomID o1, dGeomID o2)
 {
+	// Support sub-space collisions :)
+	if (dGeomIsSpace (o1) || dGeomIsSpace (o2)) {
+		// from: https://www.ode-wiki.org/wiki/index.php?title=Manual:_Collision_Detection#Collision_detection
+
+		// colliding a space with something :
+		dSpaceCollide2 (o1, o2, data, &dTraceCallback);
+
+		// collide all geoms internal to the space(s)
+		if (dGeomIsSpace (o1))
+			dSpaceCollide ((dSpaceID)o1, data, &dTraceCallback);
+		if (dGeomIsSpace (o2))
+			dSpaceCollide ((dSpaceID)o2, data, &dTraceCallback);
+
+		return;
+	}
+
 	if (dGeomIsSpace (o1) || dGeomIsSpace (o2)) {
 		engine_log("Subspace collision detected! Not supported yet!");
 		return;
@@ -137,9 +168,9 @@ static void dTraceCallback (void *data, dGeomID o1, dGeomID o2)
 		col.contact.y = c.pos[1];
 		col.contact.z = c.pos[2];
 
-		col.normal.x = c.normal[0];
-		col.normal.y = c.normal[1];
-		col.normal.z = c.normal[2];
+		col.normal.x = -c.normal[0];
+		col.normal.y = -c.normal[1];
+		col.normal.z = -c.normal[2];
 
 		if(dGeomGetClass(c.g1) == dRayClass) {
 			col.hull = demote(Hull::fromGeom(c.g2));
@@ -155,6 +186,8 @@ ACKNEXT_API_BLOCK
 {
 	bool debug_collision = false;
 
+	dSpaceID collision_space = nullptr;
+
 	ACKFUN COLLISION * c_trace(VECTOR const * _from, VECTOR const * _to, BITFIELD mask)
 	{
 		CollisionSystem::update(); // This should be improved...
@@ -164,6 +197,7 @@ ACKNEXT_API_BLOCK
 		VECTOR * dist = vec_diff(nullptr, &to, &from);
 
 		dGeomID ray = dCreateRay(0, vec_length(dist));
+		dGeomSetCollideBits(ray, mask);
 
 		vec_normalize(dist, 1);
 		dGeomRaySet(
@@ -173,7 +207,7 @@ ACKNEXT_API_BLOCK
 
 		TraceFeedback feedback;
 		dSpaceCollide2(
-			reinterpret_cast<dGeomID>(CollisionSystem::space),
+			reinterpret_cast<dGeomID>(collision_space),
 			ray,
 			&feedback,
 			dTraceCallback);

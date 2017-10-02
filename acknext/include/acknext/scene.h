@@ -8,6 +8,8 @@
 #include "core-graphics.h"
 #include "view.h"
 
+#include <ode/collision.h>
+
 #define LOD0		(1<<0)
 #define LOD1		(1<<1)
 #define LOD2		(1<<2)
@@ -100,7 +102,7 @@ typedef struct
 } ANIMATION;
 
 // managed type
-typedef struct
+typedef struct MODEL
 {
 	// counts have a minimum of 1, except for animation count
 	int ACKCONST meshCount;
@@ -115,6 +117,11 @@ typedef struct
 
 	AABB ACKCONST boundingBox;
 	uint minimumLOD; // (if(lod > minimumLOD) discard; // Usually 16, so always visible
+
+	// Collider Creation Callback
+	// if none, no collider will be created
+	// Can be customized to allow self-built colliders for models
+	dGeomID (*createCollider)(dSpaceID space, struct MODEL * model);
 } MODEL;
 
 // managed type

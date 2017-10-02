@@ -273,6 +273,11 @@ ACKNEXT_API_BLOCK
 
 	void render_scene_with_camera(CAMERA * perspective)
 	{
+		if(true) {
+			render_scene(perspective, nullptr);
+			return;
+		}
+
 		GLint drawFboId = 0;
 		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &drawFboId);
 
