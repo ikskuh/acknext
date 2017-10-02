@@ -42,3 +42,10 @@ flags.ANIMFLAGS =
 {
 	"Looped",
 }
+flags.PPSTAGES = 
+{
+	prefix="PP_",
+	"PP_SSAO",
+	"PP_Reinhard",
+	"PP_Bloom",
+}

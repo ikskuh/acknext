@@ -1,9 +1,8 @@
 #ifndef C_COROUTINE_H
 #define C_COROUTINE_H
 
-#if defined(__cplusplus)
-extern "C"
-{
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 #define COROUTINE_DEAD 0
@@ -24,7 +23,8 @@ int coroutine_status(struct schedule *, int id);
 int coroutine_running(struct schedule *);
 void coroutine_yield(struct schedule *);
 
-#if defined(__cplusplus)
+
+#ifdef __cplusplus
 }
 #endif
 

@@ -206,8 +206,6 @@ ACKFUN void camera_to_matrix(
     MATRIX * matProjection,
 	VIEW const * reference);
 
-ACKFUN void render_scene_with_camera(CAMERA * camera);
-
 // mesh api:
 ACKFUN MESH * mesh_create(GLenum primitiveType, BUFFER * vertexBuffer, BUFFER * indexBuffer);
 
@@ -235,5 +233,12 @@ ACKFUN LIGHT * light_create(LIGHTTYPE type);
 ACKFUN void light_remove(LIGHT * light);
 
 ACKFUN LIGHT * light_next(LIGHT const * light);
+
+// render api:
+
+ACKVAR var pp_exposure; // = 1.0;
+ACKVAR PPSTAGES pp_stages; // = PP_BLOOM | PP_SSAO | PP_REINHARD;
+
+ACKFUN void render_scene_with_camera(CAMERA * camera);
 
 #endif // _ACKNEXT_SCENE_H_

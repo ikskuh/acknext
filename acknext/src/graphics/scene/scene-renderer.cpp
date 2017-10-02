@@ -251,6 +251,9 @@ ACKNEXT_API_BLOCK
 
 	COLOR sky_color = { 0.3, 0.7, 1.0, 1.0 };
 
+	var pp_exposure = 1.0;
+	PPSTAGES pp_stages = PP_BLOOM | PP_SSAO | PP_REINHARD;
+
 	var lod_distances[16] =
 	{
 		0.5,
@@ -273,11 +276,6 @@ ACKNEXT_API_BLOCK
 
 	void render_scene_with_camera(CAMERA * perspective)
 	{
-		if(true) {
-			render_scene(perspective, nullptr);
-			return;
-		}
-
 		GLint drawFboId = 0;
 		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &drawFboId);
 
@@ -303,6 +301,7 @@ ACKNEXT_API_BLOCK
 
 		MATRIX matView, matProj;
 		camera_to_matrix(perspective, &matView, &matProj, view_current);
+
 
 		if(stageScene == nullptr)
 		{
@@ -358,20 +357,21 @@ ACKNEXT_API_BLOCK
 			framebuf_resize(stageHDR, targetSize);
 		}
 
-		static SHADER * tonemap = nullptr;
+		static SHADER * tonemapLinear = nullptr;
+		static SHADER * tonemapReinhard = nullptr;
 		static SHADER * bloomblur = nullptr;
 		static SHADER * bloomcomb = nullptr;
 		static SHADER * ssao = nullptr;
 		static SHADER * ssaoCombine = nullptr;
 		static SHADER * fxaa = nullptr;
 
-		if(!tonemap)     tonemap     = create_ppshader("/builtin/shaders/pp/hdr/linear.frag");
-		if(!bloomblur)   bloomblur   = create_ppshader("/builtin/shaders/pp/bloom/blur.frag");
-		if(!bloomcomb)   bloomcomb   = create_ppshader("/builtin/shaders/pp/bloom/combine.frag");
-		if(!ssao)        ssao        = create_ppshader("/builtin/shaders/pp/ssao/apply.frag");
-		if(!ssaoCombine) ssaoCombine = create_ppshader("/builtin/shaders/pp/ssao/combine.frag");
-		if(!fxaa)
-			fxaa        = create_ppshader("/builtin/shaders/pp/fxaa.frag");
+		if(!tonemapLinear)   tonemapLinear   = create_ppshader("/builtin/shaders/pp/hdr/linear.frag");
+		if(!tonemapReinhard) tonemapReinhard = create_ppshader("/builtin/shaders/pp/hdr/reinhard.frag");
+		if(!bloomblur)       bloomblur       = create_ppshader("/builtin/shaders/pp/bloom/blur.frag");
+		if(!bloomcomb)       bloomcomb       = create_ppshader("/builtin/shaders/pp/bloom/combine.frag");
+		if(!ssao)            ssao            = create_ppshader("/builtin/shaders/pp/ssao/apply.frag");
+		if(!ssaoCombine)     ssaoCombine     = create_ppshader("/builtin/shaders/pp/ssao/combine.frag");
+		if(!fxaa)            fxaa            = create_ppshader("/builtin/shaders/pp/fxaa.frag");
 
 		{ // 1: render scnee
 			framebuf_resize(stageScene, targetSize);
@@ -385,90 +385,105 @@ ACKNEXT_API_BLOCK
 		glDisable(GL_DEPTH_TEST);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+		BITMAP * currentOutput = stageScene->targets[0];
+
+		if(pp_stages & PP_SSAO)
 		{
-			framebuf_resize(stageSSAOApply, halfSize);
-			opengl_setFrameBuffer(stageSSAOApply);
+			{
+				framebuf_resize(stageSSAOApply, halfSize);
+				opengl_setFrameBuffer(stageSSAOApply);
 
-			opengl_setShader(ssao);
+				opengl_setShader(ssao);
 
-			currentShader->matView = matView;
-			currentShader->matProj = matProj;
-			currentShader->texInput = bmap_to_linear(stageScene->targets[0]);
-			currentShader->texPosition = bmap_to_linear(stageScene->targets[1]);
-			currentShader->texNormal = bmap_to_linear(stageScene->targets[2]);
+				currentShader->matView = matView;
+				currentShader->matProj = matProj;
+				currentShader->texInput = bmap_to_linear(stageScene->targets[0]);
+				currentShader->texPosition = bmap_to_linear(stageScene->targets[1]);
+				currentShader->texNormal = bmap_to_linear(stageScene->targets[2]);
 
-			opengl_drawFullscreenQuad();
+				opengl_drawFullscreenQuad();
+			}
+
+			{
+				framebuf_resize(stageSSAOBlur, halfSize);
+				opengl_setFrameBuffer(stageSSAOBlur);
+
+				opengl_setShader(bloomblur);
+				currentShader->texInput = bmap_to_linear(stageSSAOApply->targets[0]);
+				currentShader->fCutoff = 0.0;
+				currentShader->vecBlurScale = (VECTOR2) { 0.5, 0.5 };
+
+				opengl_drawFullscreenQuad();
+			}
+
+			{
+				framebuf_resize(stageSSAOCombine, targetSize);
+				opengl_setFrameBuffer(stageSSAOCombine);
+
+				opengl_setShader(ssaoCombine);
+				currentShader->texInput     = bmap_to_linear(stageScene->targets[0]);
+				currentShader->texOcclusion = bmap_to_linear(stageSSAOBlur->targets[0]);
+
+				opengl_drawFullscreenQuad();
+			}
+
+			currentOutput = stageSSAOCombine->targets[0];
 		}
 
+		if(pp_stages & PP_BLOOM)
 		{
-			framebuf_resize(stageSSAOBlur, halfSize);
-			opengl_setFrameBuffer(stageSSAOBlur);
+			{ // 2: render bloom image (half size)
+				framebuf_resize(stageBloom0, halfSize);
+				opengl_setFrameBuffer(stageBloom0);
 
-			opengl_setShader(bloomblur);
-			currentShader->texInput = bmap_to_linear(stageSSAOApply->targets[0]);
-			currentShader->fCutoff = 0.0;
-			currentShader->vecBlurScale = (VECTOR2) { 0.5, 0.5 };
+				opengl_setShader(bloomblur);
+				currentShader->texInput = bmap_to_linear(currentOutput);
+				currentShader->fCutoff = 1.0;
+				currentShader->vecBlurScale = (VECTOR2) { 1.0, 0.5 };
 
-			opengl_drawFullscreenQuad();
-		}
+				opengl_drawFullscreenQuad();
+			}
 
-		{
-			framebuf_resize(stageSSAOCombine, targetSize);
-			opengl_setFrameBuffer(stageSSAOCombine);
+			{ // 3: render bloom image (quart size)
+				SIZE halfSize = targetSize;
+				halfSize.width /= 4;
+				halfSize.height /= 4;
+				framebuf_resize(stageBloom1, halfSize);
+				opengl_setFrameBuffer(stageBloom1);
 
-			opengl_setShader(ssaoCombine);
-			currentShader->texInput     = bmap_to_linear(stageScene->targets[0]);
-			currentShader->texOcclusion = bmap_to_linear(stageSSAOBlur->targets[0]);
+				opengl_setShader(bloomblur);
+				currentShader->texInput = bmap_to_linear(stageBloom0->targets[0]);
+				currentShader->fCutoff = 0.0;
+				currentShader->vecBlurScale = (VECTOR2) { 1.0, 0.5 };
 
-			opengl_drawFullscreenQuad();
-		}
+				opengl_drawFullscreenQuad();
+			}
 
-		{ // 2: render bloom image (half size)
-			framebuf_resize(stageBloom0, halfSize);
-			opengl_setFrameBuffer(stageBloom0);
+			{ // 3: combine bloom image with source image
+				framebuf_resize(stageBloomCombine, targetSize);
+				opengl_setFrameBuffer(stageBloomCombine);
 
-			opengl_setShader(bloomblur);
-			currentShader->texInput = bmap_to_linear(stageSSAOCombine->targets[0]);
-			currentShader->fCutoff = 1.0;
-			currentShader->vecBlurScale = (VECTOR2) { 1.0, 0.5 };
+				opengl_setShader(bloomcomb);
+				currentShader->texInput = currentOutput;
+				currentShader->texBloom = bmap_to_linear(stageBloom1->targets[0]);
 
-			opengl_drawFullscreenQuad();
-		}
-
-		{ // 3: render bloom image (quart size)
-			SIZE halfSize = targetSize;
-			halfSize.width /= 4;
-			halfSize.height /= 4;
-			framebuf_resize(stageBloom1, halfSize);
-			opengl_setFrameBuffer(stageBloom1);
-
-			opengl_setShader(bloomblur);
-			currentShader->texInput = bmap_to_linear(stageBloom0->targets[0]);
-			currentShader->fCutoff = 0.0;
-			currentShader->vecBlurScale = (VECTOR2) { 1.0, 0.5 };
-
-			opengl_drawFullscreenQuad();
-		}
-
-		{ // 3: combine bloom image with source image
-			framebuf_resize(stageBloomCombine, targetSize);
-			opengl_setFrameBuffer(stageBloomCombine);
-
-			opengl_setShader(bloomcomb);
-			currentShader->texInput = stageSSAOCombine->targets[0];
-			currentShader->texBloom = bmap_to_linear(stageBloom1->targets[0]);
-
-			opengl_drawFullscreenQuad();
+				opengl_drawFullscreenQuad();
+			}
+			currentOutput = stageBloomCombine->targets[0];
 		}
 
 		{ // 4:
 			framebuf_resize(stageHDR, targetSize);
 			opengl_setFrameBuffer(stageHDR);
 
-			opengl_setShader(tonemap);
+			if(pp_stages & PP_REINHARD) {
+				opengl_setShader(tonemapReinhard);
+			} else {
+				opengl_setShader(tonemapLinear);
+			}
 
-			currentShader->texInput = stageBloomCombine->targets[0];
-			currentShader->fExposure = 1.0;
+			currentShader->texInput = currentOutput;
+			currentShader->fExposure = pp_exposure;
 
 			opengl_drawFullscreenQuad();
 		}

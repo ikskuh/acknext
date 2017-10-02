@@ -3,10 +3,14 @@ CONFIG += c++11
 CONFIG -= app_bundle
 CONFIG -= qt
 
-unix: CONFIG += link_pkgconfig
-unix: PKGCONFIG += ode dotconf sdl2 SDL2_image SDL2_mixer zlib
+CONFIG += ackScheduler
 
-CONFIG += ackGraphics ackScheduler
+unix {
+	CONFIG += link_pkgconfig
+	PKGCONFIG += ode dotconf sdl2 SDL2_image SDL2_mixer zlib assimp gl
+}
+
+include($$PWD/../extern/gl3w/gl3w.pri)
 
 INCLUDEPATH += $$PWD/include
 INCLUDEPATH += $$PWD/src
@@ -20,37 +24,21 @@ DEFINES += _ACKNEXT_INTERNAL_
 
 include($$PWD/../common.pri)
 
-# LIBS           += $$quote($$PWD/../resource/resource.o)
-
-ackGraphics {
-	include(../../gl3w/gl3w.pri)
-	unix: PKGCONFIG += assimp gl
-}
-
-ackScript {
-	INCLUDEPATH += $$PWD/../../tcc-0.9.26
-	DEPENDPATH += $$PWD/../../tcc-0.9.26
-	LIBS += -L$$PWD/../../tcc-0.9.26/ -ldl -ltcc
-}
-
-ackJSON {
-	# Used for levels
-	INCLUDEPATH += $$PWD/../../json/src
-}
-
 ackScheduler {
 	DISTFILES += \
 		linker.ld
 	QMAKE_LFLAGS += -T$$quote($$PWD/linker.ld)
 
-	HEADERS += \
-		$$PWD/../coroutine/coroutine.h
-
-	SOURCES += \
-		$$PWD/../coroutine/coroutine.c
+	include($$PWD/../extern/coroutine/coroutine.pri)
 
 	DEFINES += ACKNEXT_HAS_SCHEDULER
 }
+
+custom_rcc.output  = resource.o
+custom_rcc.commands = make -C $$PWD/../resource/ qmake OUTFILE=`pwd`/${QMAKE_FILE_OUT} shaders
+custom_rcc.depend_command = make -C $$PWD/../resource/ depends
+custom_rcc.input = RESOURCES
+QMAKE_EXTRA_COMPILERS += custom_rcc
 
 HEADERS += \
     src/graphics/opengl/buffer.hpp \
@@ -174,12 +162,6 @@ SOURCES += \
 
 RESOURCES += \
     $$PWD/../resource/builtin.qrc
-
-custom_rcc.output  = resource.o
-custom_rcc.commands = make -C $$PWD/../resource/ qmake OUTFILE=`pwd`/${QMAKE_FILE_OUT} shaders
-custom_rcc.depend_command = make -C $$PWD/../resource/ depends
-custom_rcc.input = RESOURCES
-QMAKE_EXTRA_COMPILERS += custom_rcc
 
 DISTFILES += \
     acknext.pri

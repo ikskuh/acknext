@@ -23,7 +23,6 @@ vec4 interpolate(in vec4 v0, in vec4 v1, in vec4 v2, in vec4 v3)
 uniform vec3 vecViewPos;
 
 uniform ivec2 vecTerrainSize;
-uniform ivec2 vecTileSize;
 uniform float fTerrainScale;
 
 void main()

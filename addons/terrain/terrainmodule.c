@@ -1,10 +1,11 @@
-#include "terrainmodule.h"
+#include "include/acknext/ext/terrain.h"
 
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 #include <float.h>
 
+#include <acknext/acff.h>
 #include <acknext/extension.h>
 #include <acknext/serialization.h>
 
@@ -113,7 +114,6 @@ static MODEL * terrain_load(ACKFILE * file, ACKGUID const * guid)
 	{
 		model->meshes[0] = mesh;
 		model->materials[0] = mtl_create();
-
 		model->materials[0]->shader = shdTerrain;
 
 		*((AABB*)&model->boundingBox) = (AABB){
@@ -232,6 +232,19 @@ static MODEL * terrain_load(ACKFILE * file, ACKGUID const * guid)
 	}
 
 	obj_setvar(model, "terrain-data", ACK_POINTER, hf);
+
+
+	if(true)
+	{
+		// writeout terrain file
+		ACKFILE * file = file_open_write("terrain.esd");
+		file_write_header(file, TYPE_MODEL, terrainguid);
+
+
+
+		file_close(file);
+	}
+
 
 	return model;
 }

@@ -1,5 +1,6 @@
 #include <acknext.h>
 #include <acknext/serialization.h>
+#include <acknext/ext/terrain.h>
 #include <zlib.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,7 +13,6 @@
 #include <assert.h>
 
 #include <default.h>
-#include <terrainmodule.h>
 
 // #include <ackcef.h>
 #include <ackgui.h>
@@ -188,30 +188,34 @@ void outsider()
 	}
 	ImGui::End();
 
-	if(editorMode = ImGui::Begin("Level Editor", &editorMode))
+	if(editorMode)
 	{
-		static int selection = 0;
-		static char const* items[] =
+		if(ImGui::Begin("Level Editor", &editorMode))
 		{
-			"/other/buildings/inn.amd",
-		    "/models/tree.amd",
-		};
-		static float scale[] =
-		{
-			0.0125,
-		    1.0,
-		};
-		if(ImGui::ListBox("Spawn List", &selection, items, 2))
-		{
-			// Selection changed
+			static int selection = 0;
+			static char const* items[] =
+			{
+				"/other/buildings/inn.amd",
+				"/models/tree.amd",
+			};
+			static float scale[] =
+			{
+				0.0125,
+				1.0,
+			};
+			if(ImGui::ListBox("Spawn List", &selection, items, 2))
+			{
+				// Selection changed
+			}
+			if(ImGui::Button("Spawn"))
+			{
+				engine_log("Create %s", items[selection]);
+				if(entToInsert) ent_remove(entToInsert);
+				entToInsert = ent_create(items[selection], &camera->position, NULL);
+				vec_fill(&entToInsert->scale, scale[selection]);
+			}
 		}
-		if(ImGui::Button("Spawn"))
-		{
-			engine_log("Create %s", items[selection]);
-			if(entToInsert) ent_remove(entToInsert);
-			entToInsert = ent_create(items[selection], &camera->position, NULL);
-			vec_fill(&entToInsert->scale, scale[selection]);
-		}
+		ImGui::End();
 	}
 	else
 	{
@@ -219,11 +223,26 @@ void outsider()
 			ent_remove(entToInsert);
 		entToInsert = NULL;
 	}
-	ImGui::End();
 
 	if(ImGui::Begin("Environment Control"))
 	{
 		ImGui::Checkbox("Night Scene", &nightmode);
+		ImGui::SliderFloat("Exposure", &pp_exposure, 0.1, 10.0, "%.2f", 2.0);
+
+		ImGui::Text("Features:");
+		bool reinhard = (pp_stages & PP_REINHARD);
+		bool ssao = (pp_stages & PP_SSAO);
+		bool bloom = (pp_stages & PP_BLOOM);
+
+		ImGui::Checkbox("Reinhard Tonemap", &reinhard);
+		ImGui::Checkbox("SSAO", &ssao);
+		ImGui::Checkbox("Bloom", &bloom);
+
+		pp_stages = (pp_stages & ~(PP_REINHARD | PP_BLOOM | PP_SSAO))
+			| (ssao ? PP_SSAO : 0)
+			| (bloom ? PP_BLOOM : 0)
+			| (reinhard ? PP_REINHARD : 0)
+			;
 	}
 	ImGui::End();
 #endif
@@ -243,6 +262,11 @@ void cancel_insert()
 		ent_remove(entToInsert);
 		entToInsert = NULL;
 	}
+}
+
+void toggle_editor()
+{
+	editorMode ^= true;
 }
 
 void gamemain()
@@ -276,6 +300,7 @@ void gamemain()
 	event_attach(on_t, (EVENTHANDLER)tree);
 	event_attach(on_l, (EVENTHANDLER)funnylight);
 
+	event_attach(on_f5, (EVENTHANDLER)toggle_editor);
 	event_attach(on_mouse_left, (EVENTHANDLER)accept_insert);
 	event_attach(on_mouse_right, (EVENTHANDLER)cancel_insert);
 
@@ -370,7 +395,7 @@ void gamemain()
 				ent_animate(player, "Idle", total_time);
 			}
 
-			placeToGround(&player->position, -0.05);
+			placeToGround(&player->position, 0);
 
 			camera->position = (VECTOR) { 0, 0, camdist };
 			vec_rotate(&camera->position, &camera->rotation);

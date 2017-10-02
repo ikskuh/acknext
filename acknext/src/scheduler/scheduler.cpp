@@ -5,8 +5,7 @@
 #include <algorithm>
 #include <stdlib.h>
 
-#include "../coroutine/coroutine.h"
-
+#include <coroutine.h>
 
 class CoError
 {

@@ -2,7 +2,7 @@
 #define TASK_HPP
 
 #include <engine.hpp>
-#include "../coroutine/coroutine.h"
+#include <coroutine.h>
 
 /*
  * Scheduler system:

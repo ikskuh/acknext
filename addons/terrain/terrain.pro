@@ -14,4 +14,4 @@ SOURCES += \
 
 HEADERS += \
     l3dt/l3dt.h \
-    terrainmodule.h
+    include/acknext/ext/terrainmodule.h

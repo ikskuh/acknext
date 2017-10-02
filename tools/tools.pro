@@ -4,4 +4,5 @@ SUBDIRS += \
     ackrc \
 	MIEP \
     mtlconv \
-    ackfeh
+    ackfeh \
+    terrac

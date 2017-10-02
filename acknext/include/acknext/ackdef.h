@@ -15,6 +15,9 @@
 #define VISIBLE (1<<0)
 #define GLIDE (1<<0)
 #define NOMOVE (1<<1)
+#define PP_SSAO (1<<0)
+#define PP_REINHARD (1<<1)
+#define PP_BLOOM (1<<2)
 #define TESSELATION (1<<0)
 #define LINKED (1<<1)
 #define USE_INSTANCING (1<<2)
@@ -26,6 +29,7 @@ typedef BITFIELD ANIMFLAGS;
 typedef BITFIELD CONFIGFLAGS;
 typedef BITFIELD ENTITYFLAGS;
 typedef BITFIELD MOVEFLAGS;
+typedef BITFIELD PPSTAGES;
 typedef BITFIELD SHADERFLAGS;
 typedef BITFIELD STAGEFLAGS;
 typedef BITFIELD VIEWFLAGS;

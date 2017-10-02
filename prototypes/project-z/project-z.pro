@@ -26,8 +26,8 @@ win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../addons/terrain/r
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../addons/terrain/debug/ -lterrain
 else:unix: LIBS += -L$$OUT_PWD/../../addons/terrain/ -lterrain
 
-INCLUDEPATH += $$PWD/../../addons/terrain
-DEPENDPATH += $$PWD/../../addons/terrain
+INCLUDEPATH += $$PWD/../../addons/terrain/include
+DEPENDPATH += $$PWD/../../addons/terrain/include
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../addons/default/release/ -ldefault
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../addons/default/debug/ -ldefault

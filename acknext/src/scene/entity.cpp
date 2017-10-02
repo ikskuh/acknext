@@ -32,18 +32,25 @@ Entity::Entity() :
 Entity::~Entity()
 {
 	event_invoke(api().removed, demote(this));
-	if(this->previous) {
+	if(this->previous != nullptr) {
+		assert(this->previous->next == this);
 		this->previous->next = this->next;
 	}
-	if(this->next) {
+
+	if(this->next != nullptr) {
+		assert(this->next->previous = this);
 		this->next->previous = this->previous;
 	}
+
 	if(Entity::first == this) {
 		Entity::first = this->next;
 	}
 	if(Entity::last == this) {
-		Entity::last = this->last;
+		Entity::last = this->previous;
 	}
+
+	// When there is a first entity, there must also be a last entity!
+	assert((Entity::first != nullptr) == (Entity::last != nullptr));
 }
 
 #include <engine.hpp>
