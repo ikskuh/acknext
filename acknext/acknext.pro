@@ -156,7 +156,8 @@ SOURCES += \
     src/graphics/core/glenum-translator.cpp \
     src/virtfs/ackfile.cpp \
     src/scene/animation.cpp \
-    src/graphics/opengl/framebuffer.cpp
+    src/graphics/opengl/framebuffer.cpp \
+    src/math/aabb.cpp
 
 RESOURCES += \
     $$TOPDIR/resource/builtin.qrc

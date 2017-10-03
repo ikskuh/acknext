@@ -222,13 +222,26 @@ ACKNEXT_API_BLOCK
 
 	BITMAP * bmap_to_mipmap(BITMAP * bitmap)
 	{
-		Bitmap * bmp = promote<Bitmap>(bitmap);
-		if(bmp == nullptr) {
-			return nullptr;
-		}
+		ARG_NOTNULL(bitmap, nullptr);
 		glTextureParameteri(bitmap->object, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTextureParameteri(bitmap->object, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glGenerateTextureMipmap(bitmap->object);
+		return bitmap;
+	}
+
+	BITMAP * bmap_to_linear(BITMAP * bitmap)
+	{
+		ARG_NOTNULL(bitmap, nullptr);
+		glTextureParameteri(bitmap->object, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTextureParameteri(bitmap->object, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		return bitmap;
+	}
+
+	BITMAP * bmap_to_nearest(BITMAP * bitmap)
+	{
+		ARG_NOTNULL(bitmap, nullptr);
+		glTextureParameteri(bitmap->object, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTextureParameteri(bitmap->object, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		return bitmap;
 	}
 

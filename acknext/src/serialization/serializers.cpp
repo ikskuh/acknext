@@ -327,7 +327,7 @@ MODEL * loadModel(ACKFILE * file, ACKGUID const * guid)
 		free(name);
 	}
 
-	model_updateBoundingBox(result);
+	model_updateBoundingBox(result, true);
 
 	return result;
 }
@@ -403,10 +403,10 @@ static MATERIAL * loadMaterial(ACKFILE * file, ACKGUID const * guid)
 	return result;
 }
 
-static int getNumMimaps(int width, int height, int depth)
+static int getNumMipmaps(int width, int height, int depth)
 {
 	int mips = 0;
-	while(width > 0 && height > 0 && depth > 0) {
+	while(width > 1 || height > 1 || depth > 1) {
 		width /= 2;
 		height /= 2;
 		depth /= 2;
@@ -441,13 +441,20 @@ static BITMAP * loadBitmap(ACKFILE * file, ACKGUID const * guid)
 	result->height = height;
 	result->depth = depth;
 
+	//if(depth > 1 && target == GL_TEXTURE_2D_ARRAY)
+	//	depth = 1; // for mip calculations, assume 2D
+
+	int mipsize = getNumMipmaps(width, height, depth);
+
+	engine_log("mip size: %d,%d,%d → %d", width, height, depth, mipsize);
+
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 	switch(target)
 	{
 		case GL_TEXTURE_1D:
 			glTextureStorage1D(
 				result->object,
-				1,
+				mipsize,
 				format,
 				width);
 			glTextureSubImage1D(
@@ -461,7 +468,7 @@ static BITMAP * loadBitmap(ACKFILE * file, ACKGUID const * guid)
 		case GL_TEXTURE_RECTANGLE:
 			glTextureStorage2D(
 				result->object,
-				1,
+				mipsize,
 				format,
 				width, height);
 			glTextureSubImage2D(
@@ -474,7 +481,7 @@ static BITMAP * loadBitmap(ACKFILE * file, ACKGUID const * guid)
 		case GL_TEXTURE_3D:
 			glTextureStorage3D(
 				result->object,
-				1,
+				mipsize,
 				format,
 				width, height, depth);
 			glTextureSubImage3D(
@@ -487,7 +494,9 @@ static BITMAP * loadBitmap(ACKFILE * file, ACKGUID const * guid)
 			abort();
 	}
 
-	engine_log("loaded: %s %s", GLenumToString(pixelFormat), GLenumToString(pixelType));
+	glGenerateTextureMipmap(result->object);
+
+	// engine_log("loaded: %s %s", GLenumToString(pixelFormat), GLenumToString(pixelType));
 
 	if(pixelFormat == GL_RGBA && pixelType == GL_UNSIGNED_BYTE) {
 		result->pixels = pixels;

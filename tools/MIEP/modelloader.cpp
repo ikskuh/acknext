@@ -352,7 +352,7 @@ MODEL * ModelLoader::load(QString const & _fileName)
 			model->meshes[i]->lodMask |= ANIMATED;
 	}
 
-	model_updateBoundingBox(model);
+	model_updateBoundingBox(model, true);
 
 	return model;
 }

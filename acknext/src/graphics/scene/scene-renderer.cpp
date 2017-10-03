@@ -237,14 +237,6 @@ static SHADER * create_ppshader(char const * pixelop)
 	return ppshader;
 }
 
-static BITMAP * bmap_to_linear(BITMAP * bmp)
-{
-	ARG_NOTNULL(bmp, nullptr);
-	glTextureParameteri(bmp->object, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTextureParameteri(bmp->object, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	return bmp;
-}
-
 ACKNEXT_API_BLOCK
 {
 	CAMERA * camera;

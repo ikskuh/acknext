@@ -177,7 +177,7 @@ ACKFUN MODEL * model_create(int numMeshes, int numBones, int numAnimations);
 
 ACKFUN void model_reshape(MODEL * model, int meshC, int boneC, int animC);
 
-ACKFUN void model_updateBoundingBox(MODEL * model);
+ACKFUN void model_updateBoundingBox(MODEL * model, bool updateMeshes);
 
 // animation api:
 

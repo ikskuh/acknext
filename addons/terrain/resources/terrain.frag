@@ -6,7 +6,7 @@ in vec2 uv0;
 
 uniform int iDebugMode;
 
-uniform sampler2D      texDetail; // required for noise
+uniform sampler2D      texNoise;
 uniform usampler2D     texTerrainMaterial;
 uniform sampler2DArray texTerrainMaterials;
 
@@ -44,7 +44,7 @@ float sum( vec3 v ) { return v.x+v.y+v.z; }
 
 vec3 textureNoTile(in uint ind, in vec2 x, float v )
 {
-    float k = texture( texDetail, 0.005*x ).y; // cheap (cache friendly) lookup
+    float k = texture( texNoise, 0.005 * x ).y; // cheap (cache friendly) lookup
 
     vec2 duvdx = dFdx( x );
     vec2 duvdy = dFdx( x );
@@ -54,7 +54,7 @@ vec3 textureNoTile(in uint ind, in vec2 x, float v )
     float f = fract( l );
 
     vec2 offa = sin(vec2(3.0,7.0)*(i+0.0)); // can replace with any other hash
-    vec2 offb = sin(vec2(3.0,7.0)*(i+1.0)); // can replace with any other hash
+    vec2 offb = sin(vec2(2.0,8.0)*(i+1.5)); // can replace with any other hash
 
     vec3 cola = toLinear(textureGrad( texTerrainMaterials, vec3(x + v*offa, float(ind)), duvdx, duvdy ).rgb);
     vec3 colb = toLinear(textureGrad( texTerrainMaterials, vec3(x + v*offb, float(ind)), duvdx, duvdy ).rgb);

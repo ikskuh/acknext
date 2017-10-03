@@ -71,6 +71,12 @@ typedef struct AABB
 
 ACKVAR VECTOR ACKCONST nullvector;
 
+//
+ACKFUN bool aabb_valid(AABB const * aabb);
+
+// Makes aabb invalid (minimum > maximum)
+ACKFUN void aabb_invalidate(AABB * aabb);
+
 // var Api:
 ACKFUN var maxv(var a, var b);
 ACKFUN var minv(var a, var b);

@@ -12,9 +12,12 @@
 #include <ode/common.h>
 #include <ode/collision.h>
 
+#include <resource-compiler.h>
+
 #include "l3dt/l3dt.h"
 
-#include "resource-compiler.h"
+// Don't use old loader!
+// #define OLDLOADER
 
 DECLARE_RESOURCE(terrain_frag)
 DECLARE_RESOURCE(terrain_tesc)
@@ -29,6 +32,8 @@ static const ACKGUID terrainguid = {{
 }};
 
 static SHADER * shdTerrain;
+
+static int terrainSubdivision = 1;
 
 static ACKTYPE canLoad(ACKGUID const * guid)
 {
@@ -50,9 +55,12 @@ static dGeomID terrainCreateCollider(dSpaceID space, struct MODEL * model)
 	return dCreateHeightfield(space, *data, 1);
 }
 
+#ifdef OLDLOADER
 static MODEL * terrain_load(ACKFILE * file, ACKGUID const * guid)
 {
 	assert(guid_compare(guid, &terrainguid));
+
+	engine_log("begin load");
 
 	BLOB * packed = blob_load("/terrain/GrassyMountains_HF.hfz");
 	BLOB * unpacked = blob_inflate(packed);
@@ -101,9 +109,10 @@ static MODEL * terrain_load(ACKFILE * file, ACKGUID const * guid)
 
 	buffer_unmap(indexBuffer);
 
+	BITMAP * bmpNM    = bmap_to_mipmap(bmap_load("/terrain/GrassyMountains_TN.png"));
+
 	MESH * mesh = mesh_create(GL_QUADS, NULL, indexBuffer);
 	{
-		BITMAP * bmpNM    = bmap_to_mipmap(bmap_load("/terrain/GrassyMountains_TN.png"));
 
 		mesh_setvar(mesh, "vecTerrainSize", GL_INT_VEC2, hf->width, hf->height);
 		mesh_setvar(mesh, "vecTileSize", GL_INT_VEC2, sizeX, sizeY);
@@ -144,8 +153,6 @@ static MODEL * terrain_load(ACKFILE * file, ACKGUID const * guid)
 		GL_RG_INTEGER, GL_UNSIGNED_BYTE,
 		am->data);
 	shader_setvar(model->materials[0], "texTerrainMaterial", GL_UNSIGNED_INT_SAMPLER_2D, amtexture);
-
-	l3af_free(am);
 
 	BITMAP * materials = bmap_create(GL_TEXTURE_2D_ARRAY, GL_RGBA8);
 	{
@@ -247,14 +254,139 @@ static MODEL * terrain_load(ACKFILE * file, ACKGUID const * guid)
 		ACKFILE * file = file_open_write("terrain.esd");
 		file_write_header(file, TYPE_MODEL, terrainguid);
 
+		file_write_uint32(file, hf->width);
+		file_write_uint32(file, hf->height);
+		file_write_float(file, hf->horizontalScale);
 
+		file_write(file, hf->data, sizeof(float) * hf->width * hf->height);
+
+		file_write(file, am->data, sizeof(L3Attribute) * am->width * am->height);
+
+		bmap_write(file, bmpNM);
+
+		bmap_write(file, materials);
 
 		file_close(file);
 	}
 
+	l3af_free(am);
+	engine_log("terrain done");
 
 	return model;
 }
+#else
+static MODEL * terrain_load(ACKFILE * file, ACKGUID const * guid)
+{
+	assert(guid_compare(guid, &terrainguid));
+
+	uint32_t size_x = file_read_uint32(file);
+	uint32_t size_z = file_read_uint32(file);
+	float hscale = file_read_float(file);
+
+	float    * heightmap = malloc(sizeof(float) * size_x * size_z);
+	uint16_t * attribmap = malloc(sizeof(uint16_t) * size_x * size_z);
+
+	file_read(file, heightmap, sizeof(float) * size_x * size_z);
+	file_read(file, attribmap, sizeof(uint16_t) * size_x * size_z);
+
+	BITMAP * normalmap = bmap_to_mipmap(bmap_read(file));
+	BITMAP * materialarray = bmap_to_mipmap(bmap_read(file));
+
+	BITMAP * heightmapTexture = bmap_create(GL_TEXTURE_2D, GL_R32F);
+	{
+		bmap_set(heightmapTexture, size_x, size_z, GL_RED, GL_FLOAT, heightmap);
+
+		bmap_to_linear(heightmapTexture);
+		bmap_to_mipmap(heightmapTexture);
+
+		GLuint hmp = heightmapTexture->object;
+		glTextureParameteri(hmp, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(hmp, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(hmp, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	}
+
+	if(size_x % terrainSubdivision || size_z % terrainSubdivision)
+		engine_log("Warning: Terrain has not a size that is a power of two!");
+
+	const int tiles_x = size_x / terrainSubdivision;
+	const int tiles_z = size_z / terrainSubdivision;
+
+	BUFFER * indexBuffer = buffer_create(INDEXBUFFER);
+	{
+		buffer_set(indexBuffer, 4 * sizeof(INDEX) * tiles_x * tiles_z, NULL);
+		INDEX * indices = buffer_map(indexBuffer, WRITEONLY);
+
+		const int stride = size_x;
+		const int delta = 1;
+		for(int z = 0; z < tiles_z; z++)
+		{
+			for(int x = 0; x < tiles_x; x++)
+			{
+				INDEX * face = &indices[4 * (z * tiles_x + x)];
+				int base = stride * z + delta * x;
+				face[0] = base + 0;
+				face[1] = base + stride;
+				face[2] = base + stride + delta;
+				face[3] = base + delta;
+			}
+		}
+
+		buffer_unmap(indexBuffer);
+	}
+
+	MESH * mesh = mesh_create(GL_QUADS, NULL, indexBuffer);
+	{
+		mesh_setvar(mesh, "vecTerrainSize", GL_INT_VEC2, size_x, size_z);
+		mesh_setvar(mesh, "vecTileSize", GL_INT_VEC2, terrainSubdivision, terrainSubdivision);
+		mesh_setvar(mesh, "texHeightmap", GL_SAMPLER_2D, heightmapTexture);
+		mesh_setvar(mesh, "fTerrainScale", GL_FLOAT, hscale);
+		mesh_setvar(mesh, "texNormalMap", GL_SAMPLER_2D, normalmap);
+
+		// TODO: Maybe compute correct bounding box later!
+		aabb_invalidate(&mesh->boundingBox);
+	}
+
+	MODEL * terrain = model_create(1, 0, 0);
+	{
+		terrain->meshes[0] = mesh;
+		terrain->materials[0] = mtl_create();
+		terrain->materials[0]->shader = shdTerrain;
+
+		model_updateBoundingBox(terrain, false);
+	}
+
+	BITMAP * amtexture = bmap_create(GL_TEXTURE_2D, GL_RG8UI);
+	bmap_set(amtexture,
+		size_x, size_z,
+		GL_RG_INTEGER, GL_UNSIGNED_BYTE,
+		attribmap);
+	bmap_to_nearest(amtexture);
+
+	shader_setvar(terrain->materials[0], "texTerrainMaterial", GL_UNSIGNED_INT_SAMPLER_2D, amtexture);
+	shader_setvar(terrain->materials[0], "texTerrainMaterials", GL_SAMPLER_2D_ARRAY, materialarray);
+
+	{ // Setup heightmap data
+		dHeightfieldDataID heightfield = dGeomHeightfieldDataCreate();
+		dGeomHeightfieldDataBuildSingle(
+			heightfield,
+			heightmap,
+			1, // please copy hf data, not reference
+			hscale * (size_x - 1), hscale * (size_z - 1), // real size
+			size_x, size_z, // data point size
+			1.0, 0.0, // no scale/offset, we have already correct height data
+			1000.0, // 1km thick terrain
+			0); // no wrap
+
+		obj_setvar(terrain, "terrain-collider-data", ACK_POINTER, heightfield);
+		terrain->createCollider = &terrainCreateCollider;
+	}
+
+	free(heightmap);
+	free(attribmap);
+
+	return terrain;
+}
+#endif
 
 float terrain_getheight(MODEL * terrain, float x, float z)
 {
@@ -324,11 +456,10 @@ void terrainmodule_init()
 		shader_addFileSource(shdTerrain, FRAGMENTSHADER, "/builtin/shaders/fog.glsl");
 		shader_link(shdTerrain);
 
-		int iSubdivision;
-		glGetIntegerv(GL_MAX_TESS_GEN_LEVEL, &iSubdivision);
-		engine_log("Maximum subdivision: %d", iSubdivision);
+		glGetIntegerv(GL_MAX_TESS_GEN_LEVEL, &terrainSubdivision);
+		engine_log("Using terrain subdivision subdivision: %d", terrainSubdivision);
 
-		shader_setvar(shdTerrain, "iSubdivision", GL_INT, iSubdivision);
+		shader_setvar(shdTerrain, "iSubdivision", GL_INT, terrainSubdivision);
 		shader_setvar(shdTerrain, "vecTesselationParameters", GL_FLOAT_VEC3,
 			20.0f, // tesselation rate
 			32.0f, // ???

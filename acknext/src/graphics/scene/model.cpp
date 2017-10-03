@@ -119,7 +119,7 @@ ACKNEXT_API_BLOCK
 		return Extension::load<MODEL>(file_open_read(fileName));
 	}
 
-	void model_updateBoundingBox(MODEL * model)
+	void model_updateBoundingBox(MODEL * model, bool updateMeshes)
 	{
 		ARG_NOTNULL(model, );
 
@@ -129,7 +129,14 @@ ACKNEXT_API_BLOCK
 		for(int i = 0; i < model->meshCount; i++)
 		{
 			auto * mesh = model->meshes[i];
-			mesh_updateBoundingBox(mesh);
+
+			if(updateMeshes)
+				mesh_updateBoundingBox(mesh);
+
+			if(aabb_valid(&mesh->boundingBox) == false) {
+				aabb_invalidate(&aabb);
+				return;
+			}
 
 			aabb.maximum.x = maxv(aabb.maximum.x, mesh->boundingBox.maximum.x);
 			aabb.maximum.y = maxv(aabb.maximum.y, mesh->boundingBox.maximum.y);

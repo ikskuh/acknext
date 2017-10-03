@@ -81,6 +81,8 @@ ACKFUN void bmap_set(
 ACKFUN void bmap_remove(BITMAP * bitmap);
 
 ACKFUN BITMAP * bmap_to_mipmap(BITMAP * bitmap);
+ACKFUN BITMAP * bmap_to_linear(BITMAP * bitmap);
+ACKFUN BITMAP * bmap_to_nearest(BITMAP * bitmap);
 
 // Framebuffer Api:
 

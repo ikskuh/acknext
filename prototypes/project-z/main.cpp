@@ -60,7 +60,6 @@ static bool placeToGround(VECTOR * ref, float distance)
 		vec_add(vec_clone(ref), vector(0, -10000, 0)),
 		TERRAIN_MASK);
 	if(hit) {
-		engine_log("hit: %f %p(%d)", hit->distance, hit->hull, hit->hull->type);
 		draw_point3d(&hit->contact, &COLOR_MAGENTA);
 		ref->y = hit->contact.y + distance;
 	}
@@ -317,7 +316,7 @@ void gamemain()
 		}
 	}
 
-	terrain = ent_create("/terrain/GrassyMountains.terrain", vector(0,0,0), NULL);
+	terrain = ent_create("/terrain.esd", vector(0,0,0), NULL);
 	terrain->categories = TERRAIN_MASK;
 
 	LIGHT * sun = light_create(SUNLIGHT);
