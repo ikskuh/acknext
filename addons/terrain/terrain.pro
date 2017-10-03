@@ -21,10 +21,3 @@ RAWDATA += \
     resources/terrain.tese \
     resources/terrain.frag \
     resources/terrain.vert
-
-DISTFILES += \
-    resources/terrain.tesc \
-    resources/terrain.tese \
-    resources/terrain.frag \
-    resources/terrain.vert
-
