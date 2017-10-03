@@ -202,7 +202,8 @@ void outsider()
 				0.0125,
 				1.0,
 			};
-			if(ImGui::ListBox("Spawn List", &selection, items, 2))
+			ImGui::Text("Select Model:");
+			if(ImGui::ListBox("##Spawn List", &selection, items, 2))
 			{
 				// Selection changed
 			}
@@ -414,11 +415,11 @@ void gamemain()
 				0.4);
 		}
 
-		if(editorMode)
+		if(editorMode && entToInsert)
 		{
 			VECTOR from, to;
-			from = { mouse_pos.x, mouse_pos.y, 0 };
-			to   = { mouse_pos.x, mouse_pos.y, 100 };
+			from = { float(mouse_pos.x), float(mouse_pos.y), 0 };
+			to   = { float(mouse_pos.x), float(mouse_pos.y), 100 };
 
 			vec_for_screen(&from, camera, NULL);
 			vec_for_screen(&to, camera, NULL);

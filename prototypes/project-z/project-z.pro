@@ -6,7 +6,7 @@ CONFIG -= qt
 unix: CONFIG += link_pkgconfig
 unix: PKGCONFIG += zlib
 
-CONFIG += acknext-terrain acknext-imgui acknext-default acknext-cef
+CONFIG += acknext-terrain acknext-imgui acknext-default
 
 include($$TOPDIR/acknext/acknext.pri)
 include($$TOPDIR/addons/addons.pri)
