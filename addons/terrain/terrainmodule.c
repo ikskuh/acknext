@@ -14,6 +14,13 @@
 
 #include "l3dt/l3dt.h"
 
+#include "resource-compiler.h"
+
+DECLARE_RESOURCE(terrain_frag)
+DECLARE_RESOURCE(terrain_tesc)
+DECLARE_RESOURCE(terrain_tese)
+DECLARE_RESOURCE(terrain_vert)
+
 static const ACKGUID terrainguid = {{
 	0x55, 0x07, 0xC2, 0x7D,
 	0x37, 0xB7, 0x46, 0x23,
@@ -282,14 +289,35 @@ static EXTENSION terraX =
 
 void terrainmodule_init()
 {
+	engine_log("Initialize terrain extension...");
 	ext_register("Acknext Terrain Module", &terraX);
 
 	shdTerrain = shader_create();
 	{
-		shader_addFileSource(shdTerrain, VERTEXSHADER, "shaders/terrain.vert");
-		shader_addFileSource(shdTerrain, TESSCTRLSHADER, "shaders/terrain.tesc");
-		shader_addFileSource(shdTerrain, TESSEVALSHADER, "shaders/terrain.tese");
-		shader_addFileSource(shdTerrain, FRAGMENTSHADER, "shaders/terrain.frag");
+		shader_addSourceExt(
+			shdTerrain,
+			VERTEXSHADER,
+			RESOURCE_DATA(terrain_vert),
+			RESOURCE_SIZE(terrain_vert));
+
+		shader_addSourceExt(
+			shdTerrain,
+			TESSCTRLSHADER,
+			RESOURCE_DATA(terrain_tesc),
+			RESOURCE_SIZE(terrain_tesc));
+
+		shader_addSourceExt(
+			shdTerrain,
+			TESSEVALSHADER,
+			RESOURCE_DATA(terrain_tese),
+			RESOURCE_SIZE(terrain_tese));
+
+		shader_addSourceExt(
+			shdTerrain,
+			FRAGMENTSHADER,
+			RESOURCE_DATA(terrain_frag),
+			RESOURCE_SIZE(terrain_frag));
+
 		shader_addFileSource(shdTerrain, FRAGMENTSHADER, "/builtin/shaders/lighting.glsl");
 		shader_addFileSource(shdTerrain, FRAGMENTSHADER, "/builtin/shaders/gamma.glsl");
 		shader_addFileSource(shdTerrain, FRAGMENTSHADER, "/builtin/shaders/ackpbr.glsl");
@@ -308,8 +336,6 @@ void terrainmodule_init()
 		);
 	}
 
-	obj_listvar(shdTerrain);
-
-	// Äh wut, aber ja, ist sinnvoller so im moment
+	// Setup the shader uniforms of itself
 	shader_setUniforms(shdTerrain, shdTerrain, true);
 }

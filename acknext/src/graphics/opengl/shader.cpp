@@ -24,6 +24,55 @@ Shader::~Shader()
 	glDeleteProgram(api().object);
 }
 
+static bool addSource(SHADER * _shader, GLenum type, const char * source, GLint * size)
+{
+	Shader * shader = promote<Shader>(_shader);
+	if(shader == nullptr) {
+		engine_seterror(ERR_INVALIDARGUMENT, "shader must not be NULL!");
+		return false;
+	}
+	if(shader->api().flags & LINKED) {
+		engine_seterror(ERR_INVALIDOPERATION, "Shader is already linked!");
+		return false;
+	}
+
+	GLuint sh = glCreateShader(type);
+	if(sh == 0) {
+		return false;
+	}
+	glShaderSource(sh, 1, &source, size);
+	glCompileShader(sh);
+
+	GLint status;
+	glGetShaderiv(sh, GL_COMPILE_STATUS, &status);
+
+	GLint len;
+	glGetShaderiv(sh, GL_INFO_LOG_LENGTH, &len);
+
+	std::vector<GLchar> log(len + 1);
+	glGetShaderInfoLog(sh, log.size(), &len, log.data());
+	log[len] = 0;
+
+	if(status != GL_TRUE) {
+		engine_log("Failed to compile shader: %s", log.data());
+		glDeleteShader(sh);
+		return false;
+	}
+
+	if(len > 0) {
+		engine_log("shader log: %s", log.data());
+	}
+
+	shader->shaders.push_back(sh);
+	glAttachShader(shader->api().object, sh);
+
+	if(type == TESSCTRLSHADER || type == TESSEVALSHADER) {
+		shader->api().flags |= TESSELATION;
+	}
+
+	return true;
+}
+
 ACKNEXT_API_BLOCK
 {
 	SHADER * shader_create()
@@ -31,53 +80,15 @@ ACKNEXT_API_BLOCK
 		return demote(new Shader());
 	}
 
-	bool shader_addSource(SHADER * _shader, GLenum type, const char * source)
+	bool shader_addSource(SHADER * shader, GLenum type, const char * source)
 	{
-		Shader * shader = promote<Shader>(_shader);
-		if(shader == nullptr) {
-			engine_seterror(ERR_INVALIDARGUMENT, "shader must not be NULL!");
-			return false;
-		}
-		if(shader->api().flags & LINKED) {
-			engine_seterror(ERR_INVALIDOPERATION, "Shader is already linked!");
-			return false;
-		}
+		return addSource(shader, type, source, nullptr);
+	}
 
-		GLuint sh = glCreateShader(type);
-		if(sh == 0) {
-			return false;
-		}
-		glShaderSource(sh, 1, &source, nullptr);
-		glCompileShader(sh);
-
-		GLint status;
-		glGetShaderiv(sh, GL_COMPILE_STATUS, &status);
-
-		GLint len;
-		glGetShaderiv(sh, GL_INFO_LOG_LENGTH, &len);
-
-		std::vector<GLchar> log(len + 1);
-		glGetShaderInfoLog(sh, log.size(), &len, log.data());
-		log[len] = 0;
-
-		if(status != GL_TRUE) {
-			engine_log("Failed to compile shader: %s", log.data());
-			glDeleteShader(sh);
-			return false;
-		}
-
-		if(len > 0) {
-			engine_log("shader log: %s", log.data());
-		}
-
-		shader->shaders.push_back(sh);
-		glAttachShader(shader->api().object, sh);
-
-		if(type == TESSCTRLSHADER || type == TESSEVALSHADER) {
-			shader->api().flags |= TESSELATION;
-		}
-
-		return true;
+	ACKFUN bool shader_addSourceExt(SHADER * shader, GLenum type, void const * source, size_t length)
+	{
+		GLint len = length;
+		return addSource(shader, type, (char const *)source, &len);
 	}
 
 	bool shader_addFileSource(SHADER * shader, GLenum type, const char * fileName)

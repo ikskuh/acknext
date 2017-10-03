@@ -5,5 +5,4 @@ CONFIG -= qt
 
 SOURCES += main.cpp
 
-include($$PWD/../../common.pri)
-include($$PWD/../../acknext/acknext.pri)
+include($$TOPDIR/acknext/acknext.pri)

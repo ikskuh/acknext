@@ -21,12 +21,15 @@ extern "C"
 {
 #endif
 
-
-
+// Initialized and creates a top layer view for dear imgui to draw an
+// also initializes dear imgui, so all ImGui::* functions can be called
+// afterwards
 void ackgui_init();
 
+// returns the view created by ackgui_init
+// if no view is created yet, the initialization will be done and
+// a view is returned.
 VIEW * ackgui_getView();
-
 
 #ifdef __cplusplus
 }

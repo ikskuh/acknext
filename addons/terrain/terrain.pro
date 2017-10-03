@@ -4,8 +4,8 @@ CONFIG += c++11
 CONFIG -= app_bundle
 CONFIG -= qt
 
-include($$PWD/../../common.pri)
-include($$PWD/../../acknext/acknext.pri)
+include($$TOPDIR/utilities/resource-compiler/resource-compiler.pri)
+include($$TOPDIR/acknext/acknext.pri)
 
 SOURCES += \
     l3dt/heightfield.c \
@@ -14,4 +14,17 @@ SOURCES += \
 
 HEADERS += \
     l3dt/l3dt.h \
-    include/acknext/ext/terrainmodule.h
+    include/acknext/ext/terrain.h
+
+RAWDATA += \
+    resources/terrain.tesc \
+    resources/terrain.tese \
+    resources/terrain.frag \
+    resources/terrain.vert
+
+DISTFILES += \
+    resources/terrain.tesc \
+    resources/terrain.tese \
+    resources/terrain.frag \
+    resources/terrain.vert
+

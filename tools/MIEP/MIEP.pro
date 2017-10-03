@@ -22,13 +22,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-include($$PWD/../../common.pri)
-include($$PWD/../../acknext/acknext.pri)
+include($$TOPDIR/acknext/acknext.pri)
 
 unix: CONFIG += link_pkgconfig
 unix: PKGCONFIG += assimp
-
-INCLUDEPATH += $$PWD/../acknext/include
 
 SOURCES += \
         main.cpp \
@@ -73,4 +70,4 @@ FORMS += \
     bitmaskeditor.ui
 
 RESOURCES += \
-    ../../resource/ackui.qrc
+    $$TOPDIR/resource/ackui.qrc

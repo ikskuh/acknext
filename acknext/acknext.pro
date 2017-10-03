@@ -22,8 +22,6 @@ LIBS += -lphysfs
 
 DEFINES += _ACKNEXT_INTERNAL_
 
-include($$PWD/../common.pri)
-
 ackScheduler {
 	DISTFILES += \
 		linker.ld
@@ -161,7 +159,7 @@ SOURCES += \
     src/graphics/opengl/framebuffer.cpp
 
 RESOURCES += \
-    $$PWD/../resource/builtin.qrc
+    $$TOPDIR/resource/builtin.qrc
 
 DISTFILES += \
     acknext.pri

@@ -31,6 +31,14 @@ static void toggleWFrame(void*x)
 	opengl_wireFrame = !opengl_wireFrame;
 }
 
+// on f4 or escape
+static void defaultShutdown(void*x)
+{
+	(void)x;
+	if(key_lalt) // alt-escape or alt-f4 kills the engine
+		engine_shutdown();
+}
+
 static void default_loop()
 {
 	var pan = 0;
@@ -69,9 +77,10 @@ void default_init()
 {
 	task_defer((ENTRYPOINT)default_loop, NULL);
 
+	event_attach(on_f4,  defaultShutdown);
 	event_attach(on_f8,  toggleWFrame);
 	event_attach(on_f9,  switchDebugMode);
 	event_attach(on_f10, toggleColliderDebug);
 	event_attach(on_f12, toggleMovement);
-	event_attach(on_escape, (EVENTHANDLER)engine_shutdown);
+	event_attach(on_escape, defaultShutdown);
 }

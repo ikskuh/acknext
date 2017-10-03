@@ -127,9 +127,11 @@ ACKFUN void buffer_remove(BUFFER * buffer);
 
 ACKFUN SHADER * shader_create();
 
-ACKFUN bool shader_addSource(SHADER * shader, GLenum type, const char * source);
+ACKFUN bool shader_addSource(SHADER * shader, GLenum type, char const * source);
 
-ACKFUN bool shader_addFileSource(SHADER * shader, GLenum type, const char * fileName);
+ACKFUN bool shader_addSourceExt(SHADER * shader, GLenum type, void const * source, size_t length);
+
+ACKFUN bool shader_addFileSource(SHADER * shader, GLenum type, char const * fileName);
 
 ACKFUN bool shader_link(SHADER * shader);
 

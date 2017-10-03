@@ -2,7 +2,7 @@
 #include <acknext.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <default.h>
+#include <acknext/ext/default.h>
 
 VECTOR cursor3d;
 

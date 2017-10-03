@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <acknext.h>
+#include <acknext/ext/default.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <GL/gl3w.h>
 #include <math.h>
-#include <default.c>
 
 void debug_tools();
 

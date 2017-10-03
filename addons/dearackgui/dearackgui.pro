@@ -4,16 +4,11 @@ CONFIG += c++11
 CONFIG -= app_bundle
 CONFIG -= qt
 
-include($$PWD/../../common.pri)
-include($$PWD/../../acknext/acknext.pri)
+include($$TOPDIR/acknext/acknext.pri)
+include($$TOPDIR/extern/imgui/imgui.pri)
 
 SOURCES += \
-    ../../../imgui/imgui.cpp \
-    ../../../imgui/imgui_draw.cpp \
-    ../../../imgui/imgui_demo.cpp \
     ackgui.cpp
 
 HEADERS += \
-    ackgui.h
-
-INCLUDEPATH += $$PWD/../../../imgui/
+    include/acknext/ext/ackgui.h

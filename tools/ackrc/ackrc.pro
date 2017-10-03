@@ -8,8 +8,5 @@ SOURCES += \
     process-texture.cpp \
     main.cpp
 
-include($$PWD/../../common.pri)
-include($$PWD/../../acknext/acknext.pri)
-
-HEADERS += \
-    json.hpp
+include($$TOPDIR/acknext/acknext.pri)
+include($$TOPDIR/extern/json/json.pri)

@@ -6,3 +6,6 @@ SUBDIRS += \
     default \
     ackcef \
     dearackgui
+
+DISTFILES += \
+	addons.pri

@@ -6,8 +6,7 @@ TEMPLATE = lib
 CONFIG -= app_bundle
 CONFIG -= qt
 
-include($$PWD/../../common.pri)
-include($$PWD/../../acknext/acknext.pri)
+include($$TOPDIR/acknext/acknext.pri)
 
 LIBS += -L/opt/cef-minimal/Release/ -lcef
 INCLUDEPATH += /opt/cef-minimal
@@ -19,4 +18,4 @@ SOURCES += \
     ackcef.cpp
 
 HEADERS += \
-        ackcef.h
+	include/acknext/ext/ackcef.h

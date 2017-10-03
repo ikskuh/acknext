@@ -4,11 +4,10 @@ CONFIG -= qt
 CONFIG += c++11
 # CONFIG += staticlib
 
-include($$PWD/../../common.pri)
-include($$PWD/../../acknext/acknext.pri)
+include($$TOPDIR/acknext/acknext.pri)
 
 SOURCES += \
     default.c
 
 HEADERS += \
-    default.h
+    include/acknext/ext/default.h

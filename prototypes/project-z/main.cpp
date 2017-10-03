@@ -1,6 +1,8 @@
 #include <acknext.h>
 #include <acknext/serialization.h>
 #include <acknext/ext/terrain.h>
+#include <acknext/ext/ackgui.h>
+#include <acknext/ext/default.h>
 #include <zlib.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,10 +14,8 @@
 
 #include <assert.h>
 
-#include <default.h>
 
 // #include <ackcef.h>
-#include <ackgui.h>
 
 #ifdef _ACKNEXT_EXT_ACKCEF_H_
 VIEW * cefview;
