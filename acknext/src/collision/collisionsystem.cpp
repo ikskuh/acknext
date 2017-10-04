@@ -198,6 +198,7 @@ ACKNEXT_API_BLOCK
 
 		dGeomID ray = dCreateRay(0, vec_length(dist));
 		dGeomSetCollideBits(ray, mask);
+		dGeomSetCategoryBits(ray, 0);
 
 		vec_normalize(dist, 1);
 		dGeomRaySet(

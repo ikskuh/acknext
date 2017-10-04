@@ -28,7 +28,7 @@ fragmentshaders: shaders/ackpbr.glsl shaders/gamma.glsl \
 
 vertexshaders: $(filter %.vert,$(RESOURCES))
 	glslangValidator -S vert $^
-	
+
 clean:
 	rm resource.zip
 

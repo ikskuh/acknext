@@ -334,9 +334,10 @@ void gamemain()
 	tree();
 
 	player = ent_create("/other/cyber-pirate/cyber-pirate.amd", vector(0, 0, 0), NULL);
+	player->categories = PLAYER_MASK;
 	vec_fill(&player->scale, 0.15);
 
-	// hull_createBox(player, vector(1, 2.5, 1));
+	hull_createBox(player, vector(1,2.5,1));
 
 	ACKFILE * file = file_open_read("player.dat");
 	if(file) {

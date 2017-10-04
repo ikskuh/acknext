@@ -17,7 +17,6 @@ uniform vec3 vecAttributes;
 uniform vec3 vecViewPos;
 uniform vec3 vecViewDir;
 
-
 layout(location = 0) out vec3 frag_Color;
 layout(location = 1) out vec3 frag_Position;
 layout(location = 2) out vec3 frag_Normal;
@@ -47,7 +46,7 @@ vec3 textureNoTile(in uint ind, in vec2 x, float v )
     float k = texture( texNoise, 0.005 * x ).y; // cheap (cache friendly) lookup
 
     vec2 duvdx = dFdx( x );
-    vec2 duvdy = dFdx( x );
+    vec2 duvdy = dFdy( x );
 
     float l = k*8.0;
     float i = floor( l );

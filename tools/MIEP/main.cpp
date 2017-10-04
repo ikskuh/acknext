@@ -13,6 +13,8 @@ int main(int argc, char *argv[])
 	engine_config.application = "Team Retro";
 	engine_config.application = "AckMIEP";
 
+	pp_stages &= ~(PP_SSAO | PP_REINHARD);
+
 	QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
 	QApplication a(argc, argv);
 	MainWindow w;

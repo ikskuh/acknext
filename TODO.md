@@ -4,6 +4,8 @@
 
 - STORE TEXTURES without Y flip (so y=0 is bottom!)
   → Neat OpenGL-Texture-Compatibility, also more logically
+
+- Store textures without gamma (ALWAAAAYS)
 	
 ## Implement
 - MODEL
