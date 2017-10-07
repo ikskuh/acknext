@@ -4,8 +4,6 @@
 
 - Store textures without gamma (ALWAAAAYS)
 
-
-	
 ## Implement
 - MODEL
 - Collider API

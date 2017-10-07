@@ -21,13 +21,41 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <libgimp/gimp.h>
-#include <libgimp/gimpui.h>
+#include <gimp-2.0/libgimp/gimp.h>
+#include <gimp-2.0/libgimp/gimpui.h>
 #include <GL/gl.h>
 
 const char LOAD_PROCEDURE[] = "file-atx-load";
 const char SAVE_PROCEDURE[] = "file-atx-save";
 const char BINARY_NAME[]    = "file-atx";
+
+// assume 2.2
+float librc_image_gamma = 2.2;
+
+static uint8_t linearize(uint8_t value)
+{
+	float nonlin = (value / 255.0);
+	float linear = pow(nonlin, librc_image_gamma);
+	assert(linear >= 0.0 && linear <= 1.0); // this is important!
+
+	int linearized = (int)(round(255.0 * linear));
+	assert(linearized >= 0 && linearized <= 255); // this is also important!
+
+	return (uint8_t)(linearized);
+}
+
+static uint8_t delinearize(uint8_t value)
+{
+	float nonlin = (value / 255.0);
+	float linear = pow(nonlin, 1.0 / librc_image_gamma);
+	assert(linear >= 0.0 && linear <= 1.0); // this is important!
+
+	int linearized = (int)(round(255.0 * linear));
+	assert(linearized >= 0 && linearized <= 255); // this is also important!
+
+	return (uint8_t)(linearized);
+}
+
 
 // Predeclare our entrypoints
 void query();
@@ -398,9 +426,9 @@ static int read_atx(const gchar * filename)
 					int g = readChan(&data, pixeldata, x, y, z, ig);
 					int b = readChan(&data, pixeldata, x, y, z, ib);
 
-					imagedata[3 * (width * y + x) + 0] = limit(r);
-					imagedata[3 * (width * y + x) + 1] = limit(g);
-					imagedata[3 * (width * y + x) + 2] = limit(b);
+					imagedata[3 * (width * y + x) + 0] = delinearize(limit(r));
+					imagedata[3 * (width * y + x) + 1] = delinearize(limit(g));
+					imagedata[3 * (width * y + x) + 2] = delinearize(limit(b));
 				}
 			}
 		}
@@ -424,10 +452,10 @@ static int read_atx(const gchar * filename)
 					int b = readChan(&data, pixeldata, x, y, z, ib);
 					int a = readChan(&data, pixeldata, x, y, z, ia);
 
-					imagedata[4 * (width * y + x) + 0] = limit(r);
-					imagedata[4 * (width * y + x) + 1] = limit(g);
-					imagedata[4 * (width * y + x) + 2] = limit(b);
-					imagedata[4 * (width * y + x) + 3] = limit(a);
+					imagedata[4 * (width * y + x) + 0] = delinearize(limit(r));
+					imagedata[4 * (width * y + x) + 1] = delinearize(limit(g));
+					imagedata[4 * (width * y + x) + 2] = delinearize(limit(b));
+					imagedata[4 * (width * y + x) + 3] = delinearize(limit(a));
 				}
 			}
 		}
@@ -534,6 +562,11 @@ static int write_atx(const gchar * filename, gint drawable_id)
 
     // Detach the drawable
     gimp_drawable_detach(drawable);
+
+	for(size_t i = 0; i < (size_t)width * (size_t)height * (size_t)bpp; i++)
+	{
+		image_data[i] = linearize(image_data[i]);
+	}
 
     // Open the file
     FILE * file = fopen(filename, "wb");

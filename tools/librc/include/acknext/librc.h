@@ -33,6 +33,14 @@ typedef struct rcMaterial
 	bool shareTextures; // flag for modifying the texture symlink to share resources
 } rcMaterial;
 
+
+// used for linearizing LDR images.
+extern float librc_image_gamma; // = 2.2
+
+/******************************************************************************
+ * Generic API                                                                *
+ ******************************************************************************/
+
 void librc_init(rcLogCallback callback);
 
 void librc_close();
@@ -43,7 +51,6 @@ void librc_close();
 
 // Access ATX textures
 void librc_write_image(ACKFILE * dest, rcImage const * image);
-rcImage * librc_read_image(ACKFILE * src);
 
 // read from "real" filesys
 rcImage * librc_load_image(char const * fileName);

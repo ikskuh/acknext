@@ -54,7 +54,7 @@ static char const * fragmentShader = "#version 330" "\n"
 "void main()" "\n"
 "{" "\n"
 "	color = texture(tex, uv);" "\n"
-// "	color.xyw = vec3(uv, 1);" "\n"
+"	color.rgb = pow(color.rgb, vec3(1.0 / 2.2));" "\n"
 "}";
 
 

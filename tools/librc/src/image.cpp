@@ -1,6 +1,20 @@
 #include "librc.h"
 #include <stb_image.h>
 
+float librc_image_gamma = 2.2;
+
+static uint8_t linearize(uint8_t value)
+{
+	float nonlin = (value / 255.0);
+	float linear = pow(nonlin, librc_image_gamma);
+	assert(linear >= 0.0 && linear <= 1.0); // this is important!
+
+	int linearized = int(round(255.0 * linear));
+	assert(linearized >= 0 && linearized <= 255); // this is also important!
+
+	return uint8_t(linearized);
+}
+
 C_API void librc_write_image(ACKFILE * outfile, rcImage const * image)
 {
 	assert(outfile);
@@ -20,13 +34,6 @@ C_API void librc_write_image(ACKFILE * outfile, rcImage const * image)
 	file_write_uint32(outfile, image->bufsiz);
 
 	file_write(outfile, image->pixels, image->bufsiz);
-}
-
-C_API rcImage * librc_read_image(ACKFILE * src)
-{
-	assert(src);
-
-	return nullptr;
 }
 
 C_API rcImage * librc_load_image(char const * fileName)
@@ -62,6 +69,13 @@ C_API rcImage * librc_load_image(char const * fileName)
 			LOG("Failed to load %s as an image", fileName);
 			fclose(file);
 			return nullptr;
+		}
+
+		// now linearize the LDR image
+		uint8_t * pixels = ldr;
+		for(size_t i = 0; i < size_t(n)*size_t(w)*size_t(h); i++)
+		{
+			pixels[i] = linearize(pixels[i]);
 		}
 	}
 
@@ -101,7 +115,7 @@ C_API rcImage * librc_load_image(char const * fileName)
 		const size_t stride = n * w * (hdr ? 4 : 1);
 		uint8_t scanline[stride];
 		uint8_t * pixels = (uint8_t*)img->pixels;
-		for(uint y = 0; y < h/2; y++)
+		for(uint y = 0; y < size_t(h)/2; y++)
 		{
 			void * lower = &pixels[y * stride];
 			void * upper = &pixels[(h - y - 1) * stride];
