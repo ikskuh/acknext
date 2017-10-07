@@ -29,12 +29,6 @@ uniform vec3 vecViewDir;
 
 uniform bool useNormalMapping = false;
 
-vec3 toLinear(vec3 v);
-vec4 toLinear(vec4 v);
-
-vec3 toGamma(vec3 v);
-vec4 toGamma(vec4 v);
-
 vec3 applyLighting(
 	vec3 position,
 	vec3 normal,
@@ -47,8 +41,8 @@ uniform int iLightCount;
 
 void main() {
 
-	vec4 cAlbedo = vecAlbedo * vec4(toLinear(color),1) * toLinear(texture(texAlbedo, uv0));
-	vec4 cEmissive = vecEmission * toLinear(texture(texEmission, uv0));
+	vec4 cAlbedo = vecAlbedo * vec4(color,1) * texture(texAlbedo, uv0);
+	vec4 cEmissive = vecEmission * texture(texEmission, uv0);
 
 	// cAttribute = [ roughness, metallic, fresnell ]
 	vec4 cAttribute = vec4(vecAttributes, 1) * texture(texAttributes, uv0);

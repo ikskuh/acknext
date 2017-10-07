@@ -46,6 +46,7 @@ typedef struct
 typedef struct
 {
 	int drawcalls;
+	long long polygons; // Number of polygons
 	float gpuTime; // GPU time in milliseconds for all drawcalls
 } ENGINESTATS;
 

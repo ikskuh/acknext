@@ -2,10 +2,9 @@
 
 ## Fix / Update / Refactor
 
-- STORE TEXTURES without Y flip (so y=0 is bottom!)
-  → Neat OpenGL-Texture-Compatibility, also more logically
-
 - Store textures without gamma (ALWAAAAYS)
+
+
 	
 ## Implement
 - MODEL
@@ -30,6 +29,7 @@
 - File API
 	- benutzerdefiniert (bereitstellung von read/write impl)
 	- wrapper um streams (gzip inflate/deflate)
+	- backref und marker
 
 ## Fancy Stuff
 - ATX GIMP Plugin

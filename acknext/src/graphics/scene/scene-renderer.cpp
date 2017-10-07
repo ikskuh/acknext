@@ -294,7 +294,6 @@ ACKNEXT_API_BLOCK
 		MATRIX matView, matProj;
 		camera_to_matrix(perspective, &matView, &matProj, view_current);
 
-
 		if(stageScene == nullptr)
 		{
 			stageScene = framebuf_create();

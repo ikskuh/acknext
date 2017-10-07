@@ -12,7 +12,8 @@ include($$TOPDIR/acknext/acknext.pri)
 include($$TOPDIR/addons/addons.pri)
 
 SOURCES += \
-    main.cpp
+    main.cpp \
+    gui_drawperf.cpp
 
 DISTFILES += \
     resources/shaders/fastobject.frag \

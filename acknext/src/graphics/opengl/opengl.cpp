@@ -300,6 +300,7 @@ ACKNEXT_API_BLOCK
 		currentShader->useBones = false;
 		opengl_setVertexBuffer(fullscreenQuadBuffer);
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		engine_stats.drawcalls++;
 	}
 
 	void opengl_setMaterial(MATERIAL const * material)

@@ -36,7 +36,62 @@ ACKNEXT_API_BLOCK
 	VIEW * view_current;
 }
 
-static GLuint renderTimeQuery;
+struct drawquery
+{
+	GLuint renderTimeQuery, primitiveQuery;
+
+	drawquery()
+	{
+		glCreateQueries(GL_TIME_ELAPSED, 1, &renderTimeQuery);
+		glCreateQueries(GL_PRIMITIVES_GENERATED, 1, &primitiveQuery);
+	}
+
+	~drawquery()
+	{
+
+	}
+
+	void begin()
+	{
+		glBeginQuery(GL_TIME_ELAPSED, renderTimeQuery);
+		glBeginQuery(GL_PRIMITIVES_GENERATED, primitiveQuery);
+	}
+
+	void end()
+	{
+		glEndQuery(GL_PRIMITIVES_GENERATED);
+		glEndQuery(GL_TIME_ELAPSED);
+	}
+
+	void copyTo(ENGINESTATS & stats)
+	{
+		ulong time;
+		glGetQueryObjectui64v(renderTimeQuery, GL_QUERY_RESULT, &time);
+		stats.gpuTime = time / 1000000.0;
+
+		ulong count;
+		glGetQueryObjectui64v(primitiveQuery, GL_QUERY_RESULT, &count);
+		stats.polygons = count;
+	}
+};
+
+static drawquery & getQuery()
+{
+	static std::vector<drawquery> queries;
+	static uint nextQuery = 0;
+	if(queries.size() == 0)
+	{
+		// Create two queries
+		queries.emplace_back();
+		queries.emplace_back();
+	}
+
+	drawquery & q = queries[nextQuery];
+	nextQuery += 1;
+	if(nextQuery >= queries.size())
+		nextQuery = 0;
+	return q;
+}
 
 static void (APIENTRY render_log)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
 
@@ -203,9 +258,6 @@ void render_init()
 	promote<Camera>(::camera)->userCreated = false;
 
 	{
-		glCreateQueries(GL_TIME_ELAPSED, 1, &renderTimeQuery);
-
-
 		int num;
 		glGetQueryiv(GL_TIME_ELAPSED, GL_QUERY_COUNTER_BITS, &num);
 		engine_log("Query Resolution: %d", num);
@@ -277,7 +329,9 @@ void render_frame()
 		View::all.end(),
 		[](View * lhs, View * rhs) { return (lhs->api().layer < rhs->api().layer); });
 
-	glBeginQuery(GL_TIME_ELAPSED, renderTimeQuery);
+	drawquery & query = getQuery();
+
+	query.begin();
 
 	glDisable(GL_SCISSOR_TEST);
 
@@ -293,16 +347,14 @@ void render_frame()
 		view_current = nullptr;
 	}
 
-	glEndQuery(GL_TIME_ELAPSED);
+	query.end();
 
 	SDL_GL_SwapWindow(engine.window);
 	glDisable(GL_SCISSOR_TEST);
 
 	DebugDrawer::reset();
 
-	ulong time;
-	glGetQueryObjectui64v(renderTimeQuery, GL_QUERY_RESULT, &time);
-	engine_stats.gpuTime = time / 1000000.0;
+	query.copyTo(engine_stats);
 }
 
 void render_shutdown()

@@ -14,7 +14,6 @@
 
 #include <assert.h>
 
-
 // #include <ackcef.h>
 
 #ifdef _ACKNEXT_EXT_ACKCEF_H_
@@ -101,18 +100,10 @@ bool editorMode = false;
 
 ENTITY * entToInsert = NULL;
 
+extern "C" void gui_drawperf();
+
 void outsider()
 {
-	static float time_step_over_time = 0;
-	static float gpu_time_over_time = 0;
-
-	time_step_over_time = 0.9 * time_step_over_time + 0.1 * time_step;
-	gpu_time_over_time = 0.9 * gpu_time_over_time + 0.1 * engine_stats.gpuTime;
-
-	int num = 0;
-	ENTITY * you;
-	for(you = ent_next(NULL); you; you = ent_next(you), num++);
-
 #ifdef _ACKNEXT_EXT_ACKCEF_H_
 	char buffer[128];
 	sprintf(buffer,
@@ -126,30 +117,8 @@ void outsider()
 #endif
 
 #ifdef _ACKNEXT_EXT_ACKGUI_H_
-	if(ImGui::Begin("Stats"))
-	{
-		ImGui::Text(
-			"Camera Pos: (%.2f, %.2f, %.2f)",
-			camera->position.x,
-			camera->position.y,
-			camera->position.z);
-		ImGui::Text(
-			"Framerate:  %d FPS",
-			int(1.0 / time_step_over_time));
-		ImGui::Text(
-			"Frame Time: %4.2f ms",
-			1000.0 * time_step_over_time);
-		ImGui::Text(
-			"GPU Time:   %4.2f ms",
-			gpu_time_over_time);
-		ImGui::Text(
-			"Entities:   %d",
-			num);
-		ImGui::Text(
-			"Drawcalls:  %d",
-			engine_stats.drawcalls);
-	}
-	ImGui::End();
+
+	gui_drawperf();
 
 	if(ImGui::Begin("Camera / Player"))
 	{

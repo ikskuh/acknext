@@ -18,7 +18,7 @@ uniform vec3 vecTesselationParameters;
 float distToPivot(vec3 pos)
 {
 	// ignore height for better sampling
-	return length(pos.xz - vecViewPos.xz);
+	return max(0, length(pos.xz - vecViewPos.xz) - 25);
 }
 
 vec4 project(vec3 position)

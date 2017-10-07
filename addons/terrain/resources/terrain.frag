@@ -21,12 +21,6 @@ layout(location = 0) out vec3 frag_Color;
 layout(location = 1) out vec3 frag_Position;
 layout(location = 2) out vec3 frag_Normal;
 
-vec3 toLinear(vec3 v);
-vec4 toLinear(vec4 v);
-
-vec3 toGamma(vec3 v);
-vec4 toGamma(vec4 v);
-
 vec3 applyLighting(
 	vec3 position,
 	vec3 normal,
@@ -55,8 +49,8 @@ vec3 textureNoTile(in uint ind, in vec2 x, float v )
     vec2 offa = sin(vec2(3.0,7.0)*(i+0.0)); // can replace with any other hash
     vec2 offb = sin(vec2(2.0,8.0)*(i+1.5)); // can replace with any other hash
 
-    vec3 cola = toLinear(textureGrad( texTerrainMaterials, vec3(x + v*offa, float(ind)), duvdx, duvdy ).rgb);
-    vec3 colb = toLinear(textureGrad( texTerrainMaterials, vec3(x + v*offb, float(ind)), duvdx, duvdy ).rgb);
+    vec3 cola = textureGrad( texTerrainMaterials, vec3(x + v*offa, float(ind)), duvdx, duvdy ).rgb;
+    vec3 colb = textureGrad( texTerrainMaterials, vec3(x + v*offb, float(ind)), duvdx, duvdy ).rgb;
 
     return mix( cola, colb, smoothstep(0.2,0.8,f-0.1*(cola-colb)) );
 }
