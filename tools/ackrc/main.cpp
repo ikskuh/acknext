@@ -6,7 +6,10 @@
 #include <stdbool.h>
 #include <libgen.h>
 #include <unistd.h>
+#include <stdarg.h>
+
 #include <acknext.h>
+#include <acknext/librc.h>
 
 bool useAbsolutePaths = false;
 
@@ -42,10 +45,21 @@ char * make_default(char const * infile, char const * extension)
 	return outfile;
 }
 
+static void log(char const * str, ...)
+{
+	va_list list;
+	va_start(list, str);
+	vfprintf(stderr, str, list);
+	va_end(list);
+}
+
 int main(int argc, char ** argv)
 {
 	engine_config.argv0 = argv[0];
 	engine_config.flags &= ~USE_VFS;
+
+	librc_init(log);
+	atexit(librc_close);
 
 	int opt;
 	char * outfile = NULL;

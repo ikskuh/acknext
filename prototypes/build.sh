@@ -1,4 +1,7 @@
 #!/bin/bash
+
+exit
+
 scriptroot=`dirname $0`
 dstdir=$scriptroot/resources
 srcdir=$scriptroot/resources-source
