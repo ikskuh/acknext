@@ -336,6 +336,23 @@ void update()
 		}
 	}
 
+	if(true)
+	{
+		for(int z = -25; z <= 25; z++)
+		{
+			for(int x = -25; x <= 25; x++)
+			{
+				var fx = player->position.x + 0.1 * x;
+				var fz = player->position.z + 0.1 * z;
+				COLLISION * c = c_trace(
+					vector(fx, 1000, fz),
+					vector(fx, -1000, fz),
+					TERRAIN_MASK);
+				if(c)
+					draw_point3d(&c->contact, &COLOR_CYAN);
+			}
+		}
+	}
 
 	if(key_4) {
 		static float gpuTime = 0.0;

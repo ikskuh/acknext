@@ -324,10 +324,10 @@ static MODEL * terrain_load(ACKFILE * file, ACKGUID const * guid)
 			{
 				INDEX * face = &indices[4 * (z * tiles_x + x)];
 				int base = stride * z + delta * x;
-				face[0] = base + 0;
-				face[1] = base + stride;
-				face[2] = base + stride + delta;
-				face[3] = base + delta;
+				face[3] = base + 0;
+				face[0] = base + stride;
+				face[1] = base + stride + delta;
+				face[2] = base + delta;
 			}
 		}
 
@@ -391,7 +391,7 @@ static MODEL * terrain_load(ACKFILE * file, ACKGUID const * guid)
 			heightfield,
 			heightmap,
 			1, // please copy hf data, not reference
-			hscale * (size_x - 1), hscale * (size_z - 1), // real size
+			hscale * size_x, hscale * size_z, // real size
 			size_x, size_z, // data point size
 			1.0, 0.0, // no scale/offset, we have already correct height data
 			1000.0, // 1km thick terrain

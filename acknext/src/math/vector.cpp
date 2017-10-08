@@ -99,7 +99,10 @@ ACKNEXT_API_BLOCK
 
 	var vec_dist(VECTOR const * lhs, VECTOR const * rhs)
 	{
-		return vec_length(vec_diff(nullptr, lhs, rhs));
+		float dx = lhs->x - rhs->x;
+		float dy = lhs->y - rhs->y;
+		float dz = lhs->z - rhs->z;
+		return sqrt(dx*dx + dy*dy + dz*dz);
 	}
 
 	var vec_dot(VECTOR const * lhs, VECTOR const * rhs)

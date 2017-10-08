@@ -609,9 +609,6 @@ static void render_scene(CAMERA * perspective, MATERIAL * mtlOverride)
 		uint lod;
 		for(lod = 15; lod_distances[lod] > dist && lod > 0; lod--);
 
-		if(lod >= 16)
-			continue;
-
 		if(lod > ent->model->minimumLOD)
 			continue;
 
