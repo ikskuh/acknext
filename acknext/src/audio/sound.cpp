@@ -17,9 +17,6 @@ ACKNEXT_API_BLOCK
 {
 	SOUND * snd_load(char const * fileName)
 	{
-		// TODO: Reimplement
-		return nullptr;
-
 		ARG_NOTNULL(fileName, nullptr);
 
 		ACKFILE * file = file_open_read(fileName);
@@ -28,42 +25,9 @@ ACKNEXT_API_BLOCK
 			return nullptr;
 		}
 
-		SDL_RWops *rwops = SDL_AllocRW();
-		{
-			assert(rwops);
-			rwops->size = [](SDL_RWops *c) -> Sint64 {
-				return file_size((ACKFILE*)c->hidden.unknown.data1);
-			};
-			rwops->seek = [](SDL_RWops *c,Sint64 offset,int whence) -> Sint64 {
-				auto * f = (ACKFILE*)c->hidden.unknown.data1;
-				if(whence == RW_SEEK_CUR) {
-					offset = file_tell(f) + offset;
-				} else if(whence == RW_SEEK_END) {
-					auto len = file_size(f);
-					if(len < 0) return SDL_SetError("Can't seek with _END in a non-sized stream!");
-					offset = len - offset;
-				}
-				file_seek(f, offset);
-				return offset;
-			};
-			rwops->read = [](SDL_RWops *c, void *ptr, size_t size, size_t num) -> size_t {
-				return file_read((ACKFILE*)c->hidden.unknown.data1, ptr, size * num);
-			};
-			rwops->write = [](SDL_RWops *c, const void *ptr, size_t size, size_t num) -> size_t {
-				return file_write((ACKFILE*)c->hidden.unknown.data1, ptr, size * num);
-			};
-			rwops->close= [](SDL_RWops *context) -> int {
-				file_close((ACKFILE*)context->hidden.unknown.data1);
-				return 0;
-			};
-			rwops->type = 0xdeadbeef;
-			rwops->hidden.unknown.data1 = file;
-		}
-
-		if(rwops == nullptr) {
-			engine_setsdlerror();
+		SDL_RWops *rwops = SDL_RWFromAcknext(file);
+		if(rwops == nullptr)
 			return nullptr;
-		}
 
 		Mix_Chunk *chunk = Mix_LoadWAV_RW(rwops, 1);
 		if(chunk == nullptr) {

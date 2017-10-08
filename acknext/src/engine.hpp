@@ -25,6 +25,8 @@ extern struct engine engine;
 
 void engine_setsdlerror();
 
+SDL_RWops * SDL_RWFromAcknext(ACKFILE * file);
+
 void _print_stacktrace();
 
 #define ARG_NOTNULL(arg,val) if(arg == nullptr) { \
