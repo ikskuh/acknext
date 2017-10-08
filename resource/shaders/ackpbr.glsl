@@ -100,6 +100,8 @@ vec3 applyLighting(
 		            roughness,
 		            fresnell);
 
+		cts *= dot(normal, toLight);
+
 		sDiffuse += atten * lights[i].color * ond * mix(cAlbedo.rgb, vec3(0), metallic);
 		sSpecular += atten * lights[i].color * cts * mix(vec3(1), cAlbedo.rgb, metallic);
 	}

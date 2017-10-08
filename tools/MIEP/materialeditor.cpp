@@ -13,6 +13,98 @@ static float map(float v, float srcMin, float srcMax, float dstMin, float dstMax
 	return (dstMax - dstMin) * (v - srcMin) / (srcMax - srcMin)	+ dstMin;
 }
 
+#include <QImage>
+#include "math.h"
+
+template<class T>
+inline const T& kClamp( const T& x, const T& low, const T& high )
+{
+    if ( x < low )       return low;
+    else if ( high < x ) return high;
+    else                 return x;
+}
+
+inline
+int changeGamma( int value, int gamma )
+    {
+    return kClamp( int( pow( value / 255.0, 100.0 / gamma ) * 255 ), 0, 255 );
+    }
+
+inline
+int changeUsingTable( int value, const int table[] )
+    {
+    return table[ value ];
+    }
+
+template< int operation( int, int ) >
+static
+QImage changeImage( const QImage& image, int value )
+    {
+    QImage im = image;
+    im.detach();
+    if( im.colorCount() == 0 ) /* truecolor */
+        {
+        if( im.format() != QImage::Format_RGB32 ) /* just in case */
+            im = im.convertToFormat( QImage::Format_RGB32 );
+        int table[ 256 ];
+        for( int i = 0;
+             i < 256;
+             ++i )
+            table[ i ] = operation( i, value );
+        if( im.hasAlphaChannel() )
+            {
+            for( int y = 0;
+                 y < im.height();
+                 ++y )
+                {
+                QRgb* line = reinterpret_cast< QRgb* >( im.scanLine( y ));
+                for( int x = 0;
+                     x < im.width();
+                     ++x )
+                    line[ x ] = qRgba( changeUsingTable( qRed( line[ x ] ), table ),
+                        changeUsingTable( qGreen( line[ x ] ), table ),
+                        changeUsingTable( qBlue( line[ x ] ), table ),
+                        changeUsingTable( qAlpha( line[ x ] ), table ));
+                }
+            }
+        else
+            {
+            for( int y = 0;
+                 y < im.height();
+                 ++y )
+                {
+                QRgb* line = reinterpret_cast< QRgb* >( im.scanLine( y ));
+                for( int x = 0;
+                     x < im.width();
+                     ++x )
+                    line[ x ] = qRgb( changeUsingTable( qRed( line[ x ] ), table ),
+                        changeUsingTable( qGreen( line[ x ] ), table ),
+                        changeUsingTable( qBlue( line[ x ] ), table ));
+                }
+            }
+        }
+    else
+        {
+        QVector<QRgb> colors = im.colorTable();
+        for( int i = 0;
+             i < im.colorCount();
+             ++i )
+            colors[ i ] = qRgb( operation( qRed( colors[ i ] ), value ),
+                operation( qGreen( colors[ i ] ), value ),
+                operation( qBlue( colors[ i ] ), value ));
+        }
+    return im;
+}
+
+// gamma is multiplied by 100 in order to avoid floating point numbers
+QImage changeGamma( const QImage& image, int gamma )
+    {
+    if( gamma == 100 ) // no change
+        return image;
+    return changeImage< changeGamma >( image, gamma );
+    }
+
+
 MaterialEditor::MaterialEditor(MATERIAL * material, QWidget *parent) :
     QDockWidget(parent),
     mtl(material),
@@ -64,7 +156,7 @@ void MaterialEditor::bmapToImage(ImageView * target, BITMAP const * src)
 {
 	if(src) {
 		QImage img((uchar*)src->pixels, src->width, src->height, QImage::Format_RGBA8888);
-		target->setImage(img.mirrored(false, true));
+		target->setImage(changeGamma(img.mirrored(false, true), 220));
 	} else {
 		target->setImage(QImage());
 	}
@@ -76,7 +168,6 @@ void MaterialEditor::clearTexture(ImageView *target, BITMAP *&ptr)
 	ptr = nullptr;
 	bmapToImage(target, nullptr);
 }
-
 bool MaterialEditor::changeTexture(ImageView *target, BITMAP *&ptr)
 {
 	QString fileName = QFileDialog::getOpenFileName(
@@ -88,10 +179,11 @@ bool MaterialEditor::changeTexture(ImageView *target, BITMAP *&ptr)
 		return false;
 	}
 	QImage source(fileName);
-	QImage fitting = source
+	QImage fitting = changeGamma(source
 		.convertToFormat(QImage::Format_ARGB32)
 		.rgbSwapped()
-		.mirrored(false, true);
+		.mirrored(false, true),
+		45);
 
 	MainWindow::makeCurrent();
 

@@ -27,9 +27,14 @@ include($$TOPDIR/acknext/acknext.pri)
 unix: CONFIG += link_pkgconfig
 unix: PKGCONFIG += assimp
 
+# Use librc
+LIBS += -lrc
+INCLUDEPATH += $$PWD/../librc/include
+DEPENDPATH += $$PWD/../librc/include
+
 SOURCES += \
-        main.cpp \
-        mainwindow.cpp \
+	main.cpp \
+	mainwindow.cpp \
     qacknextwidget.cpp \
     materialeditor.cpp \
     ackcolorselector.cpp \
