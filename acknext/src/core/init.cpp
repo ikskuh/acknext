@@ -85,6 +85,14 @@ ACKNEXT_API_BLOCK
 		{
 			engine_log("Initialize virtual file system...");
 
+			PHYSFS_Version version;
+
+			PHYSFS_getLinkedVersion(&version);
+			engine_log("Using PhysFS version %d.%d.%d", version.major, version.minor, version.patch);
+
+			PHYSFS_VERSION(&version);
+			engine_log("Linked against version %d.%d.%d", version.major, version.minor, version.patch);
+
 			if(!(engine_config.flags & USE_VFS))
 			{
 				engine_log("Note: virtual file system is disabled, but required by the engine, so a minimal setup will be done for /builtin.");

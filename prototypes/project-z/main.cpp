@@ -355,6 +355,8 @@ void update()
 	outsider();
 }
 
+#define STR(x) #x
+
 void gamemain()
 {
 	GLfloat fLargest;
@@ -362,8 +364,8 @@ void gamemain()
 	engine_log("max anisotropy: %f", fLargest);
 
 	view_create((RENDERCALL)render_scene_with_camera, camera);
-	filesys_addResource("/home/felix/projects/acknext/prototypes/project-z/resources/", "/");
-	filesys_addResource("/home/felix/projects/acknext/scripts/", "/other/");
+	filesys_addResource(PROJECT_ROOT "/prototypes/project-z/resources/", "/");
+	filesys_addResource(PROJECT_ROOT "/scripts/", "/other/");
 
 
 #ifdef _ACKNEXT_EXT_ACKCEF_H_
