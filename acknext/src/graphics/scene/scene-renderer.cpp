@@ -124,61 +124,105 @@ struct Drawcall
 	}
 };
 
-static bool cull(MATRIX const & frustrum, AABB const & aabb)
+enum class HalfSpace
 {
-	if((aabb.minimum.x > aabb.maximum.x) || (aabb.minimum.y > aabb.maximum.y) || (aabb.minimum.z > aabb.maximum.z))
+	Negative = -1,
+	OnPlane = 0,
+	Positive = 1,
+};
+
+struct Plane
+{
+	Plane() : xyz(0,0,0), w(0) { }
+
+	Plane(float x, float y, float z, float w) :
+	    xyz(x, y, z),
+	    w(w)
 	{
-		return false;
+		this->normalize();
 	}
 
-	VECTOR4 points[8] = {
-	    { aabb.minimum.x, aabb.minimum.y, aabb.minimum.z, 1 },
-	    { aabb.minimum.x, aabb.minimum.y, aabb.maximum.z, 1 },
-	    { aabb.minimum.x, aabb.maximum.y, aabb.minimum.z, 1 },
-	    { aabb.minimum.x, aabb.maximum.y, aabb.maximum.z, 1 },
-	    { aabb.maximum.x, aabb.minimum.y, aabb.minimum.z, 1 },
-	    { aabb.maximum.x, aabb.minimum.y, aabb.maximum.z, 1 },
-	    { aabb.maximum.x, aabb.maximum.y, aabb.minimum.z, 1 },
-	    { aabb.maximum.x, aabb.maximum.y, aabb.maximum.z, 1 },
-	};
-	for(int i = 0; i < 8; i++)
+	glm::vec3 xyz;
+	float w;
+
+	void normalize()
 	{
-		vec4_transform(&points[i], &frustrum);
-		points[i].x /= points[i].w;
-		points[i].y /= points[i].w;
-		points[i].z /= points[i].w;
+		float mag = glm::length(xyz);
+		this->xyz /= mag;
+		this->w   /= mag;
 	}
 
-	if(std::all_of(&points[0], &points[8], [](VECTOR4 const & pt) -> bool {
-				return (pt.x < -1.0);
-			}))
-		return true;
+	float distance(glm::vec3 const & pt) const
+	{
+		return this->xyz.x * pt.x + this->xyz.y * pt.y + this->xyz.z * pt.z + this->w;
+	}
 
-	if(std::all_of(&points[0], &points[8], [](VECTOR4 const & pt) -> bool {
-				return (pt.x > 1.0);
-			}))
-		return true;
+	float distance(VECTOR const & pt) const
+	{
+		return this->xyz.x * pt.x + this->xyz.y * pt.y + this->xyz.z * pt.z + this->w;
+	}
 
-	if(std::all_of(&points[0], &points[8], [](VECTOR4 const & pt) -> bool {
-				return (pt.y < -1.0);
-			}))
-		return true;
+	HalfSpace classify(glm::vec3 const & pt) const
+	{
+		float d = this->distance(pt);
+		if (d < 0)
+			return HalfSpace::Negative;
+		if (d > 0)
+			return HalfSpace::Positive;
+		return HalfSpace::OnPlane;
+	}
+};
 
-	if(std::all_of(&points[0], &points[8], [](VECTOR4 const & pt) -> bool {
-				return (pt.y > 1.0);
-			}))
-		return true;
+struct Frustrum
+{
+	Plane planes[6];
 
-	if(std::all_of(&points[0], &points[8], [](VECTOR4 const & pt) -> bool {
-				return (pt.z < -1.0);
-			}))
-		return true;
+	Frustrum(MATRIX const & modelView)
+	{
+		float m11 = modelView.fields[0][0];
+		float m12 = modelView.fields[1][0];
+		float m13 = modelView.fields[2][0];
+		float m14 = modelView.fields[3][0];
 
-	if(std::all_of(&points[0], &points[8], [](VECTOR4 const & pt) -> bool {
-				return (pt.z > 1.0);
-			}))
-		return true;
+		float m21 = modelView.fields[0][1];
+		float m22 = modelView.fields[1][1];
+		float m23 = modelView.fields[2][1];
+		float m24 = modelView.fields[3][1];
 
+		float m31 = modelView.fields[0][2];
+		float m32 = modelView.fields[1][2];
+		float m33 = modelView.fields[2][2];
+		float m34 = modelView.fields[3][2];
+
+		float m41 = modelView.fields[0][3];
+		float m42 = modelView.fields[1][3];
+		float m43 = modelView.fields[2][3];
+		float m44 = modelView.fields[3][3];
+
+		/*left*/   planes[0] = Plane(m41 + m11, m42 + m12, m43 + m13, m44 + m14);
+		/*right*/  planes[1] = Plane(m41 - m11, m42 - m12, m43 - m13, m44 - m14);
+		/*bottom*/ planes[2] = Plane(m41 + m21, m42 + m22, m43 + m23, m44 + m24);
+		/*top*/    planes[3] = Plane(m41 - m21, m42 - m22, m43 - m23, m44 - m24);
+		/*near*/   planes[4] = Plane(m41 + m31, m42 + m32, m43 + m33, m44 + m34);
+		/*far*/    planes[5] = Plane(m41 - m31, m42 - m32, m43 - m33, m44 - m34);
+
+		for(int i = 0; i < 6; i++)
+			planes[i].normalize();
+	}
+};
+
+static bool cull(Frustrum const & frustrum, VECTOR const & position, float radius)
+{
+	using namespace glm;
+
+	var threshold = -radius;
+
+	for(int i = 0; i < 6; i++)
+	{
+		float dist = frustrum.planes[i].distance(position);
+		if(dist < threshold)
+			return true;
+	}
 	return false;
 }
 
@@ -538,6 +582,14 @@ static void render_scene(CAMERA * perspective, MATERIAL * mtlOverride)
 
 	std::vector<Drawcall> drawcalls;
 
+
+	MATRIX matViewProj;
+	glm_to_ack(&matViewProj,
+		  ack_to_glm(matProj)
+		* ack_to_glm(matView));
+
+	Frustrum clipFrustrum(matViewProj);
+
 	for(ENTITY * ent = ent_next(nullptr); ent != nullptr; ent = ent_next(ent))
 	{
 		// Entity * entity = promote<Entity>(ent);
@@ -552,12 +604,6 @@ static void render_scene(CAMERA * perspective, MATERIAL * mtlOverride)
 			glm::translate(glm::mat4(), ack_to_glm(ent->position)) *
 			glm::mat4_cast(ack_to_glm(ent->rotation)) *
 			glm::scale(glm::mat4(), ack_to_glm(ent->scale)));
-
-		MATRIX matWorldViewProj;
-		glm_to_ack(&matWorldViewProj,
-			  ack_to_glm(matProj)
-			* ack_to_glm(matView)
-			* ack_to_glm(matWorld));
 
 		var dist = vec_dist(&camera->position, &ent->position);
 		uint lod;
@@ -592,12 +638,21 @@ static void render_scene(CAMERA * perspective, MATERIAL * mtlOverride)
 			call.ent = ent;
 			call.renderDoubleSided = !!(call.mesh->lodMask & DOUBLESIDED);
 
+			float radius = 0;
+			radius = glm::max(radius, glm::abs(call.mesh->boundingBox.minimum.x));
+			radius = glm::max(radius, glm::abs(call.mesh->boundingBox.minimum.y));
+			radius = glm::max(radius, glm::abs(call.mesh->boundingBox.minimum.z));
+			radius = glm::max(radius, glm::abs(call.mesh->boundingBox.maximum.x));
+			radius = glm::max(radius, glm::abs(call.mesh->boundingBox.maximum.y));
+			radius = glm::max(radius, glm::abs(call.mesh->boundingBox.maximum.z));
+
 			// Only allow rendering of meshes when the
 			// LOD is enabled in the MESH
-			if(call.mesh->lodMask & (1<<lod)) {
+			if(call.mesh->lodMask & (1<<lod))
+			{
 				// And only render it, when the
 				// mesh is actually visible
-				// if(!cull(matWorldViewProj, call.mesh->boundingBox))
+				if(!cull(clipFrustrum, call.ent->position, radius))
 				{
 					drawcalls.push_back(call);
 				}

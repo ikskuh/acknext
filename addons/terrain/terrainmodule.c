@@ -342,8 +342,28 @@ static MODEL * terrain_load(ACKFILE * file, ACKGUID const * guid)
 		mesh_setvar(mesh, "fTerrainScale", GL_FLOAT, hscale);
 		mesh_setvar(mesh, "texNormalMap", GL_SAMPLER_2D, normalmap);
 
-		// TODO: Maybe compute correct bounding box later!
-		aabb_invalidate(&mesh->boundingBox);
+		mesh->boundingBox.minimum = (VECTOR) {
+			-0.5 * hscale * (size_x - 1),
+			heightmap[0],
+			-0.5 * hscale * (size_z - 1),
+		};
+		mesh->boundingBox.maximum = (VECTOR) {
+			0.5 * hscale * (size_x - 1),
+			heightmap[0],
+			0.5 * hscale * (size_z - 1),
+		};
+
+		for(uint z = 0; z < size_z; z++)
+		{
+			for(uint x = 0; x < size_x; x++)
+			{
+				var h = heightmap[size_x * z + x];
+				if(mesh->boundingBox.maximum.y < h)
+					mesh->boundingBox.maximum.y = h;
+				if(mesh->boundingBox.minimum.y > h)
+					mesh->boundingBox.minimum.y = h;
+			}
+		}
 	}
 
 	MODEL * terrain = model_create(1, 0, 0);

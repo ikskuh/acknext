@@ -67,14 +67,19 @@ static bool placeToGround(VECTOR * ref, float distance)
 	return (hit != nullptr);
 }
 
-void spawn(const int radius, const int count, char const * fileName, float scale)
+void spawn(const int radius, const int count, char const * fileName, float scale, VECTOR const * center = nullptr)
 {
-	const VECTOR center = camera->position;
+	VECTOR middle;
+	if(center)
+		middle = *center;
+	else
+		middle = camera->position;
+
 	for(int i = 0; i < count; i++)
 	{
 		VECTOR off;
-		off.x = center.x + (rand() / (float)RAND_MAX) * 2*radius - radius;
-		off.z = center.z + (rand() / (float)RAND_MAX) * 2*radius - radius;
+		off.x = middle.x + (rand() / (float)RAND_MAX) * 2*radius - radius;
+		off.z = middle.z + (rand() / (float)RAND_MAX) * 2*radius - radius;
 		off.y = 0;
 		ENTITY * tree = ent_create(fileName, &off, NULL);
 
@@ -87,12 +92,12 @@ void spawn(const int radius, const int count, char const * fileName, float scale
 
 void tree()
 {
-	spawn(250, 250, "/models/tree.amd", 1.0);
+	spawn(250, 250 + key_lctrl * 1250, "/models/tree.amd", 1.0);
 }
 
 void house()
 {
-	spawn(1, 0, "/buildings/inn.amd", 0.1);
+	spawn(0, 1, "/buildings/inn.amd", 0.1);
 }
 
 ENTITY * player;
@@ -433,6 +438,7 @@ void gamemain()
 		file_close(file);
 	}
 
+	spawn(2048, 50000, "/models/tree.amd", 1.0, &nullvector);
 
 	event_attach(on_update, (EVENTHANDLER)update);
 }
