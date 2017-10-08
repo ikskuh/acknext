@@ -68,7 +68,6 @@ HEADERS += \
     include/acknext/filesys.h \
     include/acknext/ackmath.h \
     include/acknext/ackentity.h \
-    src/virtfs/physfsrwops.h \
     src/graphics/scene/ackglm.hpp \
     include/acknext/acktransforms.h \
     src/graphics/debug/debugdrawer.hpp \
@@ -121,7 +120,6 @@ SOURCES += \
     src/graphics/opengl/opengl.cpp \
     src/math/matrix.cpp \
     src/virtfs/physfs-integration.cpp \
-    src/virtfs/physfsrwops.c \
     src/math/quaternion.cpp \
     src/graphics/scene/scene-renderer.cpp \
     src/math/transforms.cpp \

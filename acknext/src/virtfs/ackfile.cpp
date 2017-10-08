@@ -1,6 +1,7 @@
 #include <engine.hpp>
 
 #include "core/config.hpp"
+#include <physfs.h>
 
 struct ackfile
 {
