@@ -5,7 +5,7 @@ CONFIG -= qt
 
 unix {
 	CONFIG += link_pkgconfig
-	PKGCONFIG += ode dotconf sdl2 SDL2_image SDL2_mixer zlib assimp gl
+	PKGCONFIG += ode sdl2 SDL2_image SDL2_mixer zlib assimp gl
 }
 
 include($$PWD/../extern/gl3w/gl3w.pri)
