@@ -1,5 +1,21 @@
 # Provide config options for each addon
 
+acknext-configfile {
+	DEFINES += ACKNEXT_HAS_EXT_CONFIGFILE
+	LIBS += -L$$OUT_TOPDIR/addons/configfile/ -lconfigfile
+
+	INCLUDEPATH += $$PWD/configfile/include
+	DEPENDPATH += $$PWD/configfile/include
+}
+
+acknext-scheduler {
+	DEFINES += ACKNEXT_HAS_EXT_SCHEDULER
+	LIBS += -L$$OUT_TOPDIR/addons/scheduler/ -lscheduler
+
+	INCLUDEPATH += $$PWD/scheduler/include
+	DEPENDPATH += $$PWD/scheduler/include
+}
+
 acknext-terrain {
 	DEFINES += ACKNEXT_HAS_EXT_TERRAIN
 	LIBS += -L$$OUT_TOPDIR/addons/terrain/ -lterrain

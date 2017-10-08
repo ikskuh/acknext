@@ -313,11 +313,7 @@ ACKFUN void ackcef_init(int argc, char ** argv)
 
 static void cef_mainloop(void*)
 {
-	while(true)
-	{
-		CefDoMessageLoopWork();
-		task_yield();
-	}
+	CefDoMessageLoopWork();
 }
 
 struct AckCefView
@@ -423,7 +419,7 @@ void main()
 )glsl"));
 	assert(shader_link(shader));
 
-	task_defer(cef_mainloop, nullptr);
+	event_attach(on_early_update, cef_mainloop);
 
 }
 

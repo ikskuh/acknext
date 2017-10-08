@@ -4,11 +4,24 @@
 #include "config.h"
 #include "ackmath.h"
 #include "scene.h"
-#include "scheduler.h"
 
-typedef struct HULL HULL;
+struct ENTITY;
+struct HULL;
 
-typedef struct
+typedef struct ECO
+{
+	size_t dataSize; // size of (void * data) or 0 if data is not used
+
+	void * userData; // can be used for more ECO information
+
+	void (*setup)(struct ECO const * _this, struct ENTITY * ent, void * data);
+
+	void (*update)(struct ECO const * _this, struct ENTITY * ent, void * data);
+
+	void (*teardown)(struct ECO const * _this, struct ENTITY * ent, void * data);
+} ECO;
+
+typedef struct ENTITY
 {
 	// Transform
 	VECTOR position;
@@ -21,8 +34,12 @@ typedef struct
 	FRAME pose[ACKNEXT_MAX_BONES];
 
 	// Collision
-	HULL * ACKCONST mainCollider; // changed by ent_updatehull
+	struct HULL * ACKCONST mainCollider; // changed by ent_updatehull
 	BITFIELD categories; // bitmask for collisions
+
+	// Logic:
+	ECO const * ACKCONST eco;
+	void * ACKCONST ecoData;
 
 	// Other
 	ENTITYFLAGS flags;
@@ -34,7 +51,7 @@ typedef struct
 ACKFUN ENTITY * ent_create(
 	char const * fileName,
 	VECTOR * const position,
-	ENTRYPOINT action);
+	ECO const * action);
 
 // resets the entities collision hull according to its model
 // should be called when ENTITY::model is changed

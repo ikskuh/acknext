@@ -17,7 +17,6 @@
 #include "acknext/opengl.h"
 #include "acknext/scene.h"
 #include "acknext/filesys.h"
-#include "acknext/scheduler.h"
 #include "acknext/ackentity.h"
 #include "acknext/acktransforms.h"
 #include "acknext/ackdebug.h"

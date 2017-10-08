@@ -5,7 +5,9 @@ SUBDIRS += \
     ackmain \
     default \
     ackcef \
-    dearackgui
+    dearackgui \
+    scheduler \
+    configfile
 
 DISTFILES += \
 	addons.pri

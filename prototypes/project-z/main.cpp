@@ -34,6 +34,7 @@ void funnylight()
 	funlight->position = camera->position;
 	funlight->direction = *vec_rotate(vector(0,0,-1), &camera->rotation);
 
+	/*
 	while(true)
 	{
 		draw_point3d(&funlight->position, &COLOR_RED);
@@ -45,6 +46,7 @@ void funnylight()
 			&COLOR_GREEN);
 		task_yield();
 	}
+	*/
 }
 
 ENTITY * terrain;
@@ -238,6 +240,121 @@ void toggle_editor()
 	editorMode ^= true;
 }
 
+LIGHT *sun, *ambi, *plambilight;
+
+void update()
+{
+	static var pan = 0;
+	static var tilt = 0;
+	static var camdist = 5;
+
+	if(nightmode) {
+		sun->color = COLOR_BLACK;
+		ambi->color = *color_hex(0x090b0d);
+	} else {
+		sun->color = *color_hex(0xfffac1);
+		ambi->color = *color_hex(0x232c33);
+	}
+
+	if(key_3 && default_camera_movement_enabled)
+	{
+		player->position = camera->position;
+	}
+
+	if(!default_camera_movement_enabled && !editorMode)
+	{
+		pan -= 0.3 * mickey.x;
+		tilt = clamp(tilt - 0.3 * mickey.y, -80, 85);
+		camdist = clamp(camdist - 0.5 * mickey.w, 2.0, 10.0);
+
+		camera->rotation = *euler(pan, tilt, 0);
+
+		VECTOR mov = {
+			float(key_d - key_a),
+			0,
+			float(key_s - key_w),
+		};
+
+		vec_normalize(&mov, (3 + 3 * key_lshift - 2.5 * key_lalt) * time_step);
+		vec_rotate(&mov, euler(pan, 0, 0));
+		vec_add(&player->position, &mov);
+
+		if(vec_length(&mov) > 0.0)
+		{
+			var offset = atan2(mov.x, mov.z);
+			player->rotation = *euler(RAD_TO_DEG * offset, 0, 0);
+
+			if(key_lshift)
+				ent_animate(player, "Run", total_time);
+			else
+				ent_animate(player, "Walk", total_time);
+		}
+		else
+		{
+			ent_animate(player, "Idle", total_time);
+		}
+
+		placeToGround(&player->position, 0);
+
+		camera->position = (VECTOR) { 0, 0, camdist };
+		vec_rotate(&camera->position, &camera->rotation);
+		vec_add(&camera->position, &player->position);
+		vec_add(&camera->position, vector(0, 1.5, 0));
+
+		VECTOR refpos = camera->position;
+		placeToGround(&refpos, 0.2);
+
+		if(camera->position.y < refpos.y)
+			camera->position.y = refpos.y;
+
+		vec_lerp(
+			&plambilight->position,
+			&player->position,
+			&camera->position,
+			0.4);
+	}
+
+	if(editorMode && entToInsert)
+	{
+		VECTOR from, to;
+		from = { float(mouse_pos.x), float(mouse_pos.y), 0 };
+		to   = { float(mouse_pos.x), float(mouse_pos.y), 100 };
+
+		vec_for_screen(&from, camera, NULL);
+		vec_for_screen(&to, camera, NULL);
+
+		COLLISION * col = c_trace(&from, &to, BITFIELD_ALL);
+		if(col)
+		{
+			draw_point3d(&col->contact, &COLOR_CYAN);
+			if(entToInsert) entToInsert->position = col->contact;
+		}
+	}
+
+
+	if(key_4) {
+		static float gpuTime = 0.0;
+		static float frameTime = 0.0;
+
+		gpuTime = 0.9 * gpuTime + 0.1 * engine_stats.gpuTime;
+		frameTime = 0.9 * frameTime + 0.1 * time_step;
+
+		int num = 0;
+		ENTITY * you;
+		for(you = ent_next(NULL); you; you = ent_next(you), num++);
+
+		engine_log(
+			"%8.4f ms / %8.4f ms GPU Time / %5d Objects / %5d Drawcalls / %8.4f FPS",
+			1000.0 * frameTime,
+			gpuTime,
+			num,
+			engine_stats.drawcalls,
+			1.0 / frameTime);
+	}
+
+	outsider();
+}
+
 void gamemain()
 {
 	GLfloat fLargest;
@@ -289,14 +406,14 @@ void gamemain()
 	terrain = ent_create("/terrain.esd", vector(0,0,0), NULL);
 	terrain->categories = TERRAIN_MASK;
 
-	LIGHT * sun = light_create(SUNLIGHT);
+	sun = light_create(SUNLIGHT);
 	sun->direction = *vec_normalize(vector(0.6, -1, -0.4), 1.0);
 	sun->color = *color_hex(0xfffac1);
 
-	LIGHT * ambi = light_create(AMBIENTLIGHT);
+	ambi = light_create(AMBIENTLIGHT);
 	ambi->color = *color_hex(0x232c33);
 
-	LIGHT * plambilight = light_create(POINTLIGHT);
+	plambilight = light_create(POINTLIGHT);
 	plambilight->intensity = 2;
 	vec_fill((VECTOR*)&plambilight->color, 0.3);
 
@@ -314,118 +431,8 @@ void gamemain()
 		file_close(file);
 	}
 
-	var pan = 0;
-	var tilt = 0;
-	var camdist = 5;
-	while(true)
-	{
-		if(nightmode) {
-			sun->color = COLOR_BLACK;
-			ambi->color = *color_hex(0x090b0d);
-		} else {
-			sun->color = *color_hex(0xfffac1);
-			ambi->color = *color_hex(0x232c33);
-		}
 
-		if(key_3 && default_camera_movement_enabled)
-		{
-			player->position = camera->position;
-		}
-
-		if(!default_camera_movement_enabled && !editorMode)
-		{
-			pan -= 0.3 * mickey.x;
-			tilt = clamp(tilt - 0.3 * mickey.y, -80, 85);
-			camdist = clamp(camdist - 0.5 * mickey.w, 2.0, 10.0);
-
-			camera->rotation = *euler(pan, tilt, 0);
-
-			VECTOR mov = {
-				float(key_d - key_a),
-				0,
-				float(key_s - key_w),
-			};
-
-			vec_normalize(&mov, (3 + 3 * key_lshift - 2.5 * key_lalt) * time_step);
-			vec_rotate(&mov, euler(pan, 0, 0));
-			vec_add(&player->position, &mov);
-
-			if(vec_length(&mov) > 0.0)
-			{
-				var offset = atan2(mov.x, mov.z);
-				player->rotation = *euler(RAD_TO_DEG * offset, 0, 0);
-
-				if(key_lshift)
-					ent_animate(player, "Run", total_time);
-				else
-					ent_animate(player, "Walk", total_time);
-			}
-			else
-			{
-				ent_animate(player, "Idle", total_time);
-			}
-
-			placeToGround(&player->position, 0);
-
-			camera->position = (VECTOR) { 0, 0, camdist };
-			vec_rotate(&camera->position, &camera->rotation);
-			vec_add(&camera->position, &player->position);
-			vec_add(&camera->position, vector(0, 1.5, 0));
-
-			VECTOR refpos = camera->position;
-			placeToGround(&refpos, 0.2);
-
-			if(camera->position.y < refpos.y)
-				camera->position.y = refpos.y;
-
-			vec_lerp(
-				&plambilight->position,
-				&player->position,
-				&camera->position,
-				0.4);
-		}
-
-		if(editorMode && entToInsert)
-		{
-			VECTOR from, to;
-			from = { float(mouse_pos.x), float(mouse_pos.y), 0 };
-			to   = { float(mouse_pos.x), float(mouse_pos.y), 100 };
-
-			vec_for_screen(&from, camera, NULL);
-			vec_for_screen(&to, camera, NULL);
-
-			COLLISION * col = c_trace(&from, &to, BITFIELD_ALL);
-			if(col)
-			{
-				draw_point3d(&col->contact, &COLOR_CYAN);
-				if(entToInsert) entToInsert->position = col->contact;
-			}
-		}
-
-
-		if(key_4) {
-			static float gpuTime = 0.0;
-			static float frameTime = 0.0;
-
-			gpuTime = 0.9 * gpuTime + 0.1 * engine_stats.gpuTime;
-			frameTime = 0.9 * frameTime + 0.1 * time_step;
-
-			int num = 0;
-			ENTITY * you;
-			for(you = ent_next(NULL); you; you = ent_next(you), num++);
-
-			engine_log(
-				"%8.4f ms / %8.4f ms GPU Time / %5d Objects / %5d Drawcalls / %8.4f FPS",
-				1000.0 * frameTime,
-				gpuTime,
-				num,
-				engine_stats.drawcalls,
-				1.0 / frameTime);
-		}
-
-		outsider();
-		task_yield();
-	}
+	event_attach(on_update, (EVENTHANDLER)update);
 }
 
 int main(int argc, char ** argv)

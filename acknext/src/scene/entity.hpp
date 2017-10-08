@@ -16,6 +16,8 @@ public:
 	Entity();
 	NOCOPY(Entity);
 	~Entity();
+
+	void update();
 };
 
 #endif // ENTITY_HPP

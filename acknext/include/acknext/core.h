@@ -63,7 +63,8 @@ ACKVAR ACKCONFIG engine_config;
 
 ACKVAR ENGINESTATS engine_stats;
 
-ACKFUN int engine_main(void (*main)());
+// engine_open(), init(), loop: engine_frame()
+ACKFUN int engine_main(void (*init)());
 
 ACKFUN bool engine_open();
 
@@ -82,9 +83,6 @@ ACKFUN void engine_seterror(ERROR code, char const * message, ...);
 ACKVAR ERROR ACKCONST engine_lasterror;
 
 ACKVAR char const * ACKCONST engine_lasterror_text;
-
-ACKVAR char ACKCONST ** ACKCONST engine_argv;
-ACKVAR int ACKCONST engine_argc;
 
 #define mtl_setvar    obj_setvar
 #define ent_setvar    obj_setvar

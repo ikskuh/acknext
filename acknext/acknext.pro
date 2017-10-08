@@ -3,8 +3,6 @@ CONFIG += c++11
 CONFIG -= app_bundle
 CONFIG -= qt
 
-CONFIG += ackScheduler
-
 unix {
 	CONFIG += link_pkgconfig
 	PKGCONFIG += ode dotconf sdl2 SDL2_image SDL2_mixer zlib assimp gl
@@ -21,16 +19,6 @@ DEPENDPATH += $$PWD/src
 LIBS += -lphysfs
 
 DEFINES += _ACKNEXT_INTERNAL_
-
-ackScheduler {
-	DISTFILES += \
-		linker.ld
-	QMAKE_LFLAGS += -T$$quote($$PWD/linker.ld)
-
-	include($$PWD/../extern/coroutine/coroutine.pri)
-
-	DEFINES += ACKNEXT_HAS_SCHEDULER
-}
 
 custom_rcc.output  = resource.o
 custom_rcc.commands = make -C $$PWD/../resource/ qmake OUTFILE=`pwd`/${QMAKE_FILE_OUT} shaders
@@ -53,7 +41,6 @@ HEADERS += \
     src/collision/collision.hpp \
     src/collision/hull.hpp \
     src/graphics/core/view.hpp \
-    src/scheduler/task.hpp \
     src/events/event.hpp \
     src/input/gamepad.hpp \
     src/input/joystick.hpp \
@@ -79,7 +66,6 @@ HEADERS += \
     include/acknext/opengl.h \
     include/acknext/scene.h \
     include/acknext/filesys.h \
-    include/acknext/scheduler.h \
     include/acknext/ackmath.h \
     include/acknext/ackentity.h \
     src/virtfs/physfsrwops.h \
@@ -135,7 +121,6 @@ SOURCES += \
     src/graphics/opengl/opengl.cpp \
     src/math/matrix.cpp \
     src/virtfs/physfs-integration.cpp \
-    src/scheduler/scheduler.cpp \
     src/virtfs/physfsrwops.c \
     src/math/quaternion.cpp \
     src/graphics/scene/scene-renderer.cpp \

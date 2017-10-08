@@ -277,7 +277,7 @@ extern "C" void ackgui_init()
 
 	next_frame();
 
-	event_attach(on_begin_frame, (EVENTHANDLER)next_frame);
+	event_attach(on_early_update, (EVENTHANDLER)next_frame);
 }
 
 extern "C" VIEW * ackgui_getView()

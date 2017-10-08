@@ -29,11 +29,7 @@ void Event::detach(EVENTHANDLER ptr)
 void Event::invoke(void * arg)
 {
 	for(EVENTHANDLER const & ev : this->handlers) {
-#ifdef ACKNEXT_HAS_SCHEDULER
-		task_start(ev, arg);
-#else
 		ev(arg);
-#endif
 	}
 }
 

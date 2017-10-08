@@ -32,6 +32,15 @@ Entity::Entity() :
 Entity::~Entity()
 {
 	event_invoke(api().removed, demote(this));
+
+	{ // cleanup eco data
+		if(api().eco != nullptr && api().eco->teardown != nullptr)
+			api().eco->teardown(api().eco, demote(this), api().ecoData);
+
+		if(api().ecoData != nullptr)
+			free(api().ecoData);
+	}
+
 	if(this->previous != nullptr) {
 		assert(this->previous->next == this);
 		this->previous->next = this->next;
@@ -53,14 +62,19 @@ Entity::~Entity()
 	assert((Entity::first != nullptr) == (Entity::last != nullptr));
 }
 
-#include <engine.hpp>
+void Entity::update()
+{
+	ECO const * eco = api().eco;
+	if(eco != nullptr && eco->update != nullptr)
+		eco->update(eco, demote(this), this->api().ecoData);
+}
 
 ACKNEXT_API_BLOCK
 {
 	ENTITY * ent_create(
 		char const * fileName,
 		VECTOR * const position,
-		ENTRYPOINT action)
+		ECO const * action)
 	{
 		ENTITY * ent = demote(new Entity());
 		if(fileName) {
@@ -71,13 +85,8 @@ ACKNEXT_API_BLOCK
 				return nullptr;
 			}
 		}
-		if(position) ent->position = *position;
-		if(action) {
-			// TODO: Associate the created task with
-			// the entity and kill it on entity destruction
-			// :(
-			task_defer(action, ent);
-		}
+		if(position)
+			ent->position = *position;
 
 		if(ent->model) {
 			// Go into initial pose
@@ -85,6 +94,18 @@ ACKNEXT_API_BLOCK
 
 			// Update the collision hull
 			ent_updatehull(ent);
+		}
+
+		if(action != nullptr)
+		{
+			if(action->dataSize > 0)
+			{
+				ent->ecoData = malloc(action->dataSize);
+				assert(ent->ecoData != nullptr);
+				memset(ent->ecoData, 0, action->dataSize);
+			}
+			if(action->setup != nullptr)
+				action->setup(action, ent, ent->ecoData);
 		}
 
 		return ent;

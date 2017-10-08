@@ -39,43 +39,45 @@ static void defaultShutdown(void*x)
 		engine_shutdown();
 }
 
-static void default_loop()
+
+static var pan = 0;
+static var tilt = 0;
+
+static void default_update(void*ctx)
 {
-	var pan = 0;
-	var tilt = 0;
-	while(true)
-	{
-		if(default_camera_movement_enabled) {
-			if(mouse_right) {
-				pan -= 0.3 * mickey.x;
-				tilt -= 0.3 * mickey.y;
-			}
+	(void)ctx;
 
-			camera->rotation = *euler(pan, tilt, 0);
+	if(default_camera_movement_enabled == false)
+		return;
 
-			VECTOR mov = {
-				key_d - key_a,
-				key_e - key_q,
-				key_s - key_w,
-			};
-			var speed = default_movement;
-			if(key_lalt) {
-				speed = default_slowdown;
-			} else if(key_lshift) {
-				speed = default_speedup;
-			}
-
-			vec_normalize(&mov, speed * time_step);
-			vec_rotate(&mov, &camera->rotation);
-			vec_add(&camera->position, &mov);
-		}
-		task_yield();
+	if(mouse_right) {
+		pan -= 0.3 * mickey.x;
+		tilt -= 0.3 * mickey.y;
 	}
+
+	camera->rotation = *euler(pan, tilt, 0);
+
+	VECTOR mov = {
+		key_d - key_a,
+		key_e - key_q,
+		key_s - key_w,
+	};
+	var speed = default_movement;
+	if(key_lalt) {
+		speed = default_slowdown;
+	} else if(key_lshift) {
+		speed = default_speedup;
+	}
+
+	vec_normalize(&mov, speed * time_step);
+	vec_rotate(&mov, &camera->rotation);
+	vec_add(&camera->position, &mov);
+
 }
 
 void default_init()
 {
-	task_defer((ENTRYPOINT)default_loop, NULL);
+	event_attach(on_update, default_update);
 
 	event_attach(on_f4,  defaultShutdown);
 	event_attach(on_f8,  toggleWFrame);

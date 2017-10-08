@@ -31,21 +31,17 @@ void render_init();
 void render_frame();
 void render_shutdown();
 
-// scheduler.cpp
-void scheduler_init();
-void scheduler_shutdown();
-void scheduler_update();
-
 ACKNEXT_API_BLOCK
 {
-	char ** engine_argv = { };
-	int engine_argc = 0;
-
 	ENGINESTATS engine_stats;
 
-	EVENT * on_begin_frame;
+	EVENT * on_early_update = nullptr;
+	EVENT * on_late_update = nullptr;
+	EVENT * on_update = nullptr;
+	EVENT * on_shutdown = nullptr;
+	EVENT * on_resize = nullptr;
 
-	int engine_main(void (*main)())
+	int engine_main(void (*init)())
 	{
 		if(engine_open() == false)
 	    {
@@ -53,7 +49,9 @@ ACKNEXT_API_BLOCK
 	        return 1;
 	    }
 
-		task_start(reinterpret_cast<ENTRYPOINT>(main), nullptr);
+		if(init != nullptr) {
+			(*init)();
+		}
 
 	    while(engine_frame())
 	    {
@@ -71,12 +69,10 @@ ACKNEXT_API_BLOCK
 		if(engine_config.argv0 == NULL)
 		{
 			engine_log("ERROR: engine_config.argv0 IS NOT SET. SET THIS TO argv[0] PRIOR TO CALLING engine_open or engine_main!");
-			exit(-1);
+			assert(engine_config.argv0 != NULL); // will fail with "best" error image
 		}
 
-		engine_log("Begin initalizing engine.");
-
-		// engine_config.load("acknext.cfg");
+		engine_log("Start initalizing the engine...");
 
 		if (engine_config.flags & DIAGNOSTIC)
 		{
@@ -175,7 +171,11 @@ ACKNEXT_API_BLOCK
 			engine_log("Failed to initialize SDL_image: %s", IMG_GetError());
 		}
 
-		on_begin_frame = event_create();
+		on_early_update = event_create();
+		on_late_update = event_create();
+		on_update = event_create();
+		on_resize = event_create();
+		on_shutdown = event_create();
 
 		engine_log("Initialize input...");
 		InputManager::init();
@@ -189,17 +189,10 @@ ACKNEXT_API_BLOCK
 		engine_log("Initialize audio system...");
 		AudioManager::initialize();
 
-		engine_log("Initialize scheduler...");
-		scheduler_init();
-
 		engine_log("Engine ready.");
 		engine_log("==========================================================================================");
 
 		lastFrameTime = high_resolution_clock::now();
-
-		// if(compiler_start() == false) {
-		// 	return false;
-		// }
 
 		engine_shutdown_requested = false;
 
@@ -220,6 +213,8 @@ ACKNEXT_API_BLOCK
 	                    steady_clock::now() - startupTime);
 	        total_time = timePoint.count();
 	    }
+
+		event_invoke(on_early_update, nullptr);
 
 		if(!(engine_config.flags & CUSTOM_VIDEO))
 		{
@@ -264,11 +259,11 @@ ACKNEXT_API_BLOCK
 			}
 		}
 
-		event_invoke(on_begin_frame, nullptr);
-
-		scheduler_update();
+		event_invoke(on_update, nullptr);
 
 		CollisionSystem::update();
+
+		event_invoke(on_late_update, nullptr);
 
 		CollisionSystem::draw();
 
@@ -283,8 +278,7 @@ ACKNEXT_API_BLOCK
 	{
 		screen_size.width = width;
 		screen_size.height = height;
-		// trigger resize event here
-		engine_log("resize to %d×%d", width, height);
+		event_invoke(on_resize, nullptr);
 	}
 
 	void engine_shutdown()
@@ -294,9 +288,9 @@ ACKNEXT_API_BLOCK
 
 	void engine_close()
 	{
+		event_invoke(on_shutdown, nullptr);
+
 		engine_log("==========================================================================================");
-		engine_log("Shutting down scheduler...");
-	    scheduler_shutdown();
 
 		engine_log("Shutting down input...");
 		InputManager::shutdown();
@@ -306,9 +300,6 @@ ACKNEXT_API_BLOCK
 
 		engine_log("Shutting down collision system...");
 		CollisionSystem::shutdown();
-
-		engine_log("Shutting down renderer...");
-		render_shutdown();
 
 		if(!(engine_config.flags & CUSTOM_VIDEO))
 		{
