@@ -25,6 +25,13 @@ typedef enum ACKTYPE
 	TYPE_LIGHT = 12,
 } ACKTYPE;
 
+typedef enum VSYNC
+{
+	VSYNC_OFF = 0,
+	VSYNC_ON = 1,
+	VSYNC_ADAPTIVE = -1,
+} VSYNC;
+
 typedef struct ACKGUID
 {
 	uint8_t id[16];
@@ -39,6 +46,8 @@ typedef struct
 
 	char const * windowTitle;
 	SIZE resolution;
+
+	VSYNC vsync;
 
 	CONFIGFLAGS flags;
 } ACKCONFIG;

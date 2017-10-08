@@ -167,7 +167,7 @@ ACKNEXT_API_BLOCK
 				SDL_GetWindowSize(engine.window, &screen_size.width, &screen_size.height);
 
 				// No vsync for debugging
-				SDL_GL_SetSwapInterval(0);
+				SDL_GL_SetSwapInterval(engine_config.vsync);
 			}
 		}
 
