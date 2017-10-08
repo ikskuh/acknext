@@ -3,11 +3,13 @@ TEMPLATE = subdirs
 SUBDIRS += \
     terrain \
     ackmain \
-    default \
-    ackcef \
+	default \
     dearackgui \
     scheduler \
     configfile
+
+
+# ackcef \
 
 DISTFILES += \
 	addons.pri
