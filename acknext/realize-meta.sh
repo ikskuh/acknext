@@ -63,6 +63,9 @@ f = io.open("include/acknext/ackdef.h", "w")
 f:write [[#ifndef _ACKNEXT_ACKDEF_H_
 #define _ACKNEXT_ACKDEF_H_
 
+#include "config.h"
+#include "ackmath.h"
+
 ]]
 
 function Range(min, max)
@@ -102,12 +105,15 @@ do
 					key,
 					")\n"
 				)
-				
 				-- Remove allocation
 				values[key] = nil
 				allocated[sym] = key
 			end
 		end
+	end
+	f:write("\n")
+	for i,v in orderedPairs(flags) do
+		f:write("typedef BITFIELD ",i:upper(),";\n")
 	end
 end
 
@@ -140,6 +146,9 @@ for name,list in orderedPairs(enum) do
 		f:write(v:upper())
 		if list.postfix then
 			f:write(list.postfix)
+		end
+		if list.noDefault then
+			f:write(" = ", i)
 		end
 		f:write(",\n")
 	end

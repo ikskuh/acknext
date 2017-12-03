@@ -1,0 +1,9 @@
+L3DT texture list
+
+HexID	ID# 	Land type	Climate	nTextures	TexNameList
+0x0B00	2816	"Dry grass"	"Temperate"	4	"common\grass\grass1-dry.jpg"	"common\grass\grass1-dry.jpg"	"common\grass\grass1-dry.jpg"	"common\detail\detailmap.jpg"
+0x0C00	3072	"Dry grass (2)"	"Temperate"	4	"common\grass\grass1-dry.jpg"	"common\grass\grass1-dry.jpg"	"common\grass\grass1-dry.jpg"	"common\detail\detailmap.jpg"
+0x0E00	3584	"Steep dry grass"	"Temperate"	4	"common\grass\grass1-dry.jpg"	"common\grass\grass1-dry.jpg"	"common\grass\grass1-dry.jpg"	"common\detail\detailmap.jpg"
+0x0F00	3840	"Steep dry grass (2)"	"Temperate"	4	"common\grass\grass1.jpg"	"common\grass\grass1.jpg"	"common\grass\grass1.jpg"	"common\detail\detailmap.jpg"
+0x1000	4096	"Cliff face"	"Temperate"	2	"common\rock\rock1b.jpg"	"common\rock\rock2b.jpg"
+0x1100	4352	"Steep cliffs"	"Temperate"	2	"common\rock\rock1.jpg"	"common\rock\rock2.jpg"

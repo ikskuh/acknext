@@ -1,5 +1,7 @@
 #include <engine.hpp>
 
+#include "../graphics/scene/ackglm.hpp"
+
 static MATRIX * mat_wrap(MATRIX * src)
 {
 	static int index;
@@ -46,5 +48,40 @@ ACKNEXT_API_BLOCK
 		dst = mat_wrap(dst);
 		memcpy(dst, src, sizeof(MATRIX));
 		return dst;
+	}
+
+	MATRIX * mat_invert(MATRIX * mat)
+	{
+		glm_to_ack(mat, glm::inverse(ack_to_glm(*mat)));
+		return mat;
+	}
+
+	MATRIX * quat_to_mat(MATRIX * dst, QUATERNION const * src)
+	{
+		dst = mat_wrap(dst);
+		glm_to_ack(dst, glm::mat4_cast(ack_to_glm(*src)));
+		return dst;
+	}
+
+
+	MATRIX * mat_scale(MATRIX * mat, VECTOR const * scale)
+	{
+		if(!mat) mat = mat_id(NULL);
+		glm_to_ack(mat, glm::scale(ack_to_glm(*mat), ack_to_glm(*scale)));
+		return mat;
+	}
+
+	MATRIX * mat_translate(MATRIX * mat, VECTOR const * offset)
+	{
+		if(!mat) mat = mat_id(NULL);
+		glm_to_ack(mat, glm::translate(ack_to_glm(*mat), ack_to_glm(*offset)));
+		return mat;
+	}
+
+	MATRIX * mat_rotate(MATRIX * mat, QUATERNION const * rotation)
+	{
+		if(!mat) mat = mat_id(NULL);
+		glm_to_ack(mat, ack_to_glm(*mat) * glm::mat4_cast(ack_to_glm(*rotation)));
+		return mat;
 	}
 }

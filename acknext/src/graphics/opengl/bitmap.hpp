@@ -6,11 +6,7 @@
 class Bitmap : public EngineObject<BITMAP>
 {
 public:
-	GLuint id;
-	GLenum target;
-	GLenum type;
-public:
-	explicit Bitmap(TEXTURETYPE type);
+	explicit Bitmap(GLenum type, GLenum format);
 	NOCOPY(Bitmap);
 	~Bitmap();
 };

@@ -4,34 +4,73 @@
 #include "shader.hpp"
 #include "bitmap.hpp"
 
+#include "../shareddata.hpp"
+
 #define FALLBACK(a, b) ((a) ? (a) : (b))
 
 
-static Buffer * currentVertexBuffer;
-static Buffer * currentIndexBuffer;
-static Shader * currentShader;
-
-// graphics-core.cpp
-extern GLuint vao;
-extern Shader * defaultShader;
-extern Bitmap * defaultWhiteTexture;
+static Buffer const * currentVertexBuffer;
+static Buffer const * currentIndexBuffer;
+static FRAMEBUFFER * currentFramebuffer;
+Shader * currentShader;
 
 ACKNEXT_API_BLOCK
 {
-	void opengl_setVertexBuffer(BUFFER * _buffer)
+	int opengl_debugMode = 0;
+
+	bool opengl_wireFrame = false;
+
+	void opengl_setFrameBuffer(FRAMEBUFFER * fb)
+	{
+		if(fb && !framebuf_checkValid(fb))
+		{
+			engine_seterror(ERR_INVALIDARGUMENT, "Framebuffer is not complete!");
+			return;
+		}
+
+		currentFramebuffer = fb;
+		glBindFramebuffer(
+			GL_DRAW_FRAMEBUFFER,
+			(fb != nullptr) ? fb->object : 0);
+
+		if(fb)
+		{
+			glDisable(GL_SCISSOR_TEST);
+			glViewport(0, 0, fb->size.width, fb->size.height);
+		}
+		else
+		{
+			glEnable(GL_SCISSOR_TEST);
+
+			POINT pos;
+			SIZE size;
+			view_to_bounds(view_current, &pos, &size);
+
+			if(size.width <= 0 || size.height <= 0) {
+				return;
+			}
+
+			int gly = screen_size.height - pos.y - size.height;
+
+			glViewport(pos.x, gly, size.width, size.height);
+			glScissor(pos.x, gly, size.width, size.height);
+		}
+	}
+
+	void opengl_setVertexBuffer(BUFFER const * _buffer)
 	{
 		GLuint id = 0;
-		Buffer * buffer = promote<Buffer>(_buffer);
+		Buffer const * buffer = promote<Buffer>(_buffer);
 		if(buffer != nullptr) {
-			if(buffer->type != GL_ARRAY_BUFFER) {
+			if(buffer->api().type != GL_ARRAY_BUFFER) {
 				engine_seterror(ERR_INVALIDARGUMENT, "Buffer is not a vertex buffer.");
 				return;
 			}
-			if((_buffer->size % sizeof(VERTEX)) != 0) {
+			if((buffer->api().size % sizeof(VERTEX)) != 0) {
 				engine_seterror(ERR_INVALIDARGUMENT, "Buffer size is not divisible by vertex size.");
 				return;
 			}
-			id = buffer->id;
+			id = buffer->api().object;
 		}
 
 		glVertexArrayVertexBuffer(
@@ -41,20 +80,20 @@ ACKNEXT_API_BLOCK
 		currentVertexBuffer = buffer;
 	}
 
-	void opengl_setIndexBuffer(BUFFER * _buffer)
+	void opengl_setIndexBuffer(BUFFER const * _buffer)
 	{
 		GLuint id = 0;
-		Buffer * buffer = promote<Buffer>(_buffer);
+		Buffer const * buffer = promote<Buffer>(_buffer);
 		if(buffer != nullptr) {
-			if(buffer->type != GL_ELEMENT_ARRAY_BUFFER) {
+			if(buffer->api().type != GL_ELEMENT_ARRAY_BUFFER) {
 				engine_seterror(ERR_INVALIDARGUMENT, "Buffer is not an index buffer.");
 				return;
 			}
-			if((_buffer->size % sizeof(INDEX)) != 0) {
+			if((buffer->api().size % sizeof(INDEX)) != 0) {
 				engine_seterror(ERR_INVALIDARGUMENT, "Buffer size is not divisible by index size.");
 				return;
 			}
-			id = buffer->id;
+			id = buffer->api().object;
 		}
 
 		glVertexArrayElementBuffer(vao, id);
@@ -64,9 +103,14 @@ ACKNEXT_API_BLOCK
 
 	void opengl_setTransform(MATRIX const * matWorld, MATRIX const * matView, MATRIX const * matProj)
 	{
+		currentShader->matWorld = *matWorld;
+		currentShader->matView = *matView;
+		currentShader->matProj = *matProj;
+
 		MATRIX mat;
-		int pgm = currentShader->program;
-		int cnt = currentShader->uniforms.size();
+
+		// TODO: Reimplement this!
+		/*
 		for(int i = 0; i < cnt; i++)
 		{
 			UNIFORM const & uni = currentShader->uniforms[i];
@@ -103,14 +147,12 @@ ACKNEXT_API_BLOCK
 					continue;
 			}
 
-			/*
-			engine_log("Matrix %d:\n%1.3f %1.3f %1.3f %1.3f\n%1.3f %1.3f %1.3f %1.3f\n%1.3f %1.3f %1.3f %1.3f\n%1.3f %1.3f %1.3f %1.3f",
-				uni->variable,
-				mat.v[0][0], mat.v[0][1], mat.v[0][2], mat.v[0][3],
-				mat.v[1][0], mat.v[1][1], mat.v[1][2], mat.v[1][3],
-				mat.v[2][0], mat.v[2][1], mat.v[2][2], mat.v[2][3],
-				mat.v[3][0], mat.v[3][1], mat.v[3][2], mat.v[3][3]);
-			//*/
+//			engine_log("Matrix %d:\n%1.3f %1.3f %1.3f %1.3f\n%1.3f %1.3f %1.3f %1.3f\n%1.3f %1.3f %1.3f %1.3f\n%1.3f %1.3f %1.3f %1.3f",
+//				uni->variable,
+//				mat.v[0][0], mat.v[0][1], mat.v[0][2], mat.v[0][3],
+//				mat.v[1][0], mat.v[1][1], mat.v[1][2], mat.v[1][3],
+//				mat.v[2][0], mat.v[2][1], mat.v[2][2], mat.v[2][3],
+//				mat.v[3][0], mat.v[3][1], mat.v[3][2], mat.v[3][3]);
 
 			glProgramUniformMatrix4fv(
 				pgm,
@@ -119,51 +161,149 @@ ACKNEXT_API_BLOCK
 				GL_FALSE,
 				&mat.fields[0][0]);
 		}
+		*/
 	}
 
 	void opengl_draw(
 		unsigned int primitiveType,
 		unsigned int offset,
-		unsigned int count)
+		unsigned int count,
+		unsigned int instances)
 	{
-		if(currentIndexBuffer == nullptr || currentVertexBuffer == nullptr) {
-			engine_seterror(ERR_INVALIDOPERATION, "Either index, vertex or both buffers are not set.");
+		int mode = 0;
+		if(currentIndexBuffer && currentVertexBuffer) {
+			mode = 1;
+		} else if(currentIndexBuffer) {
+			mode = 2;
+		} else if(currentVertexBuffer) {
+			mode = 3;
+		}
+
+		engine_stats.drawcalls += 1;
+
+		switch(mode) {
+			case 0:
+				engine_seterror(ERR_INVALIDOPERATION, "There is no vertex or index buffer to be drawn.");
+				return;
+			case 1:
+			case 2:
+				if((offset + count) > (currentIndexBuffer->api().size / sizeof(INDEX))) {
+					engine_seterror(ERR_INVALIDOPERATION, "offset and count index the index buffer outside of its range.");
+					return;
+				}
+				glDrawElementsInstanced(
+					primitiveType,
+					count,
+					GL_UNSIGNED_INT,
+					(const void *)(sizeof(INDEX) * offset),
+					instances);
+				break;
+			case 3:
+				if((offset + count) > (currentVertexBuffer->api().size / sizeof(VERTEX))) {
+					engine_seterror(ERR_INVALIDOPERATION, "offset and count index the vertex buffer outside of its range.");
+					return;
+				}
+				glDrawArraysInstanced(
+					primitiveType,
+					offset,
+					count,
+					instances);
+				break;
+			default: abort();
+		}
+	}
+
+	void opengl_setShader(SHADER const * shader)
+	{
+		if((shader != nullptr) && !(shader->flags & LINKED)) {
+			engine_seterror(ERR_INVALIDOPERATION, "Trying to render with an unlinked shader!");
 			return;
 		}
-		if((offset + count) > (currentIndexBuffer->api().size / sizeof(INDEX))) {
-			engine_seterror(ERR_INVALIDOPERATION, "offset and count index the index buffer outside of its range.");
-			return;
-		}
-		glDrawElements(
-			primitiveType,
-			count,
-			GL_UNSIGNED_INT,
-			(const void *)(sizeof(INDEX) * offset));
+
+		currentShader = FALLBACK(const_cast<Shader*>(promote<Shader>(shader)), defaultShader);
+		glUseProgram(currentShader->api().object);
+
+		POINT pos;
+		SIZE size;
+		view_to_bounds(view_current, &pos, &size);
+
+		currentShader->vecViewPort = (VECTOR4) { float(pos.x), float(pos.y), float(size.width), float(size.height) };
+		currentShader->fGamma = screen_gamma;
+		currentShader->vecTime = (VECTOR2){ total_time, time_step };
+		currentShader->iDebugMode = opengl_debugMode;
+		currentShader->texNoise = noisemap;
 	}
 
-	void opengl_setShader(SHADER * shader)
+	void opengl_setTexture(int slot, BITMAP const * _texture)
 	{
-		currentShader = FALLBACK(promote<Shader>(shader), defaultShader);
-		glUseProgram(currentShader->program);
+		Bitmap const * texture = promote<Bitmap>(FALLBACK(_texture, defaultWhiteTexture));
+		glBindTextureUnit(slot, texture->api().object);
 	}
 
-	void opengl_setTexture(int slot, BITMAP * _texture)
-	{
-		Bitmap *texture = FALLBACK(promote<Bitmap>(_texture), defaultWhiteTexture);
-		glBindTextureUnit(slot, texture->id);
-	}
-
-	void opengl_setMesh(MESH * mesh)
+	GLenum opengl_setMesh(MESH const * mesh, int * _count)
 	{
 		if(mesh == nullptr) {
 			engine_seterror(ERR_INVALIDARGUMENT, "mesh must not be NULL!");
 		}
 		opengl_setIndexBuffer(mesh->indexBuffer);
 		opengl_setVertexBuffer(mesh->vertexBuffer);
-		opengl_setMaterial(mesh->material);
+
+		GLuint count;
+		if(mesh->indexBuffer)
+			count = mesh->indexBuffer->size / sizeof(INDEX);
+		else
+			count = mesh->vertexBuffer->size / sizeof(VERTEX);
+
+		GLenum type = mesh->primitiveType;
+		if(currentShader->api().flags & TESSELATION)
+		{
+			type = GL_PATCHES;
+			switch(mesh->primitiveType)
+			{
+				case GL_POINTS:
+					glPatchParameteri(GL_PATCH_VERTICES, 1);
+					break;
+				case GL_LINES:
+					glPatchParameteri(GL_PATCH_VERTICES, 2);
+					break;
+				case GL_TRIANGLES:
+					glPatchParameteri(GL_PATCH_VERTICES, 3);
+					break;
+				case GL_QUADS:
+					glPatchParameteri(GL_PATCH_VERTICES, 4);
+					break;
+				default: abort();
+			}
+		}
+		if(_count) *_count = count;
+		return type;
 	}
 
-	void opengl_setMaterial(MATERIAL * material)
+	void opengl_drawMesh(MESH const * mesh)
+	{
+		if(mesh == nullptr) {
+			engine_seterror(ERR_INVALIDARGUMENT, "mesh must not be NULL!");
+		}
+		int count;
+		GLenum type = opengl_setMesh(mesh, &count);
+		opengl_draw(
+			type,
+			0,
+			count,
+			1);
+	}
+
+	void opengl_drawFullscreenQuad()
+	{
+		glBindVertexArray(vao);
+		currentShader->useInstancing = false;
+		currentShader->useBones = false;
+		opengl_setVertexBuffer(fullscreenQuadBuffer);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		engine_stats.drawcalls++;
+	}
+
+	void opengl_setMaterial(MATERIAL const * material)
 	{
 		if(material == nullptr) {
 			engine_seterror(ERR_INVALIDARGUMENT, "material must not be NULL!");
@@ -173,43 +313,19 @@ ACKNEXT_API_BLOCK
 		// this fallbacks to the defaultShader if none is set.
 		opengl_setShader(material->shader);
 
-		int pgm = currentShader->program;
+		currentShader->vecAlbedo = material->albedo;
+		currentShader->vecAttributes = (VECTOR){material->roughness,material->metallic,material->fresnell};
+		currentShader->vecEmission = material->emission;
 
-		int cnt = int(currentShader->uniforms.size());
-		for(int i = 0; i < cnt; i++)
-		{
-			UNIFORM const * uni = &currentShader->uniforms[i];
-			switch(uni->var) {
-				case VECCOLOR_VAR:
-					glProgramUniform3f(
-						pgm,
-						uni->location,
-						material->color.red,
-						material->color.green,
-						material->color.blue);
-					break;
-				case VECATTRIBUTES_VAR:
-					glProgramUniform3f(
-						pgm,
-						uni->location,
-						material->roughness,
-						material->metallic,
-						material->fresnell);
-					break;
-				case VECEMISSION_VAR:
-					glProgramUniform3f(
-						pgm,
-						uni->location,
-						material->emission.red,
-						material->emission.green,
-						material->emission.blue);
-					break;
-				default: break;
-			}
-		}
+		// binds the textures to the correct variables
+		mtl_setvar(const_cast<MATERIAL*>(material), "texAlbedo",     GL_SAMPLER_2D, material->albedoTexture);
+		mtl_setvar(const_cast<MATERIAL*>(material), "texEmission",   GL_SAMPLER_2D, material->emissionTexture);
+		mtl_setvar(const_cast<MATERIAL*>(material), "texNormalMap",  GL_SAMPLER_2D, material->normalTexture);
+		mtl_setvar(const_cast<MATERIAL*>(material), "texAttributes", GL_SAMPLER_2D, material->attributeTexture);
 
-		opengl_setTexture(0, material->colorTexture);
-		opengl_setTexture(1, material->attributeTexture);
-		opengl_setTexture(2, material->emissionTexture);
+		currentShader->useNormalMapping = (material->normalTexture != nullptr);
+
+		shader_setUniforms(&currentShader->api(), &currentShader->api(), true);
+		shader_setUniforms(&currentShader->api(), material, false);
 	}
 }

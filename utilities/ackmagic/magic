@@ -1,0 +1,34 @@
+# Acknext Magic File
+
+# Generic File Header
+0	 string	ACKNEXT\x00\x67\xE3\x41\xCC                                         Acknext Resource File
+>16  string \x6f\xb9\xe9\xd6\x87\x86\x49\xf0\x9d\x6d\x39\x16\xa7\xba\x9c\x41    Symlink to
+>>32  pstring/l x                           "%s"
+>12   lelong  1                             Model
+!:mime                                      application/x-acknext-model
+>12   lelong  2                             Shader
+!:mime                                      application/x-acknext-shader
+>12   lelong  3                             Material
+!:mime                                      application/x-acknext-material
+>12   lelong  4                             Sound
+!:mime                                      audio/x-acknext-sound
+>12   lelong  5                             Music
+!:mime                                      audio/x-acknext-music
+>12   lelong  6                             Hull
+!:mime                                      application/x-acknext-hull
+>12   lelong  7                             Blob
+!:mime                                      application/x-acknext-blob
+>12   lelong  8                             Bitmap
+!:mime                                      image/x-acknext-texture
+>>16  string  \xb4\x0f\x64\x26\x2d\x6c\x44\xb3\xbd\x3d\x62\x9f\xaa\x5a\xef\xe7 (Native)
+>>>40 lelong x                              (%d
+>>>44 lelong x                              × %d
+>>>48 lelong x                              × %d)
+>12   lelong  9                             Buffer
+!:mime                                      application/x-acknext-glbuffer
+>12   lelong  10                            Mesh
+!:mime                                      application/x-acknext-mesh
+>12   lelong  11                            View
+!:mime                                      application/x-acknext-view
+>12   lelong  12                            Light
+!:mime                                      application/x-acknext-light

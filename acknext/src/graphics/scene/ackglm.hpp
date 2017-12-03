@@ -15,6 +15,16 @@ static inline void glm_to_ack(MATRIX * target, const glm::mat4 & mat)
 	}
 }
 
+static inline glm::mat4 ack_to_glm(MATRIX const & source)
+{
+	glm::mat4 mat;
+	for(int i = 0; i < 16; i++) {
+		mat[i/4][i%4] = source.fields[i/4][i%4];
+	}
+	return mat;
+}
+
+
 static inline void glm_to_ack(QUATERNION * target, const glm::quat & q)
 {
 	target->x = q.x;

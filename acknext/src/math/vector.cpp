@@ -6,6 +6,8 @@
 
 ACKNEXT_API_BLOCK
 {
+	VECTOR nullvector = { 0, 0, 0 };
+
 	VECTOR * vector(var x, var y, var z)
 	{
 		static VECTOR buffer[ACKNEXT_TEMP_VECTORS];
@@ -97,7 +99,10 @@ ACKNEXT_API_BLOCK
 
 	var vec_dist(VECTOR const * lhs, VECTOR const * rhs)
 	{
-		return vec_length(vec_diff(nullptr, lhs, rhs));
+		float dx = lhs->x - rhs->x;
+		float dy = lhs->y - rhs->y;
+		float dz = lhs->z - rhs->z;
+		return sqrt(dx*dx + dy*dy + dz*dz);
 	}
 
 	var vec_dot(VECTOR const * lhs, VECTOR const * rhs)

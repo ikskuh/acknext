@@ -27,5 +27,15 @@
 #define ACKNEXT_TEMP_VECTORS     64
 #define ACKNEXT_TEMP_MATRICES    16
 #define ACKNEXT_TEMP_QUATERNIONS 64
+#define ACKNEXT_TEMP_COLLISIONS  16
+#define ACKNEXT_TEMP_COLORS      32
+
+// The higher the more precision there is
+// also, it can get jittery and slow... :P
+#define ACKNEXT_MAX_CONTACTS     32
+#define ACKNEXT_MAX_BONES        256
+#define ACKNEXT_MAX_FRAMEBUFFER_TARGETS 8
+
+typedef unsigned int uint;
 
 #endif // _ACKNEXT_CONFIG_H_

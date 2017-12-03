@@ -2,10 +2,13 @@ TEMPLATE = lib
 CONFIG += c++11
 CONFIG -= app_bundle
 CONFIG -= qt
-unix: CONFIG += link_pkgconfig
-unix: PKGCONFIG += ode dotconf sdl2 SDL2_image SDL2_mixer
 
-CONFIG += ackGraphics ackScheduler
+unix {
+	CONFIG += link_pkgconfig
+	PKGCONFIG += ode sdl2 SDL2_image SDL2_mixer zlib assimp gl
+}
+
+include($$PWD/../extern/gl3w/gl3w.pri)
 
 INCLUDEPATH += $$PWD/include
 INCLUDEPATH += $$PWD/src
@@ -17,39 +20,11 @@ LIBS += -lphysfs
 
 DEFINES += _ACKNEXT_INTERNAL_
 
-QMAKE_CFLAGS   += -g -rdynamic -O2
-QMAKE_CXXFLAGS += -g -rdynamic -O2
-QMAKE_LFLAGS   += -g -rdynamic -O2
-
-ackGraphics {
-	include(../../gl3w/gl3w.pri)
-	unix: PKGCONFIG += assimp gl
-}
-
-ackScript {
-	INCLUDEPATH += $$PWD/../../tcc-0.9.26
-	DEPENDPATH += $$PWD/../../tcc-0.9.26
-	LIBS += -L$$PWD/../../tcc-0.9.26/ -ldl -ltcc
-}
-
-ackJSON {
-	# Used for levels
-	INCLUDEPATH += $$PWD/../../json/src
-}
-
-ackScheduler {
-	DISTFILES += \
-		linker.ld
-	QMAKE_LFLAGS += -T$$quote($$PWD/linker.ld)
-
-	HEADERS += \
-		$$PWD/../coroutine/coroutine.h
-
-	SOURCES += \
-		$$PWD/../coroutine/coroutine.c
-
-	DEFINES += ACKNEXT_HAS_SCHEDULER
-}
+custom_rcc.output  = resource.o
+custom_rcc.commands = make -C $$PWD/../resource/ qmake OUTFILE=`pwd`/${QMAKE_FILE_OUT} shaders
+custom_rcc.depend_command = make -C $$PWD/../resource/ depends
+custom_rcc.input = RESOURCES
+QMAKE_EXTRA_COMPILERS += custom_rcc
 
 HEADERS += \
     src/graphics/opengl/buffer.hpp \
@@ -66,7 +41,6 @@ HEADERS += \
     src/collision/collision.hpp \
     src/collision/hull.hpp \
     src/graphics/core/view.hpp \
-    src/scheduler/task.hpp \
     src/events/event.hpp \
     src/input/gamepad.hpp \
     src/input/joystick.hpp \
@@ -92,12 +66,27 @@ HEADERS += \
     include/acknext/opengl.h \
     include/acknext/scene.h \
     include/acknext/filesys.h \
-    include/acknext/scheduler.h \
     include/acknext/ackmath.h \
     include/acknext/ackentity.h \
-    src/virtfs/physfsrwops.h \
     src/graphics/scene/ackglm.hpp \
-    include/acknext/acktransforms.h
+    include/acknext/acktransforms.h \
+    src/graphics/debug/debugdrawer.hpp \
+    include/acknext/ackdebug.h \
+    include/acknext/ackcol.h \
+    src/collision/collisionsystem.hpp \
+    src/audio/audiomanager.hpp \
+    src/audio/sound.hpp \
+    include/acknext/acksound.h \
+    src/virtfs/resourcemanager.hpp \
+    src/graphics/opengl/uniformconfig.h \
+    include/acknext/extension.h \
+    include/acknext/serialization.h \
+    src/extensions/extension.hpp \
+    src/graphics/core/glenum-translator.hpp \
+    include/acknext/acff.h \
+    src/scene/animation.hpp \
+    src/graphics/shareddata.hpp \
+    src/graphics/opengl/framebuffer.hpp
 
 SOURCES += \
     src/graphics/opengl/buffer.cpp \
@@ -130,10 +119,32 @@ SOURCES += \
     src/core/blob.cpp \
     src/graphics/opengl/opengl.cpp \
     src/math/matrix.cpp \
-    src/graphics/graphics-resource.cpp \
     src/virtfs/physfs-integration.cpp \
-    src/scheduler/scheduler.cpp \
-    src/virtfs/physfsrwops.c \
     src/math/quaternion.cpp \
     src/graphics/scene/scene-renderer.cpp \
-    src/math/transforms.cpp
+    src/math/transforms.cpp \
+    src/graphics/debug/debugdrawer.cpp \
+    src/collision/collisionsystem.cpp \
+    src/audio/audiomanager.cpp \
+    src/audio/sound.cpp \
+    src/virtfs/resourcemanager.cpp \
+    src/math/color.cpp \
+    src/graphics/opengl/programuniform.cpp \
+    src/core/blob_compression.c \
+    src/core/engineobject.cpp \
+    src/extensions/extension.cpp \
+    src/virtfs/serialization.cpp \
+    src/core/guid.cpp \
+    src/serialization/serializers.cpp \
+    src/graphics/core/glenum-translator.cpp \
+    src/virtfs/ackfile.cpp \
+    src/scene/animation.cpp \
+    src/graphics/opengl/framebuffer.cpp \
+    src/math/aabb.cpp
+
+RESOURCES += \
+    $$TOPDIR/resource/builtin.qrc
+
+DISTFILES += \
+    acknext.pri
+

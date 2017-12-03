@@ -1,0 +1,22 @@
+<RCC>
+    <qresource prefix="/">
+        <file>shaders/object.vert</file>
+        <file>shaders/object.frag</file>
+        <file>beep.wav</file>
+        <file>shaders/lighting.glsl</file>
+        <file>shaders/gamma.glsl</file>
+        <file>shaders/ackpbr.glsl</file>
+        <file>shaders/fog.glsl</file>
+        <file>shaders/linedraw.vert</file>
+        <file>shaders/linedraw.frag</file>
+        <file>shaders/postprocess.vert</file>
+        <file>shaders/pp/hdr/linear.frag</file>
+        <file>shaders/pp/hdr/reinhard.frag</file>
+        <file>shaders/pp/bloom/blur.frag</file>
+        <file>shaders/pp/bloom/combine.frag</file>
+        <file>textures/noise.atx</file>
+        <file>shaders/pp/ssao/apply.frag</file>
+        <file>shaders/pp/ssao/combine.frag</file>
+        <file>shaders/pp/fxaa.frag</file>
+    </qresource>
+</RCC>

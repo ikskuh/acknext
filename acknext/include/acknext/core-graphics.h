@@ -4,73 +4,148 @@
 #include "config.h"
 #include "ackmath.h"
 #include "ackenum.h"
+#include "ackdef.h"
+#include "filesys.h"
 
-typedef unsigned int GLDATA;
+#include <GL/gl3w.h>
 
 typedef struct
 {
-	TEXTURETYPE ACKCONST type;
+	GLuint ACKCONST object;
+	GLenum ACKCONST target;
+	GLenum ACKCONST format;
 	int ACKCONST width;
 	int ACKCONST height;
 	int ACKCONST depth; // 3D textures ;)
-	PIXELFORMAT ACKCONST format;
+	void * ACKCONST pixels; // when bitmap is loaded, contains raw data
 } BITMAP;
+
+typedef struct FRAMEBUFFER
+{
+	GLuint object;
+	BITMAP * targets[ACKNEXT_MAX_FRAMEBUFFER_TARGETS];
+	BITMAP * depthBuffer;
+	SIZE size;
+} FRAMEBUFFER;
 
 typedef struct
 {
+	GLuint ACKCONST object;
 	size_t ACKCONST size;
-	BUFFERTYPE ACKCONST type;
+	GLenum ACKCONST type;
 } BUFFER;
 
 typedef struct
 {
-
+	GLuint ACKCONST object;
+	int ACKCONST textureSlotCount; // number of texture slot this object uses
+	SHADERFLAGS ACKCONST flags;
 } SHADER;
 
 typedef struct
 {
-	int ACKCONST location;
+	int ACKCONST block;    // block index, if -1, the uniform is free
+	int ACKCONST index;    // index in terms of active uniform
+	int ACKCONST location; // location in terms of glUniform*()
 	char ACKCONST name[128];
-	GLDATA ACKCONST type;
+	GLenum ACKCONST type;
 	int ACKCONST size;
-	SHADERVAR ACKCONST var;
+	int ACKCONST var;         // internal shader variable for fast uniform setting
+	int ACKCONST textureSlot; // the index of the texture slot this uniform has assigned
 } UNIFORM;
 
 // BITMAP api:
 
-ACKFUN BITMAP * bmap_create(TEXTURETYPE type);
+ACKFUN BITMAP * bmap_create(GLenum type, GLenum format);
 
-ACKFUN BITMAP * bmap_createblack(int width, int height, PIXELFORMAT format);
+ACKFUN BITMAP * bmap_createblack(int width, int height, GLenum format);
+
+ACKFUN BITMAP * bmap_createpixel(COLOR color);
 
 ACKFUN BITMAP * bmap_load(char const * fileName);
 
-ACKFUN void bmap_set(BITMAP * bitmap, int width, int height, PIXELFORMAT format, void const * data);
+
+ACKFUN BITMAP * bmap_read(ACKFILE * file);
+
+ACKFUN void bmap_write(ACKFILE * file, BITMAP * bitmap);
+
+ACKFUN void bmap_renew(BITMAP * bitmap); // realloc a new bitmap object, loose everything but the object pointer
+
+ACKFUN void bmap_set(
+	BITMAP * bitmap,
+	int width, int height,
+	GLenum pixelFormat,
+	GLenum channelFormat,
+	void const * data);
 
 ACKFUN void bmap_remove(BITMAP * bitmap);
 
+ACKFUN BITMAP * bmap_to_mipmap(BITMAP * bitmap);
+ACKFUN BITMAP * bmap_to_linear(BITMAP * bitmap);
+ACKFUN BITMAP * bmap_to_nearest(BITMAP * bitmap);
+
+// Framebuffer Api:
+
+ACKFUN FRAMEBUFFER * framebuf_create();
+
+// resize all textures attached
+ACKFUN void framebuf_resize(FRAMEBUFFER * fb, SIZE size);
+
+// Adapt changes from the structure to the opengl object
+ACKFUN void framebuf_update(FRAMEBUFFER * fb);
+
+ACKFUN bool framebuf_checkValid(FRAMEBUFFER * fb);
+
+ACKFUN void framebuf_remove(FRAMEBUFFER * fb);
+
+
 // BUFFER api:
-ACKFUN BUFFER * buffer_create(BUFFERTYPE type);
+#define VERTEXBUFFER  GL_ARRAY_BUFFER
+#define INDEXBUFFER   GL_ELEMENT_ARRAY_BUFFER
+#define UNIFORMBUFFER GL_UNIFORM_BUFFER
 
-ACKFUN void buffer_set(BUFFER * buffer, size_t size, void * data);
+ACKFUN BUFFER * buffer_create(GLenum type);
 
-ACKFUN void buffer_update(BUFFER * buffer, size_t offset, size_t size, void * data);
+ACKFUN void buffer_set(BUFFER * buffer, size_t size, void const * data);
 
-ACKFUN GLDATA buffer_getObject(BUFFER * buffer);
+ACKFUN void buffer_update(BUFFER * buffer, size_t offset, size_t size, void const * data);
+
+#define READONLY GL_READ_ONLY
+#define WRITEONLY GL_WRITE_ONLY
+#define READWRITE GL_READ_WRITE
+ACKFUN void * buffer_map(BUFFER * buffer, GLenum mode);
+
+ACKFUN void buffer_unmap(BUFFER * buffer);
 
 ACKFUN void buffer_remove(BUFFER * buffer);
 
 // SHADER api:
+#define VERTEXSHADER   GL_VERTEX_SHADER
+#define FRAGMENTSHADER GL_FRAGMENT_SHADER
+#define GEOMETRYSHADER GL_GEOMETRY_SHADER
+#define TESSCTRLSHADER GL_TESS_CONTROL_SHADER
+#define TESSEVALSHADER GL_TESS_EVALUATION_SHADER
+#define COMPUTESHADER  GL_COMPUTE_SHADER
+
 ACKFUN SHADER * shader_create();
 
-ACKFUN bool shader_addSource(SHADER * shader, SHADERTYPE type, const char * source);
+ACKFUN bool shader_addSource(SHADER * shader, GLenum type, char const * source);
+
+ACKFUN bool shader_addSourceExt(SHADER * shader, GLenum type, void const * source, size_t length);
+
+ACKFUN bool shader_addFileSource(SHADER * shader, GLenum type, char const * fileName);
 
 ACKFUN bool shader_link(SHADER * shader);
 
-ACKFUN UNIFORM const * shader_getUniform(SHADER * shader, int index);
+ACKFUN UNIFORM const * shader_getUniform(SHADER const * shader, int index);
 
-ACKFUN int shader_getUniformCount(SHADER * shader);
+ACKFUN int shader_getUniformCount(SHADER const * shader);
 
-ACKFUN GLDATA shader_getObject(SHADER * shader);
+ACKFUN UNIFORM const * shader_getUniformByName(SHADER const * shader, char const * name);
+
+ACKFUN void shader_setUniforms(SHADER * shader, void const * source, bool override);
+
+ACKFUN void shader_logInfo(SHADER const * shader);
 
 ACKFUN void shader_remove(SHADER * shader);
 

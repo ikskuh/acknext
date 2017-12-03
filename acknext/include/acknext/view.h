@@ -3,6 +3,7 @@
 
 #include "config.h"
 #include "ackmath.h"
+#include "ackdef.h"
 
 typedef void (*RENDERCALL)(void * context);
 
@@ -15,13 +16,18 @@ typedef struct
 	SIZE size;
 	var layer;
 
-	BITFIELD flags;
+	VIEWFLAGS flags;
 } VIEW;
+
+// Current view, only valid in rendering process
+ACKVAR VIEW * ACKCONST view_current;
 
 ACKFUN VIEW * view_create(RENDERCALL render, void * context);
 
 ACKFUN void view_draw(VIEW * view);
 
 ACKFUN void view_remove(VIEW * view);
+
+ACKFUN void view_to_bounds(VIEW const * view, POINT * pt, SIZE * size); // get view size
 
 #endif // _ACKNEXT_VIEW_H_

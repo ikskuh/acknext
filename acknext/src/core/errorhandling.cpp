@@ -7,18 +7,18 @@
 #include <execinfo.h>
 // int backtrace(void **buffer, int size);
 // char **backtrace_symbols(void *const *buffer, int size);
-static void print_stacktrace()
+void _print_stacktrace()
 {
 	void * stack[64];
 	int cnt = backtrace(stack, 64);
 
 	char ** symbols = backtrace_symbols(stack, cnt);
 	if(symbols == nullptr) {
-		for(int i = 2; i < cnt; i++) {
+		for(int i = 3; i < cnt; i++) {
 			engine_log("\t%d [%p]", i - 2, stack[i]);
 		}
 	} else {
-		for(int i = 2; i < cnt; i++) {
+		for(int i = 3; i < cnt; i++) {
 			engine_log("\t%s", symbols[i]);
 		}
 	}
@@ -52,9 +52,13 @@ ACKNEXT_API_BLOCK
 
 		engine_log("Error: %s", buffer);
 
-		print_stacktrace();
+		_print_stacktrace();
 
 		engine_lasterror_text = buffer;
+
+		if(!(engine_config.flags & SILENT_FAIL)) {
+			abort();
+		}
 	}
 }
 

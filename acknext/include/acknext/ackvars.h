@@ -5,6 +5,15 @@
 #include "ackmath.h"
 
 ACKVAR ACKCONST SIZE screen_size;
+ACKVAR var screen_gamma;
+
+ACKVAR EVENT * ACKCONST on_resize;
+
+ACKVAR EVENT * ACKCONST on_early_update; // Called before any other update logic, even before input
+ACKVAR EVENT * ACKCONST on_update; // Called before any other update logic, but after input
+ACKVAR EVENT * ACKCONST on_late_update; // Called after all update logic, but before drawing
+
+ACKVAR EVENT * ACKCONST on_shutdown; // Invoked when the engine is beeing closed
 
 // Time vars:
 

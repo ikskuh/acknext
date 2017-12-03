@@ -1,124 +1,76 @@
 #include <engine.hpp>
 
 #include <physfs.h>
+#include "core/config.hpp"
 
 ACKNEXT_API_BLOCK
 {
 	void filesys_addResource(char const * resource, char const * path)
 	{
-		if(resource == nullptr) {
-			engine_seterror(ERR_INVALIDARGUMENT, "name must not be NULL");
+		if(!(engine_config.flags & USE_VFS)) {
+			engine_seterror(ERR_INVALIDOPERATION, "acknext was not configured to use the virtual file system.");
 			return;
 		}
+		ARG_NOTNULL(resource, );
 		if(PHYSFS_mount(resource, path, 1) == 0) {
 			engine_seterror(ERR_FILESYSTEM, "%s", PHYSFS_getLastError());
 		}
 	}
+}
 
-	ACKFILE * file_open_read(char const * name)
-	{
-		if(name == nullptr) {
-			engine_seterror(ERR_INVALIDARGUMENT, "name must not be NULL");
-			return nullptr;
-		} else {
-			return PHYSFS_openRead(name);
-		}
-	}
+static Sint64 rw_size(SDL_RWops * c)
+{
+	return file_size((ACKFILE*)c->hidden.unknown.data1);
+}
 
-	ACKFILE * file_open_write(char const * name)
+static Sint64 rw_seek(SDL_RWops *c,Sint64 offset,int whence)
+{
+	auto * f = (ACKFILE*)c->hidden.unknown.data1;
+	if(whence == RW_SEEK_CUR)
 	{
-		if(name == nullptr) {
-			engine_seterror(ERR_INVALIDARGUMENT, "name must not be NULL");
-			return nullptr;
-		} else {
-			return PHYSFS_openWrite(name);
-		}
+		offset = file_tell(f) + offset;
 	}
+	else if(whence == RW_SEEK_END)
+	{
+		auto len = file_size(f);
+		if(len < 0) return SDL_SetError("Can't seek with _END in a non-sized stream!");
+		offset = len - offset;
+	}
+	file_seek(f, offset);
+	return offset;
+}
 
-	ACKFILE * file_open_append(char const * name)
-	{
-		if(name == nullptr) {
-			engine_seterror(ERR_INVALIDARGUMENT, "name must not be NULL");
-			return nullptr;
-		} else {
-			return PHYSFS_openAppend(name);
-		}
-	}
+static size_t rw_read(SDL_RWops *c, void *ptr, size_t size, size_t num)
+{
+	return file_read((ACKFILE*)c->hidden.unknown.data1, ptr, size * num) / size;
+}
 
-	int64_t file_read(ACKFILE *file, void *buffer, uint32_t objSize, uint32_t objCount)
-	{
-		if(file == nullptr) {
-			engine_seterror(ERR_INVALIDARGUMENT, "file must not be NULL");
-			return -1;
-		} else {
-			return PHYSFS_read(file, buffer, objSize, objCount);
-		}
-	}
+static size_t rw_write(SDL_RWops *c, const void *ptr, size_t size, size_t num)
+{
+	return file_write((ACKFILE*)c->hidden.unknown.data1, ptr, size * num) / size;
+}
 
-	int64_t file_write(ACKFILE *file, const void *buffer, uint32_t objSize, uint32_t objCount)
-	{
-		if(file == nullptr) {
-			engine_seterror(ERR_INVALIDARGUMENT, "file must not be NULL");
-			return -1;
-		} else {
-			return PHYSFS_write(file, buffer, objSize, objCount);
-		}
-	}
+static int rw_close(SDL_RWops *context)
+{
+	file_close((ACKFILE*)context->hidden.unknown.data1);
+	return 0;
+}
 
-	void file_seek(ACKFILE * file, uint64_t position)
-	{
-		if(file == nullptr) {
-			engine_seterror(ERR_INVALIDARGUMENT, "file must not be NULL");
-		} else {
-			PHYSFS_seek(file, position);
-		}
-	}
+SDL_RWops * SDL_RWFromAcknext(ACKFILE * file)
+{
+	ARG_NOTNULL(file, nullptr);
 
-	bool file_eof(ACKFILE * file)
-	{
-		if(file == nullptr) {
-			engine_seterror(ERR_INVALIDARGUMENT, "file must not be NULL");
-			return true;
-		} else {
-			return PHYSFS_eof(file);
-		}
-	}
+	SDL_RWops *rwops = SDL_AllocRW();
+	assert(rwops);
 
-	int64_t file_tell(ACKFILE * file)
-	{
-		if(file == nullptr) {
-			engine_seterror(ERR_INVALIDARGUMENT, "file must not be NULL");
-			return true;
-		} else {
-			return PHYSFS_tell(file);
-		}
-	}
+	rwops->type = 0xdeadbeef;
+	rwops->hidden.unknown.data1 = file;
 
-	int64_t file_size(ACKFILE * file)
-	{
-		if(file == nullptr) {
-			engine_seterror(ERR_INVALIDARGUMENT, "file must not be NULL");
-			return true;
-		} else {
-			return PHYSFS_fileLength(file);
-		}
-	}
+	rwops->size = rw_size;
+	rwops->seek = rw_seek;
+	rwops->read = rw_read;
+	rwops->write = rw_write;
+	rwops->close= rw_close;
 
-	void file_flush(ACKFILE * file)
-	{
-		if(file == nullptr) {
-			engine_seterror(ERR_INVALIDARGUMENT, "file must not be NULL");
-		} else {
-			PHYSFS_flush(file);
-		}
-	}
-
-	void file_close(ACKFILE * file)
-	{
-		if(file == nullptr) {
-			engine_seterror(ERR_INVALIDARGUMENT, "file must not be NULL");
-		} else {
-			PHYSFS_close(file);
-		}
-	}
+	return rwops;
 }

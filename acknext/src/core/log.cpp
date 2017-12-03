@@ -26,6 +26,7 @@ ACKNEXT_API_BLOCK
 	        vfprintf(files[i], format, args);
 	        va_end(args);
 	        fprintf(files[i], "\n");
+			fflush(files[i]);
 	    }
 	}
 }

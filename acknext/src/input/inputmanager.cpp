@@ -79,6 +79,8 @@ static void update_anykey()
 
 void InputManager::keyDown(SDL_KeyboardEvent const & ev)
 {
+	key_lastpressed = ev.keysym.scancode;
+	update_anykey();
 	switch(ev.keysym.scancode)
 	{
 #define _ACKNEXT_KEYDEF(_name,_scancode) \
@@ -92,9 +94,10 @@ void InputManager::keyDown(SDL_KeyboardEvent const & ev)
 			engine_log("You pressed a key that isn't known to SDL! Bad boy!");
 			return;
 		case SDL_NUM_SCANCODES: abort(); // Just hard-die here
+		default:
+			engine_log("Unsupported key pressed: %s", ev.keysym.scancode);
+			break;
 	}
-	key_lastpressed = ev.keysym.scancode;
-	update_anykey();
 	event_invoke(on_anykey, nullptr);
 }
 
@@ -112,6 +115,8 @@ void InputManager::keyUp(SDL_KeyboardEvent const & ev)
 			engine_log("You pressed a key that isn't known to SDL! Bad boy!");
 			return;
 		case SDL_NUM_SCANCODES: abort(); // Just hard-die here
+		default:
+			break;
 	}
 	update_anykey();
 }

@@ -2,13 +2,13 @@ TEMPLATE = subdirs
 
 CONFIG += ordered
 
+# The order here is important!
 SUBDIRS += \
-    acknext \
-#	demo-cpp \
-#	scripts \
-#	Qtnext
-	demo-c
+    acknext \  # Engine is first
+    addons \   # Then comes the list of addons
+    tools \    # After that, the tools are built
+	prototypes \ # And finally, the prototypes
+    utilities
 
-HEADERS += \
-    documentation/src/groups.h \
-    documentation/src/mainpage.h
+prototypes.depends = acknext addons
+tools.depends = acknext addons

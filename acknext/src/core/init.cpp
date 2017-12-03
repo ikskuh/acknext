@@ -2,6 +2,9 @@
 #include "log.hpp"
 #include "config.hpp"
 #include "input/inputmanager.hpp"
+#include "collision/collisionsystem.hpp"
+#include "audio/audiomanager.hpp"
+#include "virtfs/resourcemanager.hpp"
 
 #include <chrono>
 #include <getopt.h>
@@ -13,12 +16,6 @@ using std::chrono::high_resolution_clock;
 
 // This clock point is used for frame time calculations
 static high_resolution_clock::time_point lastFrameTime;
-
-struct
-{
-	int no_sdl;
-	int diag;
-} options;
 
 struct engine engine;
 
@@ -34,25 +31,27 @@ void render_init();
 void render_frame();
 void render_shutdown();
 
-// scheduler.cpp
-void scheduler_init();
-void scheduler_shutdown();
-void scheduler_update();
-
 ACKNEXT_API_BLOCK
 {
-	char ** engine_argv = { };
-	int engine_argc = 0;
+	ENGINESTATS engine_stats;
 
-	int engine_main(void (*main)(), int argc, char ** argv)
+	EVENT * on_early_update = nullptr;
+	EVENT * on_late_update = nullptr;
+	EVENT * on_update = nullptr;
+	EVENT * on_shutdown = nullptr;
+	EVENT * on_resize = nullptr;
+
+	int engine_main(void (*init)())
 	{
-		if(engine_open(argc, argv) == false)
+		if(engine_open() == false)
 	    {
 			fprintf(stderr, "Failed to initialize engine: %s\n", engine_lasterror_text);
 	        return 1;
 	    }
 
-		task_start(reinterpret_cast<ENTRYPOINT>(main), nullptr);
+		if(init != nullptr) {
+			(*init)();
+		}
 
 	    while(engine_frame())
 	    {
@@ -63,114 +62,75 @@ ACKNEXT_API_BLOCK
 		return 0;
 	}
 
-	bool engine_open(int argc, char ** argv)
+	bool engine_open()
 	{
 		startupTime = std::chrono::steady_clock::now();
 
-		engine_log("Begin initalizing engine.");
-
-		engine_argv = argv;
-		engine_argc = argc;
-
-		engine_config.load("acknext.cfg");
-
-		// Parse arguments
+		if(engine_config.argv0 == NULL)
 		{
-			static struct option long_options[] =
-			{
-				/* These options set a flag. */
-			{ "diag",    no_argument,       &options.diag, 1},
-			/* These options don’t set a flag.
-						  We distinguish them by their indices. */
-			// {"diag",    no_argument,       0, 'd'},
-			{ "config",  required_argument, 0, 'c'},
-			{ "no-sdl", no_argument, &options.no_sdl, 'X' },
-			{0, 0, 0, 0}
-		};
-			while (1)
-			{
-				/* getopt_long stores the option index here. */
-				int option_index = 0;
-				int c = getopt_long (argc, argv, "Xdc:",
-				                     long_options, &option_index);
+			engine_log("ERROR: engine_config.argv0 IS NOT SET. SET THIS TO argv[0] PRIOR TO CALLING engine_open or engine_main!");
+			assert(engine_config.argv0 != NULL); // will fail with "best" error image
+		}
 
-				/* Detect the end of the options. */
-				if (c == -1)
-					break;
+		engine_log("Start initalizing the engine...");
 
-				switch (c)
-				{
-					case 0:
-						/* If this option set a flag, do nothing else now. */
-						if (long_options[option_index].flag != 0)
-							break;
-						printf ("option %s", long_options[option_index].name);
-						if (optarg)
-							printf (" with arg %s", optarg);
-						printf ("\n");
-						break;
-
-					case 'd':
-						options.diag = 1;
-						break;
-					case 'X':
-						options.no_sdl = 1;
-						break;
-					case 'c': {
-						engine_config.load(optarg);
-						break;
-					}
-					case '?': break;
-					default:
-						abort ();
-				}
-			}
-
-			if (options.diag) {
-				if(logfile == nullptr) {
-					logfile = fopen("acklog.txt", "w");
-					if(logfile == nullptr) {
-						engine_log("Failed to open acklog.txt!");
-					}
-				}
-			}
-
-			for(int i = optind; i < argc; i++)
-			{
-				engine_config.sourceFiles.emplace_back(argv[i]);
+		if (engine_config.flags & DIAGNOSTIC)
+		{
+			logfile = fopen("acklog.txt", "w");
+			if(logfile == nullptr) {
+				engine_log("Failed to open acklog.txt!");
 			}
 		}
 
-		engine_log("Initialize virtual file system...");
 		{
-			PHYSFS_init(argv[0]);
+			engine_log("Initialize virtual file system...");
 
-			PHYSFS_setSaneConfig (
-				engine_config.organization.c_str(),
-				engine_config.application.c_str(),
-				"ARP",    // scan for default archive
-				0,        // no cd
-				0);       // filesys > pack
+			PHYSFS_Version version;
 
-			char buffer[256];
-			PHYSFS_addToSearchPath(getcwd(buffer, 256), 0);
+			PHYSFS_getLinkedVersion(&version);
+			engine_log("Using PhysFS version %d.%d.%d", version.major, version.minor, version.patch);
+
+			PHYSFS_VERSION(&version);
+			engine_log("Linked against version %d.%d.%d", version.major, version.minor, version.patch);
+
+			if(!(engine_config.flags & USE_VFS))
+			{
+				engine_log("Note: virtual file system is disabled, but required by the engine, so a minimal setup will be done for /builtin.");
+			}
+
+			PHYSFS_init(engine_config.argv0);
+
+			if(engine_config.flags & USE_VFS)
+			{
+				PHYSFS_setSaneConfig (
+					engine_config.organization,
+					engine_config.application,
+					"ARP",    // scan for default archive
+					0,        // no cd
+					0);       // filesys > pack
+			}
+			else
+			{
+				// We could set up something here, but
+				// actually, we don't.
+			}
 
 			engine_log("app dir:  %s", PHYSFS_getBaseDir());
 			engine_log("save dir: %s", PHYSFS_getWriteDir());
-			engine_log("work dir: %s", buffer);
+
+			if(engine_config.flags & VFS_USE_CWD)
+			{
+				char buffer[256];
+				PHYSFS_mount(getcwd(buffer,256), NULL, 0);
+
+				engine_log("work dir: %s", buffer);
+			}
 		}
 
-		// if(compiler_init() == false) {
-		// 	return false;
-		// }
+		engine_log("Initialize builtin resources...");
+		ResourceManager::initialize();
 
-		// for(auto & str : engine_config.sourceFiles) {
-		// 	if(compiler_add(str.c_str()) == false) {
-		// 		return false;
-		// 	}
-		// }
-
-		if(options.no_sdl == 0)
+		if(!(engine_config.flags & CUSTOM_VIDEO))
 		{
 			engine_log("Initialize SDL2...");
 			SDL_CHECKED(SDL_Init(SDL_INIT_EVERYTHING), false)
@@ -182,18 +142,19 @@ ACKNEXT_API_BLOCK
 
 			{ // Create window and initialize SDL
 				auto flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_MOUSE_FOCUS;
-				if(engine_config.fullscreen == FullscreenType::Fullscreen) {
-					flags |= SDL_WINDOW_FULLSCREEN;
-				}
-				else if(engine_config.fullscreen == FullscreenType::DesktopFullscreen) {
-					flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+				if(engine_config.flags & FULLSCREEN) {
+					if(engine_config.flags & DESKTOP) {
+						flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+					} else {
+						flags |= SDL_WINDOW_FULLSCREEN;
+					}
 				}
 
 				engine.window = SDL_CreateWindow(
-				            engine_config.title.c_str(),
-				            SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-				            engine_config.resolution.width, engine_config.resolution.height,
-				            flags);
+					engine_config.windowTitle,
+					SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+					engine_config.resolution.width, engine_config.resolution.height,
+					flags);
 				if(engine.window == nullptr)
 				{
 					engine_setsdlerror();
@@ -206,11 +167,23 @@ ACKNEXT_API_BLOCK
 					engine_setsdlerror();
 					return false;
 				}
+
+				SDL_GetWindowSize(engine.window, &screen_size.width, &screen_size.height);
+
+				// No vsync for debugging
+				SDL_GL_SetSwapInterval(engine_config.vsync);
 			}
 		}
 
-		// engine_log("Initialize collision engine...");
-		// collision_init();
+		if(IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF | IMG_INIT_WEBP) < 0) {
+			engine_log("Failed to initialize SDL_image: %s", IMG_GetError());
+		}
+
+		on_early_update = event_create();
+		on_late_update = event_create();
+		on_update = event_create();
+		on_resize = event_create();
+		on_shutdown = event_create();
 
 		engine_log("Initialize input...");
 		InputManager::init();
@@ -218,16 +191,16 @@ ACKNEXT_API_BLOCK
 		engine_log("Initialize renderer...");
 		render_init();
 
-		engine_log("Initialize scheduler...");
-		scheduler_init();
+		engine_log("Initialize collision system...");
+		CollisionSystem::initialize();
+
+		engine_log("Initialize audio system...");
+		AudioManager::initialize();
 
 		engine_log("Engine ready.");
+		engine_log("==========================================================================================");
 
 		lastFrameTime = high_resolution_clock::now();
-
-		// if(compiler_start() == false) {
-		// 	return false;
-		// }
 
 		engine_shutdown_requested = false;
 
@@ -249,10 +222,10 @@ ACKNEXT_API_BLOCK
 	        total_time = timePoint.count();
 	    }
 
-		if(options.no_sdl == 0)
-		{
-			SDL_GetWindowSize(engine.window, &screen_size.width, &screen_size.height);
+		event_invoke(on_early_update, nullptr);
 
+		if(!(engine_config.flags & CUSTOM_VIDEO))
+		{
 			InputManager::beginFrame();
 
 			// Update Frame
@@ -264,6 +237,14 @@ ACKNEXT_API_BLOCK
 					case SDL_QUIT:
 						// TODO: Replace with event-call here
 						return false;
+					case SDL_WINDOWEVENT:
+						switch(event.window.event)
+						{
+							case SDL_WINDOWEVENT_RESIZED:
+								engine_resize(event.window.data1, event.window.data2);
+								break;
+						}
+						break;
 					case SDL_KEYDOWN:
 						InputManager::keyDown(event.key);
 						break;
@@ -286,17 +267,26 @@ ACKNEXT_API_BLOCK
 			}
 		}
 
-		scheduler_update();
+		event_invoke(on_update, nullptr);
 
-		// if(!(engine_flags & CUSTOMDRAW)) {
-		//
-		// }
+		CollisionSystem::update();
+
+		event_invoke(on_late_update, nullptr);
+
+		CollisionSystem::draw();
 
 		render_frame();
 
 	    lastFrameTime = nextFrameTime;
 	    total_frames++;
 	    return !engine_shutdown_requested;
+	}
+
+	void engine_resize(int width, int height)
+	{
+		screen_size.width = width;
+		screen_size.height = height;
+		event_invoke(on_resize, nullptr);
 	}
 
 	void engine_shutdown()
@@ -306,16 +296,20 @@ ACKNEXT_API_BLOCK
 
 	void engine_close()
 	{
-		engine_log("Shutting down scheduler...");
-	    scheduler_shutdown();
+		event_invoke(on_shutdown, nullptr);
+
+		engine_log("==========================================================================================");
 
 		engine_log("Shutting down input...");
 		InputManager::shutdown();
 
-		engine_log("Shutting down renderer...");
-		render_shutdown();
+		engine_log("Shutting down audio system...");
+		AudioManager::shutdown();
 
-		if(!options.no_sdl)
+		engine_log("Shutting down collision system...");
+		CollisionSystem::shutdown();
+
+		if(!(engine_config.flags & CUSTOM_VIDEO))
 		{
 			engine_log("Destroy GL context.");
 			SDL_GL_DeleteContext(engine.context);
@@ -323,6 +317,9 @@ ACKNEXT_API_BLOCK
 			engine_log("Close window.");
 			SDL_DestroyWindow(engine.window);
 		}
+
+		engine_log("Shutting down builtin resources...");
+		ResourceManager::shutdown();
 
 		engine_log("Shutting down virtual file system...");
 		PHYSFS_deinit();

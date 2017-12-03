@@ -8,12 +8,12 @@
 #define NOCOPY(Class) Class(Class const &) = delete; Class(Class&&) = delete
 
 #include "core/engineobject.hpp"
-#include "virtfs/physfsrwops.h"
 
 #include <GL/gl3w.h>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
+#include <SDL2/SDL_image.h>
 
 struct engine
 {
@@ -24,5 +24,14 @@ struct engine
 extern struct engine engine;
 
 void engine_setsdlerror();
+
+SDL_RWops * SDL_RWFromAcknext(ACKFILE * file);
+
+void _print_stacktrace();
+
+#define ARG_NOTNULL(arg,val) if(arg == nullptr) { \
+	engine_seterror(ERR_INVALIDARGUMENT, #arg " must not be NULL!"); \
+	return val; \
+}
 
 #endif // ENGINE_HPP

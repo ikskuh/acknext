@@ -1,27 +1,19 @@
 #include "shader.hpp"
 
-
-static GLenum getShaderType(SHADERTYPE type)
-{
-	switch(type) {
-		case VERTEXSHADER: return GL_VERTEX_SHADER;
-		case FRAGMENTSHADER: return GL_FRAGMENT_SHADER;
-		case GEOMETRYSHADER: return GL_GEOMETRY_SHADER;
-		case TESSCTRLSHADER: return GL_TESS_CONTROL_SHADER;
-		case TESSEVALSHADER: return GL_TESS_EVALUATION_SHADER;
-		default:
-			engine_seterror(ERR_INVALIDARGUMENT, "%d is not a valid shader type!", type);
-			return GL_INVALID_ENUM;
-	}
-}
+#include "../core/glenum-translator.hpp"
 
 Shader::Shader() :
     EngineObject<SHADER>(),
-    program(glCreateProgram()),
     uniforms(), shaders(),
-    isLinked(false)
+#define _UNIFORM(xname, xtype, value, _rtype) xname(),
+#include "uniformconfig.h"
+#undef _UNIFORM
+    stub(42) // required for termination
 {
-
+	api().object = glCreateProgram();
+#define _UNIFORM(xname, xtype, value, _rtype) this->xname.shader = this;
+#include "uniformconfig.h"
+#undef _UNIFORM
 }
 
 Shader::~Shader()
@@ -29,7 +21,56 @@ Shader::~Shader()
 	for(GLuint sh : this->shaders) {
 		glDeleteShader(sh);
 	}
-	glDeleteProgram(this->program);
+	glDeleteProgram(api().object);
+}
+
+static bool addSource(SHADER * _shader, GLenum type, const char * source, GLint * size)
+{
+	Shader * shader = promote<Shader>(_shader);
+	if(shader == nullptr) {
+		engine_seterror(ERR_INVALIDARGUMENT, "shader must not be NULL!");
+		return false;
+	}
+	if(shader->api().flags & LINKED) {
+		engine_seterror(ERR_INVALIDOPERATION, "Shader is already linked!");
+		return false;
+	}
+
+	GLuint sh = glCreateShader(type);
+	if(sh == 0) {
+		return false;
+	}
+	glShaderSource(sh, 1, &source, size);
+	glCompileShader(sh);
+
+	GLint status;
+	glGetShaderiv(sh, GL_COMPILE_STATUS, &status);
+
+	GLint len;
+	glGetShaderiv(sh, GL_INFO_LOG_LENGTH, &len);
+
+	std::vector<GLchar> log(len + 1);
+	glGetShaderInfoLog(sh, log.size(), &len, log.data());
+	log[len] = 0;
+
+	if(status != GL_TRUE) {
+		engine_log("Failed to compile shader: %s", log.data());
+		glDeleteShader(sh);
+		return false;
+	}
+
+	if(len > 0) {
+		engine_log("shader log: %s", log.data());
+	}
+
+	shader->shaders.push_back(sh);
+	glAttachShader(shader->api().object, sh);
+
+	if(type == TESSCTRLSHADER || type == TESSEVALSHADER) {
+		shader->api().flags |= TESSELATION;
+	}
+
+	return true;
 }
 
 ACKNEXT_API_BLOCK
@@ -39,45 +80,27 @@ ACKNEXT_API_BLOCK
 		return demote(new Shader());
 	}
 
-	bool shader_addSource(SHADER * _shader, SHADERTYPE type, const char * source)
+	bool shader_addSource(SHADER * shader, GLenum type, const char * source)
 	{
-		Shader * shader = promote<Shader>(_shader);
-		if(shader == nullptr) {
-			engine_seterror(ERR_INVALIDARGUMENT, "shader must not be NULL!");
+		return addSource(shader, type, source, nullptr);
+	}
+
+	ACKFUN bool shader_addSourceExt(SHADER * shader, GLenum type, void const * source, size_t length)
+	{
+		GLint len = length;
+		return addSource(shader, type, (char const *)source, &len);
+	}
+
+	bool shader_addFileSource(SHADER * shader, GLenum type, const char * fileName)
+	{
+		BLOB * blob = blob_load(fileName);
+		if(!blob) {
+			engine_log("Failed to open %s file: %s", GLenumToString(type), fileName);
 			return false;
 		}
-		if(shader->isLinked) {
-			engine_seterror(ERR_INVALIDOPERATION, "Shader is already linked!");
-			return false;
-		}
-
-		GLuint sh = glCreateShader(getShaderType(type));
-		if(sh == 0) {
-			return false;
-		}
-		glShaderSource(sh, 1, &source, nullptr);
-		glCompileShader(sh);
-
-		GLint status;
-		glGetShaderiv(sh, GL_COMPILE_STATUS, &status);
-		if(status != GL_TRUE) {
-			GLint len;
-			glGetShaderiv(sh, GL_INFO_LOG_LENGTH, &len);
-
-			std::vector<GLchar> log(len + 1);
-			glGetShaderInfoLog(sh, log.size(), &len, log.data());
-			log[len] = 0;
-
-			engine_log("Failed to compile shader: %s", log.data());
-
-			glDeleteShader(sh);
-			return false;
-		}
-
-		shader->shaders.push_back(sh);
-		glAttachShader(shader->program, sh);
-
-		return true;
+		bool result = shader_addSource(shader, type, (char*)blob->data);
+		blob_remove(blob);
+		return result;
 	}
 
 	bool shader_link(SHADER * _shader)
@@ -87,100 +110,165 @@ ACKNEXT_API_BLOCK
 			engine_seterror(ERR_INVALIDARGUMENT, "shader must not be NULL!");
 			return false;
 		}
-		if(shader->isLinked) {
+		if(shader->api().flags & LINKED) {
 			engine_seterror(ERR_INVALIDOPERATION, "Shader is already linked!");
 			return false;
 		}
-		glLinkProgram(shader->program);
 		GLint status;
-		glGetProgramiv(shader->program, GL_LINK_STATUS, &status);
+		GLuint const program = shader->api().object;
+
+		glLinkProgram(program);
+		glGetProgramiv(program, GL_LINK_STATUS, &status);
+
+		GLint len;
+		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len);
+
+		std::vector<GLchar> log(len + 1);
+		glGetProgramInfoLog(shader->api().object, log.size(), &len, log.data());
+		log[len] = 0;
 
 		for(GLuint sh : shader->shaders) {
-			glDetachShader(shader->program, sh);
+			glDetachShader(program, sh);
 			glDeleteShader(sh);
 		}
 		shader->shaders.clear();
 
 		if(status != GL_TRUE) {
+			engine_log("Failed to link shader: %s", log.data());
 			engine_seterror(ERR_INVALIDOPERATION, "Failed to link shader!");
 			return false;
 		}
+		if(len > 0) {
+			engine_log("link log: %s", log.data());
+		}
 
-		GLint count;
-		glGetProgramiv(shader->program, GL_ACTIVE_UNIFORMS, &count);
+		_shader->textureSlotCount = 0;
+		{
+			GLint count;
+			glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &count);
 
-		shader->uniforms.resize(count);
-		for(int i = 0; i < count; i++) {
-			UNIFORM * uni = &shader->uniforms[i];
-			uni->location = i;
-			glGetActiveUniform(
-				shader->program,
-				i,
-				sizeof(uni->name),
-				nullptr,
-				&uni->size,
-				&uni->type,
-				uni->name);
+			shader->uniforms.resize(count);
+			for(int i = 0; i < count; i++) {
+				UNIFORM * uni = &shader->uniforms[i];
+				glGetActiveUniform(
+					program,
+					i,
+					sizeof(uni->name),
+					nullptr,
+					&uni->size,
+					&uni->type,
+					uni->name);
+				uni->index = i;
+				uni->block = -1; // No block by default
+				uni->location = glGetUniformLocation(program, uni->name);
 
-			// TODO: Add all shader variables
+				shader->uniformsByName.emplace(uni->name, uni);
 
-	#define SETTYPE(xname, xtype, value) \
-			do { \
-				if(strcmp(uni->name, xname) == 0) { \
-					if(uni->type != xtype) { \
-						engine_seterror(ERR_INVALIDOPERATION, "The uniform " xname " is not of the type " #xtype "!"); \
-						return false; \
+	#define _UNIFORM(xname, xtype, value, _rtype) \
+				do { \
+					if(strcmp(uni->name, #xname) == 0) { \
+						if(uni->type != xtype) { \
+							engine_seterror(ERR_INVALIDOPERATION, "The uniform " #xname " is not of the type " #xtype "!"); \
+							return false; \
+						} \
+						uni->var = value; \
+						shader->xname.uniform = uni; \
 					} \
-					uni->var = value; \
-				} \
-			} while(false)
+				} while(false);
+	#include "uniformconfig.h"
+	#undef _UNIFORM
 
-			SETTYPE("matWorld", GL_FLOAT_MAT4, MATWORLD_VAR);
-			SETTYPE("matWorldView", GL_FLOAT_MAT4, MATWORLDVIEW_VAR);
-			SETTYPE("matWorldViewProj", GL_FLOAT_MAT4, MATWORLDVIEWPROJ_VAR);
-			SETTYPE("matView", GL_FLOAT_MAT4, MATVIEW_VAR);
-			SETTYPE("matViewProj", GL_FLOAT_MAT4, MATVIEWPROJ_VAR);
-			SETTYPE("matProj", GL_FLOAT_MAT4, MATPROJ_VAR);
-
-			SETTYPE("vecViewPos", GL_FLOAT_VEC3, VECVIEWPOS_VAR);
-			SETTYPE("vecViewDir", GL_FLOAT_VEC3, VECVIEWDIR_VAR);
-			SETTYPE("vecViewPort", GL_FLOAT_VEC4, VECVIEWPORT_VAR);
-
-			SETTYPE("vecColor", GL_FLOAT_VEC3, VECCOLOR_VAR);
-			SETTYPE("vecEmission", GL_FLOAT_VEC3, VECEMISSION_VAR);
-			SETTYPE("vecAttributes", GL_FLOAT_VEC3, VECATTRIBUTES_VAR);
-
-			SETTYPE("texColor", GL_SAMPLER_2D, TEXCOLOR_VAR);
-			SETTYPE("texAttributes", GL_SAMPLER_2D, TEXATTRIBUTES_VAR);
-			SETTYPE("texEmission", GL_SAMPLER_2D, TEXEMISSION_VAR);
-
-			switch(uni->var) {
-				case TEXCOLOR_VAR:
-					glProgramUniform1i(shader->program, uni->location, 0);
-					break;
-				case TEXATTRIBUTES_VAR:
-					glProgramUniform1i(shader->program, uni->location, 1);
-					break;
-				case TEXEMISSION_VAR:
-					glProgramUniform1i(shader->program, uni->location, 2);
-					break;
-				default:
-					break;
+				if(Property::isSampler(uni->type))
+				{
+					// preinitialize uniforms with correct slut
+					uni->textureSlot = _shader->textureSlotCount++;
+					glProgramUniform1i(program, uni->location, uni->textureSlot);
+				}
+				else
+				{
+					uni->textureSlot = -1;
+				}
 			}
 		}
 
-		shader->isLinked = true;
+		{
+			int count;
+			glGetProgramiv(program, GL_ACTIVE_UNIFORM_BLOCKS, &count);
+			for(int i = 0; i < count; i++)
+			{
+				int len;
+				glGetActiveUniformBlockiv(program, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &len);
+				int locations[len];
+				glGetActiveUniformBlockiv(program, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, locations);
+				for(int j = 0; j < len; j++) {
+					// Now associate each uniform with its uniform block
+					shader->uniforms[locations[j]].block = i;
+				}
+			}
+		}
+
+		shader->api().flags |= LINKED;
 		return true;
 	}
 
-	UNIFORM const * shader_getUniform(SHADER * shader, int index)
+
+	ACKFUN void shader_logInfo(SHADER const * _shader)
 	{
-		Shader * sh = promote<Shader>(shader);
+		Shader const * shader = promote<Shader>(_shader);
+		if(shader == nullptr) {
+			engine_seterror(ERR_INVALIDARGUMENT, "shader must not be NULL!");
+			return;
+		}
+		if(!(shader->api().flags & LINKED)) {
+			engine_seterror(ERR_INVALIDOPERATION, "Shader is not linked!");
+			return;
+		}
+		engine_log("Shader %d:", _shader->object);
+		GLuint const program = shader->api().object;
+		{
+			int count;
+			glGetProgramiv(program, GL_ACTIVE_UNIFORM_BLOCKS, &count);
+			for(int i = 0; i < count; i++)
+			{
+				int len;
+				glGetActiveUniformBlockiv(program, i, GL_UNIFORM_BLOCK_NAME_LENGTH, &len);
+
+				char name[len + 1];
+				glGetActiveUniformBlockName(program, i, len + 1, NULL, name);
+
+				engine_log("\tUniform Buffer Block %d: %s", i, name);
+			}
+		}
+
+		for(UNIFORM const & uni : shader->uniforms)
+		{
+			char const * variable = "";
+			switch(uni.var) {
+#define _UNIFORM(xname, xtype, value, _rtype) \
+				case value: variable = "(" #value ")"; break;
+#include "uniformconfig.h"
+#undef _UNIFORM
+			}
+
+			engine_log(
+				"\tUniform: [%d:%2d] %s%s, size=%d, slot=%d",
+				uni.block,
+				uni.location,
+				uni.name,
+				variable,
+				uni.size,
+				uni.textureSlot);
+		}
+	}
+
+	UNIFORM const * shader_getUniform(SHADER const * shader, int index)
+	{
+		Shader const * sh = promote<Shader>(shader);
 		if(sh == nullptr) {
 			engine_seterror(ERR_INVALIDARGUMENT, "shader must not be NULL!");
 			return nullptr;
 		}
-		if(sh->isLinked == false) {
+		if(!(sh->api().flags & LINKED)) {
 			engine_seterror(ERR_INVALIDOPERATION, "shader must be linked!");
 			return nullptr;
 		}
@@ -191,28 +279,108 @@ ACKNEXT_API_BLOCK
 		return &sh->uniforms[index];
 	}
 
-	int shader_getUniformCount(SHADER * shader)
+	int shader_getUniformCount(SHADER const * shader)
 	{
-		Shader * sh = promote<Shader>(shader);
+		Shader const * sh = promote<Shader>(shader);
 		if(sh == nullptr) {
 			engine_seterror(ERR_INVALIDARGUMENT, "shader must not be NULL!");
 			return -1;
 		}
-		if(sh->isLinked == false) {
+		if(!(sh->api().flags & LINKED)) {
 			engine_seterror(ERR_INVALIDOPERATION, "shader must be linked!");
 			return -1;
 		}
 		return int(sh->uniforms.size());
 	}
 
-	GLDATA shader_getObject(SHADER * shader)
+	UNIFORM const * shader_getUniformByName(const SHADER *shader, const char *name)
+	{
+		const int cnt = shader_getUniformCount(shader);
+		if(cnt < 0) {
+			return nullptr;
+		}
+		return promote<Shader>(shader)->uniformsByName[name];
+		for(int i = 0; i < cnt; i++)
+		{
+			UNIFORM const * uni = shader_getUniform(shader, i);
+			if(strcmp(uni->name, name) == 0) {
+				return uni;
+			}
+		}
+		return nullptr;
+	}
+
+	void shader_setUniforms(SHADER * shader, void const * source, bool override)
 	{
 		Shader * sh = promote<Shader>(shader);
 		if(sh == nullptr) {
 			engine_seterror(ERR_INVALIDARGUMENT, "shader must not be NULL!");
-			return 0;
+			return;
 		}
-		return sh->program;
+		if(!(sh->api().flags & LINKED)) {
+			engine_seterror(ERR_INVALIDOPERATION, "shader must be linked!");
+			return;
+		}
+		Dummy const * dummy = promote<Dummy>(reinterpret_cast<DUMMY const*>(source));
+		if(dummy == nullptr) {
+			engine_seterror(ERR_INVALIDARGUMENT, "source must be an engine object!");
+			return;
+		}
+		const GLuint pgm = shader->object;
+		for(auto const & prop : dummy->properties)
+		{
+			UNIFORM const * uni = sh->uniformsByName[prop.first];
+			if(uni == nullptr) {
+				continue;
+			}
+			Property const & p = prop.second;
+			if(uni->type != p.type) {
+				engine_log("Warning: %s does not match the shader specification!", uni->name);
+				continue;
+			}
+			const int loc = uni->location;
+
+			if(p.isSampler())
+			{
+				if(p.data.texture || override) {
+					opengl_setTexture(uni->textureSlot, p.data.texture);
+				}
+			}
+			else
+			{
+				switch(p.type)
+				{
+					case GL_INT:
+						glProgramUniform1i(pgm, loc, p.data.ints[0]);
+						break;
+					case GL_INT_VEC2:
+						glProgramUniform2i(pgm, loc, p.data.ints[0], p.data.ints[1]);
+						break;
+					case GL_INT_VEC3:
+						glProgramUniform3i(pgm, loc, p.data.ints[0], p.data.ints[1], p.data.ints[2]);
+						break;
+					case GL_INT_VEC4:
+						glProgramUniform4i(pgm, loc, p.data.ints[0], p.data.ints[1], p.data.ints[2], p.data.ints[3]);
+						break;
+					case GL_FLOAT:
+						glProgramUniform1f(pgm, loc, p.data.floats[0]);
+						break;
+					case GL_FLOAT_VEC2:
+						glProgramUniform2f(pgm, loc, p.data.floats[0], p.data.floats[1]);
+						break;
+					case GL_FLOAT_VEC3:
+						glProgramUniform3f(pgm, loc, p.data.floats[0], p.data.floats[1], p.data.floats[2]);
+						break;
+					case GL_FLOAT_VEC4:
+						glProgramUniform4f(pgm, loc, p.data.floats[0], p.data.floats[1], p.data.floats[2], p.data.floats[3]);
+						break;
+					// TODO: Add more, also add support for samplers!
+					default:
+						engine_log("Warning: %s has an unsupported property type!", uni->name);
+						continue;
+				}
+			}
+		}
 	}
 
 	void shader_remove(SHADER * shader)

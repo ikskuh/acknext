@@ -1,0 +1,11 @@
+{
+	"type": "acknext-material",
+	"albedo": [ 1, 0, 0 ],
+	"emission": [ 1, 1, 1 ],
+	"roughness": 1.0,
+	"textures": {
+		"embed": false,
+		"albedo": "/mtl_metal/albedo.atx",
+		"normal": "/mtl_metal/normal.atx"
+	}
+}

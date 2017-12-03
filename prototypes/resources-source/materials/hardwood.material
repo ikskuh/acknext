@@ -1,0 +1,11 @@
+{
+	"type": "acknext-material",
+	"metalness": 1.0,
+	"roughness": 1.0,
+	"fresnell": 1.0,
+	"textures": {
+		"albedo": "/textures/hardwood_albedo.atx",
+		"normal": "/textures/hardwood_normal.atx",
+		"attribute": "/textures/hardwood_attributes.atx"
+	}
+}

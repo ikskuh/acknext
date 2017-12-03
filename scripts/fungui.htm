@@ -1,0 +1,51 @@
+<?doctype html?>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<style type="text/css">
+			html {
+				background-color: transparent;
+			}
+			div.camInfo {
+				width: 250px;
+				height: 150px;
+				border-left: 1px solid black;
+				border-bottom: 1px solid black;
+				border-bottom-left-radius: 15px;
+				top: 0;
+				right: 0;
+				position: fixed;
+				background-color: rgba(0,0,0,0.5);
+				color: white;
+				padding: 0.5em;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="camInfo"><pre>
+Frame Rate:       <span id="fps">0</span> FPS
+Frame Time:       <span id="time">0</span> ms
+Entities:         <span id="num">0</span>
+Drawcalls:        <span id="calls">0</span>
+Terrain Size:     2048×2048
+Camera Elevation: <span id="camh">0</span> m a.s.l.
+Max. Tesselation: 64
+		</pre></div>
+		
+		<script type="text/javascript">
+			function initialize()
+			{
+				// rdy
+			}
+			function update(height,frametime,num,calls)
+			{
+				var camh = document.getElementById("camh");
+				camh.innerText = String(height);
+				document.getElementById("fps").innerText = String((1.0 / frametime).toFixed(2));
+				document.getElementById("time").innerText = String((1000 * frametime).toFixed(2));
+				document.getElementById("num").innerText = String(num);
+				document.getElementById("calls").innerText = String(calls);
+			}
+		</script>
+	</body>
+</html>
